@@ -5,8 +5,8 @@
 /**
  * Provides services for managing tests.
  */
-app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 'ENDPOINT_URI',
-    function ($scope, $controller, HttpService, ENDPOINT_URI) {
+app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 'ENDPOINT_URI', '$filter',
+    function ($scope, $controller, HttpService, ENDPOINT_URI, $filter) {
 
 
         let testReport = null;
@@ -62,30 +62,30 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         async function generateReport(chart, testReport) {
             const dimensionChart = await getImageDimensions(chart);
 
-            var doc = new jsPDF()
+            const doc = new jsPDF();
 
-            var generalInformation = doc.autoTableHtmlToJson(document.getElementById("generalInformation"));
-            var simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
-            var realSensorInfo = doc.autoTableHtmlToJson(document.getElementById("informationRealSensors"));
+            const generalInformation = doc.autoTableHtmlToJson(document.getElementById("generalInformation"));
+            const simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
+            const realSensorInfo = doc.autoTableHtmlToJson(document.getElementById("informationRealSensors"));
+            const triggerRulesInfo = doc.autoTableHtmlToJson(document.getElementById("triggerRulesInfo"));
 
-            var pageSize = doc.internal.pageSize
-            var pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth()
-            var generalInfo = doc.splitTextToSize("General information", pageWidth - 35, {})
-            var involvedSim = doc.splitTextToSize("Involved Sensor-Simulators", pageWidth - 35, {})
-            var involvedRealSensors = doc.splitTextToSize("Involved real Sensors", pageWidth - 35, {})
+            const pageSize = doc.internal.pageSize;
+            const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+            const generalInfo = doc.splitTextToSize("General information", pageWidth - 35, {});
+            const involvedSim = doc.splitTextToSize("Involved Sensor-Simulators", pageWidth - 35, {});
+            const involvedRealSensors = doc.splitTextToSize("Involved real Sensors", pageWidth - 35, {});
+            const ruleInfoText = doc.splitTextToSize("Rule Information of the tested IoT-Application ", pageWidth - 35, {});
 
 
             doc.setFontSize(12);
             doc.setTextColor(128, 128, 128);
-            doc.text(generalInfo, 14, 20)
+            doc.text(generalInfo, 14, 25)
             doc.autoTable(generalInformation.columns, generalInformation.data, {
-                margin: {top: 23}, headStyles: {
-                    fillColor: [241, 196, 15],
-                    fontSize: 15,
-                }
+                margin: {top: 28},
+                styles:{fontSize:9}
             });
 
-            var header = function (data) {
+            const header = function (data) {
                 doc.setFontSize(18);
                 doc.setTextColor(40);
                 doc.setFontStyle('normal');
@@ -93,34 +93,111 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 doc.text("Testing Report: " + testReport.name, data.settings.margin.left, 10);
             };
 
-            var options = {
+            const options = {
                 beforePageContent: header,
                 margin: {
                     top: 80
                 },
                 startY: doc.autoTableEndPosY() + 8,
                 theme: 'striped',
+                styles: {fontSize: 9}
             };
 
             doc.setFontSize(12);
             doc.setTextColor(128, 128, 128);
 
             if (simulatedSensorInfo !== null) {
+                doc.setFontSize(12);
+                doc.setTextColor(128, 128, 128);
+
                 doc.text(involvedSim, 14, doc.autoTableEndPosY() + 5)
-                doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, options);
+                await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, options);
+
+
             }
 
             if (realSensorInfo !== null) {
-                doc.text(involvedRealSensors, 14, doc.autoTableEndPosY() + 5)
-                doc.autoTable(realSensorInfo.columns, realSensorInfo.data, options);
-            }
-            doc.addImage(chart, 'PNG', 15, doc.autoTableEndPosY()+5, dimensionChart.w / 6, dimensionChart.h / 6, "chart", "NONE", 0);
+                doc.setFontSize(12);
+                doc.setTextColor(128, 128, 128);
+                await doc.text(involvedRealSensors, 14, doc.autoTableEndPosY() + 5)
+                await doc.autoTable(realSensorInfo.columns, realSensorInfo.data, options);
 
-            doc.save("table.pdf");
+            }
+
+            doc.addImage(chart, 'PNG', 14, doc.autoTableEndPosY() + 5, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0);
+
+            const posAfterImage = (dimensionChart.h / 5) + doc.autoTableEndPosY();
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+            await doc.text(ruleInfoText, 14, posAfterImage + 15)
+            await doc.autoTable(triggerRulesInfo.columns, triggerRulesInfo.data, {
+                startY: posAfterImage + 20,
+                theme: 'striped',
+                styles: {fontSize: 9}
+            });
+
+            const bodyData = await getRuleInformation(testReport)
+            const headerData = ['Name', 'Condition', '# triggered during test', 'Trigger values'];
+
+            doc.autoTable(headerData, bodyData, {
+                startY: doc.autoTableEndPosY() + 3,
+                theme: 'striped',
+                bodyStyles: {valign: 'top'},
+                headStyles: {fontSize: 25},
+                styles: {overflow: 'linebreak', columnWidth: 'wrap', fontSize: 9},
+                columnStyles: {
+                    0: {columnWidth: 'auto'},
+                    1: {columnWidth: 'auto'},
+                    2: {columnWidth: 'auto'},
+                    3: {columnWidth: 'auto'}
+                }
+            })
+
+
+            getNextSteps(doc, pageWidth, testReport);
+
+
+            doc.save(testReport.id + ".pdf");
 
 
         }
 
+
+        function getRuleInformation(testReport) {
+            const body = []
+            angular.forEach(testReport.ruleInformationBefore, function (info, bla) {
+                const ruleInfo = []
+                ruleInfo.push(info.name);
+                ruleInfo.push(info.trigger.query);
+                if ((info.name in testReport.amountRulesTriggered)) {
+                    ruleInfo.push(testReport.amountRulesTriggered[info.name]);
+                }
+                if ((info.name in testReport.triggerValues)) {
+                    ruleInfo.push(testReport.triggerValues[info.name].toString());
+                }
+                body.push(ruleInfo)
+            });
+            console.log(body)
+            return body;
+
+
+            /**
+             body.push({
+                name: testReport,
+                name: faker.name.findName(),
+                email: faker.internet.email(),
+                city: faker.address.city(),
+                expenses: faker.finance.amount(),
+            })
+             **/
+        }
+
+        function getNextSteps(doc, pageWidth, testReport) {
+            const notSuccessful = doc.splitTextToSize("Im line number1\\r\\nAnd Im line number2", pageWidth - 35, {});
+            if (testReport.successful === "Not Successful") {
+                return doc.text(notSuccessful, 14, doc.autoTableEndPosY() + 5)
+            }
+        }
 
         // convert all needed information for the specific test report and open the modal
         $scope.openReport = function (report) {
@@ -134,6 +211,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             getSimulatedSensorList(testReport);
             $('#testReport').modal('show');
         };
+
 
         /**
          * [Private]

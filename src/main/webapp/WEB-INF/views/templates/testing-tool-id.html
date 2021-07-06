@@ -27,11 +27,6 @@
                     <h4>Properties</h4>
                     <table class="table table-hover">
                         <tbody>
-                        <tr id="{{ctrl.test.name}}">
-                            <th>Name:</th>
-                            <td>{{ctrl.test.name}}
-                            </td>
-                        </tr>
                         <tr id="{{ctrl.test.type}}">
                             <th>Sensor type(s):</th>
                             <td>{{ctrl.test.type.join(', ')}}</td>
@@ -886,7 +881,7 @@
                                 </h2>
                             </div>
                             <div class="body">
-                                <table class="table table-hover" st-table="displayedCollection"
+                                <table id="triggerRulesInfo" class="table table-hover" st-table="displayedCollection"
                                        st-safe-src="ruleListCtrl.items">
                                     <thead>
                                     <tr>
@@ -915,16 +910,10 @@
                                         </div>
                                     </td>
                                     </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <td class="text-center" st-pagination="" st-items-by-page="10"
-                                            colspan="4"></td>
-                                    </tr>
-                                    </tfoot>
                                 </table>
 
 
-                                <table class="table table-hover" st-table="displayedCollection"
+                                <table id="rulesTriggered" class="table table-hover" st-table="displayedCollection"
                                        st-safe-src="ruleListCtrl.items">
                                     <thead>
                                     <tr>
