@@ -134,7 +134,6 @@ app.factory('HttpService', ['$rootScope', '$location', '$interval', 'ENDPOINT_UR
         function postRequest(url, payload, dataType) {
             //Sanitize payload
             payload = payload || {};
-
             //Debug message
             debug("Initiating POST request at " + url + " with payload:", payload);
 

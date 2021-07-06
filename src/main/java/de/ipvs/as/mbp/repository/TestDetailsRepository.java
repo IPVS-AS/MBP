@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.repository;
 
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import org.junit.Test;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -21,4 +22,6 @@ public interface TestDetailsRepository extends MongoRepository<TestDetails, Stri
     List<TestDetails> findAllBySensorId(@Param("sensor") String id);
 
     List<TestDetails> findAllBySensorName(@Param("sensor") String name);
+
+    List<TestDetails> findAllByRulesId(@Param("rules") String id);
 }

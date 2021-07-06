@@ -21,7 +21,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         //URL suffix under which the value logs of a certain component can be retrieved
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
 
-
         /**
          * [Public]
          * Performs a server request in order to start a certain component (in case it has been stopped before)m
@@ -101,6 +100,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             //Execute request
             return HttpService.getRequest(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, parameters);
         }
+
 
         /**
          * [Public]

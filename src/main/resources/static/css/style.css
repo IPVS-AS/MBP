@@ -3703,6 +3703,7 @@ section.content {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     position: relative;
     margin-bottom: 30px;
+    flex: 1;
 }
 
 .card .card-inside-title {
@@ -3981,6 +3982,16 @@ section.content {
 .card .body .col-md-12,
 .card .body .col-lg-12 {
     margin-bottom: 20px;
+}
+
+.side-by-side {
+    max-height: 500px;
+    display: flex;
+}
+
+.side-by-side-scroll {
+    overflow-y: scroll;
+    flex: 1;
 }
 
 /* Infobox ===================================== */
@@ -6175,6 +6186,7 @@ section.content {
     padding: 10px;
     border: 1px solid #eee;
 }
+
 
 /* Panel ======================================= */
 .panel-group .panel-col-red {
