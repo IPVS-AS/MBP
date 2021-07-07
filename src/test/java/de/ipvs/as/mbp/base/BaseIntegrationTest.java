@@ -43,7 +43,6 @@ public abstract class BaseIntegrationTest {
     @Autowired
     protected ObjectMapper objectMapper;
 
-
     public HttpHeaders getMBPAccessHeaderForAdmin() {
         return getMBPAccessHeaderForUser("admin", "admin", "admin");
     }

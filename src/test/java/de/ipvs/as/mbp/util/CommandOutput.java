@@ -3,8 +3,8 @@ package de.ipvs.as.mbp.util;
 import java.io.ByteArrayOutputStream;
 
 public class CommandOutput {
-    private ByteArrayOutputStream stderr;
-    private ByteArrayOutputStream stdout;
+    private final ByteArrayOutputStream stderr;
+    private final ByteArrayOutputStream stdout;
     private int exitCode;
 
     public CommandOutput() {

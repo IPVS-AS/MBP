@@ -138,7 +138,11 @@ public class SensorIoTTest extends BaseIoTTest {
                 sessionCookie,
                 "TestOperator",
                 "",
-                new OperatorRoutine("start.sh", testScript)
+                this.getRoutineFromClasspath("mbp_client.py","text/plain","scripts/mbp_client/mbp_client.py"),
+                this.getRoutineFromClasspath("docker_dummy.py","text/plain","scripts/test_sensor/docker_dummy.py"),
+                this.getRoutineFromClasspath("entry-file-name","text/plain","scripts/test_sensor/entry-file-name"),
+                this.getRoutineFromClasspath("start.sh","application/x-shellscript","scripts/mbp_client/start.sh"),
+                this.getRoutineFromClasspath("stop.sh","application/x-shellscript","scripts/mbp_client/stop.sh")
         );
 
         // Create sensor
@@ -151,12 +155,9 @@ public class SensorIoTTest extends BaseIoTTest {
         );
 
         deploySensor(sessionCookie, sensorResponse.getId());
-        startSensor(sessionCookie, sensorResponse.getId());
-
-        CommandOutput commandOutput = device.runCommand("cat /home/mbp/calllog.log");
-        assertThat(commandOutput.getStderr()).isEmpty();
+        // startSensor(sessionCookie, sensorResponse.getId());
+        CommandOutput commandOutput = device.runCommand(String.format("cat /home/mbp/scripts/mbp%s/mbp.properties", sensorResponse.getId()));
         String stdoutString = commandOutput.getStdout();
-        assertThat(stdoutString).contains("Test Script was called");
         System.out.println(stdoutString);
     }
 }

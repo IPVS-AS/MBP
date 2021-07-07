@@ -2,6 +2,9 @@
 
 DIR=`dirname $0`
 cd $DIR
+sed -i '2s/.*/brokerHost=docker.host.internal/' mbp.properties > mbp.properties.new
+mv -v mbp.properties.new mbp.properties
+
 # ---------Attention----------------
 # If you rename the main python file of the operator, update the content of the entry-file-name accordingly
 ENTRY_FILE_NAME=`cat $DIR/entry-file-name`

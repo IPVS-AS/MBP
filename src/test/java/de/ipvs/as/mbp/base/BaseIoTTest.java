@@ -15,7 +15,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.util.StreamUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -28,8 +31,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith({RequiresMQTTExtension.class})
 public abstract class BaseIoTTest extends BaseIntegrationTest {
 
-    public OperatorRoutine getRoutineFromClasspath(String name,String type, String path) {
-        return null;
+    public OperatorRoutine getRoutineFromClasspath(String name, String type, String path) throws Exception {
+        InputStream classPathInput = getClass().getClassLoader().getResourceAsStream(path);
+        ByteArrayOutputStream fileData = new ByteArrayOutputStream();
+        StreamUtils.copy(classPathInput, fileData);
+
+        return new OperatorRoutine(name, type, fileData.toByteArray());
     }
 
     public Device createNewDevice(IoTDeviceContainer container, Cookie sessionCookie, String name) throws Exception {
@@ -134,10 +141,14 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
 
     public static class OperatorRoutine {
         public String name;
-        public String content;
+        public byte[] content;
         public String contentType;
 
         public OperatorRoutine(String name, String contentType, String content) {
+            this(name, contentType, content.getBytes(StandardCharsets.UTF_8));
+        }
+
+        public OperatorRoutine(String name, String contentType, byte[] content) {
             this.name = name;
             this.content = content;
             this.contentType = contentType;
@@ -152,7 +163,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
             testScriptObj.put("name", name);
             testScriptObj.put("content",
                     String.format("data:%s;base64,%s", this.contentType,
-                            Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8))));
+                            Base64.getEncoder().encodeToString(this.content)));
             return testScriptObj;
         }
     }
