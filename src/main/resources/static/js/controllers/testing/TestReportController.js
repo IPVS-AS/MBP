@@ -5,13 +5,15 @@
 /**
  * Provides services for managing tests.
  */
-app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 'ENDPOINT_URI', '$filter',
-    function ($scope, $controller, HttpService, ENDPOINT_URI, $filter) {
+app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 'ENDPOINT_URI',
+    function ($scope, $controller, HttpService, ENDPOINT_URI) {
 
 
         let testReport = null;
         const footerHeight = 287;
         let lastPos = 0;
+        let pageSize;
+        let pageWidth;
 
         //URL for server requests
         const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
@@ -64,8 +66,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         async function generateReport(chart, testReport) {
 
             const doc = new jsPDF();
-            const pageSize = doc.internal.pageSize;
-            const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+            pageSize = doc.internal.pageSize;
+            pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
 
             addLogo(doc, pageWidth)
 
@@ -84,19 +86,19 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         function addPage(y, doc) {
             if (y >= footerHeight - 10) {
                 lastPos = 0;
-                return doc.addPage();
+                return doc.addPage(), addLogo(doc, pageWidth);
             }
 
         }
 
-         function addLogo(doc, pageWidth) {
+        function addLogo(doc, pageWidth) {
             var favicon = new Image();
             var nodeList = document.getElementsByTagName("link");
             for (var i = 0; i < nodeList.length; i++) {
                 if ((nodeList[i].getAttribute("rel") === "icon") || (nodeList[i].getAttribute("rel") === "shortcut icon")) {
 
                     favicon.src = nodeList[i].getAttribute("href");
-                    doc.addImage(favicon, 'PNG',pageWidth-15, 5,10,10, "icon", "NONE", 0)
+                    doc.addImage(favicon, 'PNG', pageWidth - 14, 4, 10, 10, "icon", "NONE", 0)
                 }
             }
 
@@ -120,8 +122,23 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 lastPos = 25,
                 doc.autoTable(generalInformation.columns, generalInformation.data, {
                     beforePageContent: header,
+                    headerStyles: {
+                        fillColor: [0, 190, 255]
+                    },
                     margin: {top: 28},
-                    styles: {fontSize: 9}
+                    styles: {fontSize: 9},
+                    createdCell: function (cell, data) {
+                        if (data.column.dataKey === 2) {
+                            if (cell.text[0] === "Not Successful" || cell.text[0] === "ERROR DURING TEST") {
+                                cell.styles.textColor = [255, 255, 255];
+                                cell.styles.fillColor = [251, 72, 58];
+
+                            } else {
+                                cell.styles.textColor = [255, 255, 255];
+                                cell.styles.fillColor = [76, 175, 80];
+                            }
+                        }
+                    }
                 }),
                 lastPos = doc.autoTableEndPosY();
         }
@@ -136,14 +153,17 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             if (simulatedSensorInfo !== null) {
                 return doc.setFontSize(12),
                     doc.setTextColor(128, 128, 128),
+                    lastPos = lastPos + 10,
                     addPage(lastPos, doc),
-                    doc.text(involvedSim, 14, lastPos + 5),
-                    lastPos = lastPos + 5,
+                    doc.text(involvedSim, 14, lastPos ),
                     addPage(lastPos, doc),
                     await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, {
                         startY: lastPos + 3,
+                        headerStyles: {
+                            fillColor: [0, 190, 255]
+                        },
                         theme: 'striped',
-                        styles: {fontSize: 9}
+                        styles: {fontSize: 9},
                     }),
                     lastPos = doc.autoTableEndPosY()
             }
@@ -157,15 +177,19 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             if (realSensorInfo !== null) {
                 return doc.setFontSize(12),
                     doc.setTextColor(128, 128, 128),
-                    lastPos = lastPos + 5,
+                    lastPos = lastPos + 10,
                     addPage(lastPos, doc),
                     await doc.text(involvedRealSensors, 14, lastPos),
                     await doc.autoTable(realSensorInfo.columns, realSensorInfo.data, {
                         startY: lastPos + 3,
+                        styles: {fontSize: 9},
+                        headerStyles: {
+                            fillColor: [0, 190, 255]
+                        },
                         theme: 'striped',
-                        styles: {fontSize: 9}
+
                     }),
-                    lastPos = doc.autoTableEndPosY() + 5;
+                    lastPos = doc.autoTableEndPosY() ;
 
             }
         }
@@ -190,6 +214,9 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             await doc.text(ruleInfoText, 14, lastPos + 15)
             await doc.autoTable(triggerRulesInfo.columns, triggerRulesInfo.data, {
                 startY: lastPos + 18,
+                headerStyles: {
+                    fillColor: [0, 190, 255]
+                },
                 theme: 'striped',
                 styles: {fontSize: 9}
             });
@@ -199,9 +226,11 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
             doc.autoTable(headerData, bodyData, {
                 startY: doc.autoTableEndPosY() + 3,
+                headerStyles: {
+                    fillColor: [0, 190, 255]
+                },
                 theme: 'striped',
                 bodyStyles: {valign: 'top'},
-                headStyles: {fontSize: 25},
                 styles: {overflow: 'linebreak', columnWidth: 'wrap', fontSize: 9},
                 columnStyles: {
                     0: {columnWidth: 'auto'},
