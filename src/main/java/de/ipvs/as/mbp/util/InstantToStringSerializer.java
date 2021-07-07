@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 
 public class InstantToStringSerializer extends StdSerializer<Instant> {
 
@@ -14,7 +18,11 @@ public class InstantToStringSerializer extends StdSerializer<Instant> {
     }
 
     @Override
-    public void serialize(Instant item, JsonGenerator jsonGenerator, SerializerProvider provider) throws IOException {
-        jsonGenerator.writeObject(item.toString());
+    public void serialize(Instant instant, JsonGenerator jsonGenerator, SerializerProvider provider) throws IOException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+                .withLocale(Locale.GERMAN)
+                .withZone(ZoneId.systemDefault());
+
+        jsonGenerator.writeObject(formatter.format(instant).replace(",", ""));
     }
 }

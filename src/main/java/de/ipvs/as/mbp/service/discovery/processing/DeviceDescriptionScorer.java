@@ -112,5 +112,8 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
 
         //Calculate the scores of both device descriptions and compare them
         return scoreDeviceDescription(d2) - scoreDeviceDescription(d1);
+
+        //TODO if scores are equal, compare the timestamps and use the newer device description --> deterministic
+        //TODO but when re-deploying, always check if the score is better! Do not re-deploy for equal score
     }
 }
