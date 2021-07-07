@@ -10,7 +10,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
 
         let testReport = null;
-
+        const footerHeight = 287;
+        let lastPos = 0;
 
         //URL for server requests
         const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
@@ -56,82 +57,125 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         /**
          * [Public]
          *
-         * Converts the png of the test report into a pdf.
-         * @param testId The id of the test to be started
+         *
+         * @param chart
+         * @param testReport
          */
         async function generateReport(chart, testReport) {
-            const dimensionChart = await getImageDimensions(chart);
 
             const doc = new jsPDF();
-
-            const generalInformation = doc.autoTableHtmlToJson(document.getElementById("generalInformation"));
-            const simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
-            const realSensorInfo = doc.autoTableHtmlToJson(document.getElementById("informationRealSensors"));
-            const triggerRulesInfo = doc.autoTableHtmlToJson(document.getElementById("triggerRulesInfo"));
-
             const pageSize = doc.internal.pageSize;
             const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+
+
+            getGeneralInfo(doc, pageWidth);
+            await getSimulatorInfo(doc, pageWidth);
+            await getRealSensorInfo(doc, pageWidth);
+            await getSensorChart(doc, chart);
+            await getAllRuleInformation(doc, pageWidth);
+            await getNextSteps(doc, testReport, pageWidth);
+
+
+            addFooters(doc);
+            doc.save(testReport.id + ".pdf");
+        }
+
+        function addPage(y, doc) {
+            console.log(doc);
+            if (y >= footerHeight - 10) {
+                lastPos = 0;
+                return doc.addPage();
+            }
+
+        }
+
+        function getGeneralInfo(doc, pageWidth) {
+            const header = function (data) {
+                doc.setFontSize(18);
+                doc.setFontStyle('normal');
+                doc.setTextColor(80, 80, 80);
+                //doc.addImage(headerImgData, 'JPEG', data.settings.margin.left, 20, 50, 50);
+                doc.text("Testing Report: " + testReport.name, data.settings.margin.left, 15);
+            };
+
+            const generalInformation = doc.autoTableHtmlToJson(document.getElementById("generalInformation"));
             const generalInfo = doc.splitTextToSize("General information", pageWidth - 35, {});
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+            addPage(25, doc);
+            return doc.text(generalInfo, 14, 25),
+                lastPos = 25,
+                doc.autoTable(generalInformation.columns, generalInformation.data, {
+                    beforePageContent: header,
+                    margin: {top: 28},
+                    styles: {fontSize: 9}
+                }),
+                lastPos = doc.autoTableEndPosY();
+        }
+
+
+        async function getSimulatorInfo(doc, pageWidth) {
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+
+            const simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
             const involvedSim = doc.splitTextToSize("Involved Sensor-Simulators", pageWidth - 35, {});
+            if (simulatedSensorInfo !== null) {
+                return doc.setFontSize(12),
+                    doc.setTextColor(128, 128, 128),
+                    addPage(lastPos, doc),
+                    doc.text(involvedSim, 14, lastPos + 5),
+                    lastPos = lastPos + 5,
+                    addPage(lastPos, doc),
+                    await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, {
+                        startY: lastPos + 3,
+                        theme: 'striped',
+                        styles: {fontSize: 9}
+                    }),
+                    lastPos = doc.autoTableEndPosY()
+            }
+        }
+
+        async function getRealSensorInfo(doc, pageWidth) {
+            const realSensorInfo = doc.autoTableHtmlToJson(document.getElementById("informationRealSensors"));
             const involvedRealSensors = doc.splitTextToSize("Involved real Sensors", pageWidth - 35, {});
+
+
+            if (realSensorInfo !== null) {
+                return doc.setFontSize(12),
+                    doc.setTextColor(128, 128, 128),
+                    lastPos = lastPos + 5,
+                    addPage(lastPos, doc),
+                    await doc.text(involvedRealSensors, 14, lastPos),
+                    await doc.autoTable(realSensorInfo.columns, realSensorInfo.data, {
+                        startY: lastPos + 3,
+                        theme: 'striped',
+                        styles: {fontSize: 9}
+                    }),
+                    lastPos = doc.autoTableEndPosY() + 5;
+
+            }
+        }
+
+        async function getSensorChart(doc, chart) {
+            const dimensionChart = await getImageDimensions(chart);
+            return addPage(lastPos, doc),
+                doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0),
+                lastPos = (dimensionChart.h / 5) + lastPos;
+        }
+
+        async function getAllRuleInformation(doc, pageWidth) {
+            const triggerRulesInfo = doc.autoTableHtmlToJson(document.getElementById("triggerRulesInfo"));
             const ruleInfoText = doc.splitTextToSize("Rule Information of the tested IoT-Application ", pageWidth - 35, {});
 
 
             doc.setFontSize(12);
             doc.setTextColor(128, 128, 128);
-            doc.text(generalInfo, 14, 25)
-            doc.autoTable(generalInformation.columns, generalInformation.data, {
-                margin: {top: 28},
-                styles:{fontSize:9}
-            });
 
-            const header = function (data) {
-                doc.setFontSize(18);
-                doc.setTextColor(40);
-                doc.setFontStyle('normal');
-                //doc.addImage(headerImgData, 'JPEG', data.settings.margin.left, 20, 50, 50);
-                doc.text("Testing Report: " + testReport.name, data.settings.margin.left, 10);
-            };
-
-            const options = {
-                beforePageContent: header,
-                margin: {
-                    top: 80
-                },
-                startY: doc.autoTableEndPosY() + 8,
-                theme: 'striped',
-                styles: {fontSize: 9}
-            };
-
-            doc.setFontSize(12);
-            doc.setTextColor(128, 128, 128);
-
-            if (simulatedSensorInfo !== null) {
-                doc.setFontSize(12);
-                doc.setTextColor(128, 128, 128);
-
-                doc.text(involvedSim, 14, doc.autoTableEndPosY() + 5)
-                await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, options);
-
-
-            }
-
-            if (realSensorInfo !== null) {
-                doc.setFontSize(12);
-                doc.setTextColor(128, 128, 128);
-                await doc.text(involvedRealSensors, 14, doc.autoTableEndPosY() + 5)
-                await doc.autoTable(realSensorInfo.columns, realSensorInfo.data, options);
-
-            }
-
-            doc.addImage(chart, 'PNG', 14, doc.autoTableEndPosY() + 5, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0);
-
-            const posAfterImage = (dimensionChart.h / 5) + doc.autoTableEndPosY();
-            doc.setFontSize(12);
-            doc.setTextColor(128, 128, 128);
-            await doc.text(ruleInfoText, 14, posAfterImage + 15)
+            addPage(lastPos + 15, doc);
+            await doc.text(ruleInfoText, 14, lastPos + 15)
             await doc.autoTable(triggerRulesInfo.columns, triggerRulesInfo.data, {
-                startY: posAfterImage + 20,
+                startY: lastPos + 18,
                 theme: 'striped',
                 styles: {fontSize: 9}
             });
@@ -152,16 +196,33 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                     3: {columnWidth: 'auto'}
                 }
             })
-
-
-            getNextSteps(doc, pageWidth, testReport);
-
-
-            doc.save(testReport.id + ".pdf");
-
-
+            lastPos = doc.autoTableEndPosY();
         }
 
+        function getNextSteps(doc, testReport, pageWidth) {
+
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+            lastPos = lastPos+15;
+            addPage(lastPos, doc);
+            if (testReport.successful === "Not Successful") {
+                return doc.text("Next Steps", 14, lastPos),
+                    getNextStepsNoSuccess(doc, pageWidth, testReport);
+            } else if (testReport.successful === "Not Successful") {
+                return doc.text("Next Steps", 14, lastPos),
+                    getNextStepsError(doc);
+            }
+        }
+
+        function addFooters(doc) {
+            const pageCount = doc.internal.getNumberOfPages();
+            for (var i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(7);
+                doc.setTextColor(80, 80, 80);
+                doc.text(String(i) + ' of ' + String(pageCount), doc.internal.pageSize.width / 2, footerHeight);
+            }
+        }
 
         function getRuleInformation(testReport) {
             const body = []
@@ -174,30 +235,70 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 }
                 if ((info.name in testReport.triggerValues)) {
                     ruleInfo.push(testReport.triggerValues[info.name].toString());
+
+                } else{
+                    ruleInfo.push("-")
                 }
                 body.push(ruleInfo)
             });
-            console.log(body)
             return body;
 
 
-            /**
-             body.push({
-                name: testReport,
-                name: faker.name.findName(),
-                email: faker.internet.email(),
-                city: faker.address.city(),
-                expenses: faker.finance.amount(),
-            })
-             **/
         }
 
-        function getNextSteps(doc, pageWidth, testReport) {
-            const notSuccessful = doc.splitTextToSize("Im line number1\\r\\nAnd Im line number2", pageWidth - 35, {});
-            if (testReport.successful === "Not Successful") {
-                return doc.text(notSuccessful, 14, doc.autoTableEndPosY() + 5)
-            }
+        function getNextStepsError(doc) {
+            const lineOne = "Possible actions to solve the problem that caused the error:"
+            const lineTwo = "• Check your WiFi and VPN connection."
+            const lineThree = "• Check your MQTT broker settings and may change the IP adress of your broker."
+            const lineFour = "• Reinstall / redeploy the default testing components via the settings."
+
+            doc.setFontSize(9);
+            doc.setTextColor(80, 80, 80);
+            doc.setFont(undefined, 'bold');
+
+            return addPage(lastPos + 15, doc), doc.text(lineOne, 14, lastPos + 15),
+                doc.setFont(undefined, 'normal'),
+                addPage(lastPos + 20, doc), doc.text(lineTwo, 19, lastPos + 20),
+                addPage(lastPos + 25, doc), doc.text(lineThree, 19, lastPos + 25),
+                addPage(lastPos + 30, doc), doc.text(lineFour, 19, lastPos + 30)
+
         }
+
+        function getNextStepsNoSuccess(doc, pageWidth) {
+            const lineOne = "Rules were triggered that shouldn't have been triggered:"
+            const lineTwo = "1. Check which values led to the triggering of this rule."
+            const lineThree = "2. Check if it was just a sensor anomaly or if the condition of the rule was set too sensitively."
+            const lineFour = "3. Adjust the condition of the rule accordingly."
+            const lineFive = "• For example: increase the time window / window length, set the average higher, ..."
+            const lineSix = "4. Repeat the test under the same conditions and check the result again."
+            const lineSeven = "5. Repeat this procedure until the test is completed successfully."
+            const lineEight = "Rules which should have been triggered weren't triggered:"
+            const lineNine = "1. Check the values of the test and the condition of the rule, why the rule was not triggered."
+            const lineTen = "2. Set the condition of the rule to be more sensitive to the values."
+            const lineEleven = "• For example: decrease the time window / window length, lower the average, ..."
+            const lineTwelve = "4. Repeat the test under the same conditions and check the result again."
+            const lineThirteen = "5. Repeat this procedure until the test is completed successfully."
+
+            doc.setFontSize(9);
+            doc.setTextColor(80, 80, 80);
+            doc.setFont(undefined, 'bold');
+
+            return addPage(lastPos + 5, doc), doc.text(lineOne, 14, lastPos + 5).setFont(undefined, 'normal'),
+                addPage(lastPos + 10, doc), doc.text(lineTwo, 19, lastPos + 10),
+                addPage(lastPos + 15, doc), doc.text(lineThree, 19, lastPos + 15),
+                addPage(lastPos + 20, doc), doc.text(lineFour, 19, lastPos + 20),
+                addPage(lastPos + 25, doc), doc.text(lineFive, 24, lastPos + 25),
+                addPage(lastPos + 30, doc), doc.text(lineSix, 19, lastPos + 30),
+                addPage(lastPos + 35, doc), doc.text(lineSeven, 19, lastPos + 35),
+                addPage(lastPos + 40, doc), doc.setDrawColor(194, 194, 194), doc.line(14, lastPos + 40, pageWidth - 55, lastPos + 40),
+                addPage(lastPos + 45, doc), doc.setFont(undefined, 'bold'), doc.text(lineEight, 14, lastPos + 45).setFont(undefined, 'normal'),
+                addPage(lastPos + 50, doc), doc.text(lineNine, 19, lastPos + 50),
+                addPage(lastPos + 55, doc), doc.text(lineTen, 19, lastPos + 55),
+                addPage(lastPos + 60, doc), doc.text(lineEleven, 24, lastPos + 60),
+                addPage(lastPos + 65, doc), doc.text(lineTwelve, 19, lastPos + 65),
+                addPage(lastPos + 70, doc), doc.text(lineThirteen, 19, lastPos + 70)
+        }
+
 
         // convert all needed information for the specific test report and open the modal
         $scope.openReport = function (report) {
