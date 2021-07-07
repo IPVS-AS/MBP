@@ -2,17 +2,12 @@ package de.ipvs.as.mbp;
 
 import javax.servlet.http.Cookie;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ipvs.as.mbp.domain.user.User;
-import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.service.user.UserSessionService;
-import de.ipvs.as.mbp.util.BaseIntegrationTest;
-import org.junit.jupiter.api.BeforeEach;
+import de.ipvs.as.mbp.base.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

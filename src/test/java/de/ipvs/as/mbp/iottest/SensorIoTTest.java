@@ -1,34 +1,24 @@
-package de.ipvs.as.mbp;
+package de.ipvs.as.mbp.iottest;
 
 import javax.servlet.http.Cookie;
 
-import com.github.dockerjava.zerodep.shaded.org.apache.hc.core5.reactor.Command;
-import de.ipvs.as.mbp.domain.component.ComponentDTO;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
-import de.ipvs.as.mbp.util.BaseDeviceTest;
+import de.ipvs.as.mbp.base.BaseIoTTest;
 import de.ipvs.as.mbp.util.CommandOutput;
 import de.ipvs.as.mbp.util.IoTDeviceContainer;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import de.ipvs.as.mbp.util.RequiresMQTT;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Container;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class BasicDeviceTest extends BaseDeviceTest {
+public class SensorIoTTest extends BaseIoTTest {
 
     private static String testScript = "#!/bin/bash\n" +
             "echo  $(date): Test Script was called | tee -a /home/mbp/calllog.log";
@@ -103,7 +93,42 @@ public class BasicDeviceTest extends BaseDeviceTest {
     }
 
     @Test
+    @RequiresMQTT
     void deviceRunStartScript() throws Exception {
+        Cookie sessionCookie = getSessionCookieForAdmin();
+
+        Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");
+
+        // Create Operator
+        Operator opResponse = createOperator(
+                sessionCookie,
+                "TestOperator",
+                "",
+                new OperatorRoutine("start.sh", testScript)
+        );
+
+        // Create sensor
+        Sensor sensorResponse = createSensor(
+                sessionCookie,
+                "TestSensor",
+                "Temperature",
+                deviceObj.getId(),
+                opResponse.getId()
+        );
+
+        deploySensor(sessionCookie, sensorResponse.getId());
+        startSensor(sessionCookie, sensorResponse.getId());
+
+        CommandOutput commandOutput = device.runCommand("cat /home/mbp/calllog.log");
+        assertThat(commandOutput.getStderr()).isEmpty();
+        String stdoutString = commandOutput.getStdout();
+        assertThat(stdoutString).contains("Test Script was called");
+        System.out.println(stdoutString);
+    }
+
+    @Test
+    @RequiresMQTT
+    void deviceRunScriptExpectData() throws Exception {
         Cookie sessionCookie = getSessionCookieForAdmin();
 
         Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");

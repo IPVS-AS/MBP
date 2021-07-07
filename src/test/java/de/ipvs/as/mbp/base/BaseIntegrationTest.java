@@ -1,8 +1,10 @@
-package de.ipvs.as.mbp.util;
+package de.ipvs.as.mbp.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.user.UserLoginData;
+import de.ipvs.as.mbp.util.IntegrationTestConfiguration;
+import de.ipvs.as.mbp.util.MongoDbContainer;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;

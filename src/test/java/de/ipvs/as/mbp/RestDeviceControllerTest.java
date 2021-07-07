@@ -2,21 +2,16 @@ package de.ipvs.as.mbp;
 
 import javax.servlet.http.Cookie;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
-import de.ipvs.as.mbp.domain.user.User;
-import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.user.UserService;
-import de.ipvs.as.mbp.util.BaseIntegrationTest;
+import de.ipvs.as.mbp.base.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
