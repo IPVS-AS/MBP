@@ -111,6 +111,6 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
         }
 
         //Calculate the scores of both device descriptions and compare them
-        return scoreDeviceDescription(d1) - scoreDeviceDescription(d2);
+        return scoreDeviceDescription(d2) - scoreDeviceDescription(d1);
     }
 }

@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionScorer;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Objects of this class represent queues of {@link DeviceDescription}s that are sorted by the scores that
@@ -76,8 +77,10 @@ public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
      *
      * @return The resulting list of device descriptions
      */
+    @SuppressWarnings("SimplifyStreamApiCallChains")
     public List<DeviceDescription> toList() {
-        return new ArrayList<>(this.queue);
+        //Stream through the ranking and collect the items to a list (preserves order)
+        return this.stream().collect(Collectors.toList());
     }
 
     /**
@@ -86,10 +89,16 @@ public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
      *
      * @return The map (device description --> score) of device descriptions and their scores
      */
+    @SuppressWarnings("SimplifyStreamApiCallChains")
     public Map<DeviceDescription, Integer> getScores() {
+        //Create new sorted map for device descriptions and scores
+        Map<DeviceDescription, Integer> scoreMap = new LinkedHashMap<>();
+
         //Stream through the contents of the queue and collect them as map
-        return this.queue.stream()
-                .collect(Collectors.toMap(d -> d, d -> this.deviceDescriptionScorer.scoreDeviceDescription(d)));
+        this.stream().forEachOrdered(d -> scoreMap.put(d, this.deviceDescriptionScorer.scoreDeviceDescription(d)));
+
+        //Return result map
+        return scoreMap;
     }
 
     /**
@@ -476,5 +485,24 @@ public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
     @Override
     public DeviceDescription peek() {
         return this.queue.peek();
+    }
+
+    /**
+     * Returns a sequential {@code Stream} with this collection as its source.
+     *
+     * <p>This method should be overridden when the {@link #spliterator()}
+     * method cannot return a spliterator that is {@code IMMUTABLE},
+     * {@code CONCURRENT}, or <em>late-binding</em>. (See {@link #spliterator()}
+     * for details.)
+     *
+     * @return a sequential {@code Stream} over the elements in this collection
+     * @implSpec The default implementation creates a sequential {@code Stream} from the
+     * collection's {@code Spliterator}.
+     * @since 1.8
+     */
+    @Override
+    public Stream<DeviceDescription> stream() {
+        //Stream through the queue while preserving the order
+        return queue.stream().sorted(this.deviceDescriptionScorer);
     }
 }

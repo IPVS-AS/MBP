@@ -2,8 +2,11 @@ package de.ipvs.as.mbp.domain.discovery.description;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.ipvs.as.mbp.domain.discovery.description.deserializer.DeviceDescriptionCapabilitiesDeserializer;
 import de.ipvs.as.mbp.util.InstantFromEpochMilliDeserializer;
+import de.ipvs.as.mbp.util.InstantToEpochMilliSerializer;
+import de.ipvs.as.mbp.util.InstantToStringSerializer;
 
 import java.time.Instant;
 import java.util.List;
@@ -44,6 +47,7 @@ public class DeviceDescription {
     //Timestamp indicating the last update of the description
     @JsonProperty("last_update")
     @JsonDeserialize(using = InstantFromEpochMilliDeserializer.class)
+    @JsonSerialize(using = InstantToStringSerializer.class)
     private Instant lastUpdateTimestamp;
 
     /**

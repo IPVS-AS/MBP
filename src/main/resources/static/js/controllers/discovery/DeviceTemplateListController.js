@@ -77,8 +77,34 @@ app.controller('DeviceTemplateListController',
                     //Expose test results
                     vm.deviceTemplateTestResults = result || [];
 
+                    //Remove all map locations
+                    vm.deviceLocationMapApi.clearLocations();
+
+                    //Add locations of devices to the map
+                    for (let i = 0; i < vm.deviceTemplateTestResults.length; i++) {
+                        //Get current device description
+                        let deviceDescription = vm.deviceTemplateTestResults[i];
+
+                        //Check if location is available
+                        if ((!deviceDescription.hasOwnProperty("location")) || (!deviceDescription.location) ||
+                            (!deviceDescription.location.hasOwnProperty("coordinates")) ||
+                            (!deviceDescription.location.coordinates) ||
+                            (!deviceDescription.location.coordinates.hasOwnProperty("lon")) ||
+                            (!deviceDescription.location.coordinates.hasOwnProperty("lat"))) {
+                            continue;
+                        }
+
+                        //Add device location to map
+                        vm.deviceLocationMapApi.addLocation(deviceDescription.location.coordinates.lon,
+                            deviceDescription.location.coordinates.lat, deviceDescription.name || "");
+                    }
+
                     //First hide and then show the editor
                     ELEMENT_EDITORS_DEVICE_TEST_RESULTS.slideUp().slideDown(400, function () {
+                        //Update location marker map
+                        vm.deviceLocationMapApi.updateMapSize();
+                        vm.deviceLocationMapApi.viewAllLocations();
+
                         //Clear displayed validation errors
                         vm.addDeviceTemplateCtrl.item.errors = {};
 
