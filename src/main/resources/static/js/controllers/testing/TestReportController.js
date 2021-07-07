@@ -67,6 +67,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             const pageSize = doc.internal.pageSize;
             const pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
 
+            addLogo(doc, pageWidth)
 
             getGeneralInfo(doc, pageWidth);
             await getSimulatorInfo(doc, pageWidth);
@@ -81,11 +82,24 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         function addPage(y, doc) {
-            console.log(doc);
             if (y >= footerHeight - 10) {
                 lastPos = 0;
                 return doc.addPage();
             }
+
+        }
+
+         function addLogo(doc, pageWidth) {
+            var favicon = new Image();
+            var nodeList = document.getElementsByTagName("link");
+            for (var i = 0; i < nodeList.length; i++) {
+                if ((nodeList[i].getAttribute("rel") === "icon") || (nodeList[i].getAttribute("rel") === "shortcut icon")) {
+
+                    favicon.src = nodeList[i].getAttribute("href");
+                    doc.addImage(favicon, 'PNG',pageWidth-15, 5,10,10, "icon", "NONE", 0)
+                }
+            }
+
 
         }
 
@@ -94,7 +108,6 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 doc.setFontSize(18);
                 doc.setFontStyle('normal');
                 doc.setTextColor(80, 80, 80);
-                //doc.addImage(headerImgData, 'JPEG', data.settings.margin.left, 20, 50, 50);
                 doc.text("Testing Report: " + testReport.name, data.settings.margin.left, 15);
             };
 
@@ -161,6 +174,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             const dimensionChart = await getImageDimensions(chart);
             return addPage(lastPos, doc),
                 doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0),
+                doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0),
                 lastPos = (dimensionChart.h / 5) + lastPos;
         }
 
@@ -203,7 +217,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
             doc.setFontSize(12);
             doc.setTextColor(128, 128, 128);
-            lastPos = lastPos+15;
+            lastPos = lastPos + 15;
             addPage(lastPos, doc);
             if (testReport.successful === "Not Successful") {
                 return doc.text("Next Steps", 14, lastPos),
@@ -236,7 +250,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 if ((info.name in testReport.triggerValues)) {
                     ruleInfo.push(testReport.triggerValues[info.name].toString());
 
-                } else{
+                } else {
                     ruleInfo.push("-")
                 }
                 body.push(ruleInfo)
