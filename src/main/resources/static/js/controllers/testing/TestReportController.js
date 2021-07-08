@@ -17,7 +17,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         //URL for server requests
         const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
-
+        const iconRepeatBase64 = 'data:image/png;base64,' + "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAtklEQVRoge2ZQQrEMAwD9XT/vHtaWJq2l5XcyGggVylDQ3EIEELYgqo63t7DX1TVYS3xFbCV+BWwlDgL2ElcCVAl7go6lr0ARSICux0hSuhDPr3nDQFpATW8Ib9VgJ29FCgF2LlLgVKAnbkUyD+zEnuBEIIW+59Eq4DlLHQuUuW2zUPKbPtpVH4XsBKQX/VueiShnct68xHYQYIi8CRBK+jAXgAYMC0CA56BgAGPccCAJ9EQBvEBl7TmnovloTUAAAAASUVORK5CYII="
 
         /**
          * [Private]
@@ -71,7 +71,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
             addLogo(doc, pageWidth)
 
-            getGeneralInfo(doc, pageWidth);
+            getGeneralInfo(doc, pageWidth, testReport);
             await getSimulatorInfo(doc, pageWidth);
             await getRealSensorInfo(doc, pageWidth);
             await getSensorChart(doc, chart);
@@ -88,8 +88,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 lastPos = 0;
                 return doc.addPage(), addLogo(doc, pageWidth);
             }
-
         }
+
 
         function addLogo(doc, pageWidth) {
             var favicon = new Image();
@@ -105,7 +105,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         }
 
-        function getGeneralInfo(doc, pageWidth) {
+        function getGeneralInfo(doc, pageWidth, testReport) {
             const header = function (data) {
                 doc.setFontSize(18);
                 doc.setFontStyle('normal');
@@ -120,8 +120,10 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             addPage(25, doc);
             return doc.text(generalInfo, 14, 25),
                 lastPos = 25,
+                addRepetitionInfo(doc, testReport),
                 doc.autoTable(generalInformation.columns, generalInformation.data, {
                     beforePageContent: header,
+                    startY: lastPos,
                     headerStyles: {
                         fillColor: [0, 190, 255]
                     },
@@ -140,9 +142,21 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                         }
                     }
                 }),
-                lastPos = doc.autoTableEndPosY();
+                lastPos = doc.autoTableEndPosY()
         }
 
+        function addRepetitionInfo(doc, testReport) {
+            if (testReport.useNewData === false) {
+                doc.setFontSize(12)
+                doc.setTextColor(128, 128, 128)
+                doc.setFillColor(128, 128, 128);
+                doc.setDrawColor(128, 128, 128)
+                doc.setFontSize(9)
+                return doc.addImage(iconRepeatBase64, 'PNG', 14, lastPos + 4.5, 3, 3, 'repetition', "NONE", 0), doc.text("This was a Test Rerun", 18, lastPos + 7),
+                    lastPos = lastPos + 10;
+            }
+
+        }
 
         async function getSimulatorInfo(doc, pageWidth) {
             doc.setFontSize(12);
@@ -155,7 +169,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                     doc.setTextColor(128, 128, 128),
                     lastPos = lastPos + 10,
                     addPage(lastPos, doc),
-                    doc.text(involvedSim, 14, lastPos ),
+                    doc.text(involvedSim, 14, lastPos),
                     addPage(lastPos, doc),
                     await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, {
                         startY: lastPos + 3,
@@ -189,7 +203,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                         theme: 'striped',
 
                     }),
-                    lastPos = doc.autoTableEndPosY() ;
+                    lastPos = doc.autoTableEndPosY();
 
             }
         }
