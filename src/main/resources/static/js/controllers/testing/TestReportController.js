@@ -222,7 +222,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             });
 
             const bodyData = await getRuleInformation(testReport)
-            const headerData = ['Name', 'Condition', '# triggered during test', 'Trigger values'];
+            const headerData = ['Name', 'Condition', '# triggered', 'Trigger values'];
 
             doc.autoTable(headerData, bodyData, {
                 startY: doc.autoTableEndPosY() + 3,
@@ -233,9 +233,9 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 bodyStyles: {valign: 'top'},
                 styles: {overflow: 'linebreak', columnWidth: 'wrap', fontSize: 9},
                 columnStyles: {
-                    0: {columnWidth: 'auto'},
+                    0: {columnWidth: 'wrap'},
                     1: {columnWidth: 'auto'},
-                    2: {columnWidth: 'auto'},
+                    2: {columnWidth: 'wrap'},
                     3: {columnWidth: 'auto'}
                 }
             })
