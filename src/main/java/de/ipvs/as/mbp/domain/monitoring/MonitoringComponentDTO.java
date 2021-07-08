@@ -18,15 +18,31 @@ public class MonitoringComponentDTO {
 		return id;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public String getName() {
 		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getMonitoringOperatorId() {
 		return monitoringOperatorId;
 	}
 
+	public void setMonitoringOperatorId(String monitoringOperatorId) {
+		this.monitoringOperatorId = monitoringOperatorId;
+	}
+
 	public String getDeviceId() {
 		return deviceId;
+	}
+
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
 	}
 }

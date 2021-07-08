@@ -23,7 +23,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         // URL suffix under which the active visualizations of a component can be retrieved or updated
         const URL_ACTIVE_VISUALIZATION_SUFFIX = 'component-vis';
 
-
         /**
          * [Public]
          * Performs a server request in order to start a certain component (in case it has been stopped before)m
@@ -103,6 +102,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             //Execute request
             return HttpService.getRequest(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, parameters);
         }
+
 
         /**
          * [Public]

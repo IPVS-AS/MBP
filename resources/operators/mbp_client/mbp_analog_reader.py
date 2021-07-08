@@ -15,8 +15,8 @@ class AnalogInputReader(object):
     self.adc_channel = adc_channel
 
   def read_adc(self):
-    # read SPI data from MCP3004 chip, 4 possible adc’s (0 thru 3)
-    if ((self.adc_channel > 3) or (self.adc_channel < 0)):
+    # read SPI data from MCP3008 chip, 8 possible adc’s (0 thru 7)
+    if ((self.adc_channel > 7) or (self.adc_channel < 0)):
       return -1
     r = self.spi.xfer2([1,8+self.adc_channel <<4,0])
     adcout = ((r[1] &3) <<8)+r[2]

@@ -33,24 +33,23 @@ public class DefaultOperatorService {
     private ServletContext servletContext;
 
     @Autowired
-    private List<String> defaultOperatorWhitelist;
-
-    @Autowired
     private OperatorRepository operatorRepository;
 
     private static final String DESCRIPTOR_FILE = "operator.json";
+
 
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
      */
-    public void addDefaultOperators() {
+    public void addDefaultOperators(List<String> whiteList) {
+
 
         //Remembers if an operator was inserted
         boolean inserted = false;
 
         //Iterate over all default operator paths
-        for (String operatorPath : defaultOperatorWhitelist) {
+        for (String operatorPath : whiteList) {
             //Create new operator object to add it later to the repository
             Operator newOperator = new Operator();
 
@@ -169,9 +168,6 @@ public class DefaultOperatorService {
             }
         }
 
-        //Check for failure
-        if (!inserted) {
-            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "All available default operators have already been added.");
-        }
+
     }
 }
