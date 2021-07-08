@@ -3,25 +3,34 @@ package de.ipvs.as.mbp.service.discovery.processing;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * Objects of this class can be used to calculate scores for {@link DeviceDescription}s, based on the scoring criteria
- * that are part of a given {@link DeviceTemplate}. Furthermore, they can be used as {@link Comparator}s for sorting
- * lists and other collections of {@link DeviceDescription}.
- * The resulting scores are guaranteed to be greater than or equal to zero.
+ * that are part of a given {@link DeviceTemplate} and relative to a collection of related {@link DeviceDescription}s.
+ * Each device scorer can be used as {@link Comparator}s for sorting lists and other collections of
+ * {@link DeviceDescription}s. The resulting scores are guaranteed to be greater than or equal to zero.
  */
 public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
     //Device template to use for calculating the scores
     private DeviceTemplate deviceTemplate;
 
+    //Set of related device descriptions for calculating relative scores
+    private Collection<DeviceDescription> relatedDeviceDescriptions;
+
     /**
-     * Creates a new device scorer for a given {@link DeviceTemplate}.
+     * Creates a new device scorer from a given {@link DeviceTemplate} and a collection of {@link DeviceDescription}s
+     * to which the calculated scores are relative.
      *
-     * @param deviceTemplate The device template to use for calculating the scores.
+     * @param deviceTemplate            The device template to use for calculating the scores
+     * @param relatedDeviceDescriptions The collection of device descriptions to use
      */
-    public DeviceDescriptionScorer(DeviceTemplate deviceTemplate) {
+    public DeviceDescriptionScorer(DeviceTemplate deviceTemplate, Collection<DeviceDescription> relatedDeviceDescriptions) {
+        //Set fields
         setDeviceTemplate(deviceTemplate);
+        setRelatedDeviceDescriptions(relatedDeviceDescriptions);
     }
 
     /**
@@ -38,8 +47,36 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
      *
      * @param deviceTemplate The device template to set
      */
-    public void setDeviceTemplate(DeviceTemplate deviceTemplate) {
+    private void setDeviceTemplate(DeviceTemplate deviceTemplate) {
+        //Null check
+        if (deviceTemplate == null) {
+            throw new IllegalArgumentException("The device template must not be null.");
+        }
+
         this.deviceTemplate = deviceTemplate;
+    }
+
+    /**
+     * Returns the collection of {@link DeviceDescription} to which the calculated scores are relative.
+     *
+     * @return The collection of device descriptions
+     */
+    public Collection<DeviceDescription> getRelatedDeviceDescriptions() {
+        return this.relatedDeviceDescriptions;
+    }
+
+    /**
+     * Sets the collection of {@link DeviceDescription} to which the calculated scores are relative.
+     *
+     * @param relatedDeviceDescriptions The collection of device descriptions to set
+     */
+    private void setRelatedDeviceDescriptions(Collection<DeviceDescription> relatedDeviceDescriptions) {
+        //Null checks
+        if ((relatedDeviceDescriptions == null) || (relatedDeviceDescriptions.stream().anyMatch(Objects::isNull))) {
+            throw new IllegalArgumentException("The device descriptions must not be null.");
+        }
+
+        this.relatedDeviceDescriptions = relatedDeviceDescriptions;
     }
 
     /**
@@ -49,14 +86,16 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
      * @param deviceDescription The device description for which the score is supposed to be calculated
      * @return The resulting score of the device description
      */
-    public int scoreDeviceDescription(DeviceDescription deviceDescription) {
+    public int score(DeviceDescription deviceDescription) {
         //Sanity check
         if (deviceDescription == null) {
             throw new IllegalArgumentException("The device description must not be null.");
         }
 
-        //TODO calculate score using this.deviceTemplate
-        return 0;
+        //TODO calculate score using this.deviceTemplate and this.deviceDescriptions
+        //TODO but when re-deploying, always check if the score is better! Do not re-deploy for equal score
+        return deviceDescription.getKeywords().size() * this.relatedDeviceDescriptions.size()
+                + (deviceDescription.getName().equals("asdf") ? 5 : 0);
     }
 
     /**
@@ -111,9 +150,6 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
         }
 
         //Calculate the scores of both device descriptions and compare them
-        return scoreDeviceDescription(d2) - scoreDeviceDescription(d1);
-
-        //TODO if scores are equal, compare the timestamps and use the newer device description --> deterministic
-        //TODO but when re-deploying, always check if the score is better! Do not re-deploy for equal score
+        return score(d2) - score(d1);
     }
 }

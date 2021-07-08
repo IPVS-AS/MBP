@@ -4,7 +4,7 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
-import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionDTO;
+import de.ipvs.as.mbp.domain.discovery.collections.ScoredDeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateCreateValidator;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateTestDTO;
@@ -20,7 +20,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * REST Controller for discovery-related tasks.
@@ -58,7 +61,7 @@ public class RestDiscoveryController {
     @PostMapping("/testDeviceTemplate")
     @ApiOperation(value = "Retrieves device descriptions that match the requirements of a given device template and processes them to a ranking.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "The device template is invalid!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
-    public ResponseEntity<List<DeviceDescriptionDTO>> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
+    public ResponseEntity<List<ScoredDeviceDescription>> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
         //Unpack the DTO
         DeviceTemplate deviceTemplate = deviceTemplateTestDTO.getDeviceTemplate();
         Set<String> requestTopicIds = deviceTemplateTestDTO.getRequestTopicIds();
@@ -82,12 +85,8 @@ public class RestDiscoveryController {
         //Retrieve the device descriptions and process them to a ranking
         DeviceDescriptionRanking ranking = discoveryService.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
 
-        //Transform device descriptions and their scores to DTOs while preserving the order
-        List<DeviceDescriptionDTO> deviceDescriptions = new ArrayList<>();
-        ranking.getScores().forEach((d, s) -> deviceDescriptions.add(new DeviceDescriptionDTO(d, s)));
-
-        //Return result map
-        return new ResponseEntity<>(deviceDescriptions, HttpStatus.OK);
+        //Return device descriptions and their associated scores
+        return new ResponseEntity<>(ranking.toList(), HttpStatus.OK);
     }
 
     /**

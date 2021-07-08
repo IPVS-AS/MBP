@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.service.discovery.processing;
 
 import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
 import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionSet;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.service.discovery.processing.steps.DeviceDescriptionRankingCollector;
 import de.ipvs.as.mbp.service.discovery.processing.steps.DeviceDescriptionSetValidityFilter;
@@ -10,6 +11,7 @@ import de.ipvs.as.mbp.service.discovery.processing.steps.DeviceDescriptionValidi
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -48,15 +50,17 @@ public class DeviceDescriptionProcessor {
         }
 
         //Define and run the processing chain
-        return deviceDescriptionSets.stream()
+         List<DeviceDescription> deviceDescriptionList = deviceDescriptionSets.stream()
                 .filter(new DeviceDescriptionSetValidityFilter(deviceTemplate)) //Filter for valid sets
                 .distinct() //Remove duplicated sets (just for robustness)
                 .flatMap(DeviceDescriptionSet::stream) //Flat the sets
                 .filter(new DeviceDescriptionValidityFilter()) //Filter for valid device descriptions
                 .sorted(new DeviceDescriptionTimestampComparator()) //Sort them by their last update timestamp
                 .distinct() //Remove duplicates, preserving the descriptions with newer last update timestamp
-                .collect(Collectors.toCollection( //Collect, score and rank the descriptions
-                        new DeviceDescriptionRankingCollector(deviceTemplate)));
+                .collect(Collectors.toList());
+
+        //Create a ranking from the device descriptions
+        return new DeviceDescriptionRanking(deviceTemplate, deviceDescriptionList);
     }
 
 }

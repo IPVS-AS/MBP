@@ -43,6 +43,11 @@ app.controller('DeviceTemplateListController',
                 //Initialize the templates menu and editor windows
                 initTemplatesMenu();
                 initEditorWindows();
+
+                //Initialize UI elements
+                $(document).ready(() => {
+                    $('[data-toggle="popover"]').popover();
+                });
             })();
 
             /**
