@@ -17,24 +17,48 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         //URL for server requests
         const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
+
         const iconRepeatBase64 = 'data:image/png;base64,' + "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAtklEQVRoge2ZQQrEMAwD9XT/vHtaWJq2l5XcyGggVylDQ3EIEELYgqo63t7DX1TVYS3xFbCV+BWwlDgL2ElcCVAl7go6lr0ARSICux0hSuhDPr3nDQFpATW8Ib9VgJ29FCgF2LlLgVKAnbkUyD+zEnuBEIIW+59Eq4DlLHQuUuW2zUPKbPtpVH4XsBKQX/VueiShnct68xHYQYIi8CRBK+jAXgAYMC0CA56BgAGPccCAJ9EQBvEBl7TmnovloTUAAAAASUVORK5CYII="
 
+
         /**
-         * [Private]
+         * [Public]
          * Export the test report modal to pdf.
+         *
+         * @param testReport information about the test and the results
          */
-        async function getPDF(report) {
+        async function getPDF(testReport) {
             const chart = await getChart();
-            await generateReport(chart, report);
+
+            // create a new PDF
+            const doc = new jsPDF();
+            pageSize = doc.internal.pageSize;
+            pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
+
+            //  add all necessary information to the new pdf
+            addLogo(doc)
+            getGeneralInfo(doc, testReport);
+            await getSimulatorInfo(doc);
+            await getRealSensorInfo(doc);
+            await getSensorChart(doc, chart);
+            await getAllRuleInformation(doc);
+            await getNextSteps(doc, testReport);
+
+            addFooters(doc);
+            doc.save(testReport.id + ".pdf");
         }
 
 
+        /**
+         * [Private]
+         * Creates a png image of the chart shown in the modal of the test report, to be able to add it to the pdf.
+         */
         function getChart() {
             const options = {
                 quality: 0.95
             };
 
-            return new Promise(function (resolve, reject) {
+            return new Promise(function (resolve) {
                 domtoimage.toPng(document.getElementById("chart"), options)
                     .then(function (blob) {
                         resolve(blob);
@@ -43,69 +67,69 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
 
-        function getImageDimensions(file) {
-            if (file !== false) {
-                return new Promise(function (resolved, rejected) {
-                    var i = new Image()
+        /**
+         * [Private]
+         *
+         * Returns the dimension of a image.
+         * @param image of which the dimension should be calculated
+         */
+        function getImageDimensions(image) {
+            if (image !== false) {
+                return new Promise(function (resolved) {
+                    const i = new Image();
                     i.onload = function () {
                         resolved({w: i.width, h: i.height})
                     };
-                    i.src = file
+                    i.src = image
                 })
 
             }
         }
 
+
         /**
-         * [Public]
+         * Calculates if the new element can be added to the current page without overlapping the footer.
+         * If the element would overlap the footer, a new page and the mbp logo are added
          *
-         *
-         * @param chart
-         * @param testReport
+         * @param yPosition of the element to be added
+         * @param doc document to which the element should be added
          */
-        async function generateReport(chart, testReport) {
-
-            const doc = new jsPDF();
-            pageSize = doc.internal.pageSize;
-            pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth();
-
-            addLogo(doc, pageWidth)
-
-            getGeneralInfo(doc, pageWidth, testReport);
-            await getSimulatorInfo(doc, pageWidth);
-            await getRealSensorInfo(doc, pageWidth);
-            await getSensorChart(doc, chart);
-            await getAllRuleInformation(doc, pageWidth);
-            await getNextSteps(doc, testReport, pageWidth);
-
-
-            addFooters(doc);
-            doc.save(testReport.id + ".pdf");
-        }
-
-        function addPage(y, doc) {
-            if (y >= footerHeight - 10) {
+        function addPage(yPosition, doc) {
+            if (yPosition >= footerHeight - 10) {
                 lastPos = 0;
-                return doc.addPage(), addLogo(doc, pageWidth);
+                doc.addPage()
+                addLogo(doc, pageWidth);
             }
         }
 
 
-        function addLogo(doc, pageWidth) {
-            var favicon = new Image();
-            var nodeList = document.getElementsByTagName("link");
-            for (var i = 0; i < nodeList.length; i++) {
+        /**
+         * Gets the mbp icon with its reference and adds it to the upper right corner of the pdf page.
+         *
+         * @param doc to which the mbp logo should be added
+         */
+        function addLogo(doc) {
+            const favicon = new Image();
+            const nodeList = document.getElementsByTagName("link");
+            for (let i = 0; i < nodeList.length; i++) {
                 if ((nodeList[i].getAttribute("rel") === "icon") || (nodeList[i].getAttribute("rel") === "shortcut icon")) {
-
                     favicon.src = nodeList[i].getAttribute("href");
                     doc.addImage(favicon, 'PNG', pageWidth - 14, 4, 10, 10, "icon", "NONE", 0)
                 }
             }
-
-
         }
 
-        function getGeneralInfo(doc, pageWidth, testReport) {
+
+        /**
+         * Adds the general information (name, start- and end-time, success state, rerun information) to the pdf.
+         * @param doc to which the general information should be added
+         * @param testReport with the information needed to be displayed
+         */
+        function getGeneralInfo(doc, testReport) {
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+
+            // header of the test report with the name
             const header = function (data) {
                 doc.setFontSize(18);
                 doc.setFontStyle('normal');
@@ -113,119 +137,154 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 doc.text("Testing Report: " + testReport.name, data.settings.margin.left, 15);
             };
 
+
             const generalInformation = doc.autoTableHtmlToJson(document.getElementById("generalInformation"));
             const generalInfo = doc.splitTextToSize("General information", pageWidth - 35, {});
-            doc.setFontSize(12);
-            doc.setTextColor(128, 128, 128);
-            addPage(25, doc);
-            return doc.text(generalInfo, 14, 25),
-                lastPos = 25,
-                addRepetitionInfo(doc, testReport),
-                doc.autoTable(generalInformation.columns, generalInformation.data, {
-                    beforePageContent: header,
-                    startY: lastPos,
+
+            // Header general information
+            doc.text(generalInfo, 14, 25)
+            lastPos = 25
+
+            // Rerun information
+            addRepetitionInfo(doc, testReport)
+
+            // Table with start-, end-time and success info
+            doc.autoTable(generalInformation.columns, generalInformation.data, {
+                beforePageContent: header,
+                startY: lastPos+3,
+                headerStyles: {
+
+                    fillColor: [0, 190, 255]
+                },
+                margin: {top: 28},
+                styles: {fontSize: 9},
+                createdCell: function (cell, data) {
+                    if (data.column.dataKey === 2) {
+                        if (cell.text[0] === "Not Successful" || cell.text[0] === "ERROR DURING TEST") {
+                            cell.styles.textColor = [255, 255, 255];
+                            cell.styles.fillColor = [251, 72, 58];
+
+                        } else {
+                            cell.styles.textColor = [255, 255, 255];
+                            cell.styles.fillColor = [76, 175, 80];
+                        }
+                    }
+                }
+            })
+            lastPos = doc.autoTableEndPosY()
+        }
+
+        /**
+         * If the test was a repetition of a other test, this information will be added
+         *
+         * @param doc
+         * @param testReport
+         */
+        function addRepetitionInfo(doc, testReport) {
+            if (testReport.useNewData === false) {
+                doc.setTextColor(128, 128, 128)
+                doc.setFontSize(9)
+                doc.addImage(iconRepeatBase64, 'PNG', 14, lastPos + 4.5, 3, 3, 'repetition', "NONE", 0)
+                doc.text("This was a Test Rerun", 18, lastPos + 7)
+                lastPos = lastPos+7;
+            }
+
+        }
+
+        /**
+         * Adds the relevant information about the included sensor simulators if existing.
+         *
+         * @param doc to which this information should be added
+         */
+        async function getSimulatorInfo(doc) {
+            const simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
+            const involvedSim = doc.splitTextToSize("Involved Sensor-Simulators", pageWidth - 35, {});
+
+            if (simulatedSensorInfo !== null) {
+                doc.setFontSize(12)
+                doc.setTextColor(128, 128, 128)
+
+                // Add the header of the simulator information
+                lastPos = lastPos + 10
+                addPage(lastPos, doc)
+                doc.text(involvedSim, 14, lastPos)
+
+                // Add the table with the information
+                addPage(lastPos + 3, doc)
+                await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, {
+                    startY: lastPos + 3,
                     headerStyles: {
                         fillColor: [0, 190, 255]
                     },
-                    margin: {top: 28},
+                    theme: 'striped',
                     styles: {fontSize: 9},
-                    createdCell: function (cell, data) {
-                        if (data.column.dataKey === 2) {
-                            if (cell.text[0] === "Not Successful" || cell.text[0] === "ERROR DURING TEST") {
-                                cell.styles.textColor = [255, 255, 255];
-                                cell.styles.fillColor = [251, 72, 58];
-
-                            } else {
-                                cell.styles.textColor = [255, 255, 255];
-                                cell.styles.fillColor = [76, 175, 80];
-                            }
-                        }
-                    }
-                }),
+                })
                 lastPos = doc.autoTableEndPosY()
-        }
-
-        function addRepetitionInfo(doc, testReport) {
-            if (testReport.useNewData === false) {
-                doc.setFontSize(12)
-                doc.setTextColor(128, 128, 128)
-                doc.setFillColor(128, 128, 128);
-                doc.setDrawColor(128, 128, 128)
-                doc.setFontSize(9)
-                return doc.addImage(iconRepeatBase64, 'PNG', 14, lastPos + 4.5, 3, 3, 'repetition', "NONE", 0), doc.text("This was a Test Rerun", 18, lastPos + 7),
-                    lastPos = lastPos + 10;
-            }
-
-        }
-
-        async function getSimulatorInfo(doc, pageWidth) {
-            doc.setFontSize(12);
-            doc.setTextColor(128, 128, 128);
-
-            const simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
-            const involvedSim = doc.splitTextToSize("Involved Sensor-Simulators", pageWidth - 35, {});
-            if (simulatedSensorInfo !== null) {
-                return doc.setFontSize(12),
-                    doc.setTextColor(128, 128, 128),
-                    lastPos = lastPos + 10,
-                    addPage(lastPos, doc),
-                    doc.text(involvedSim, 14, lastPos),
-                    addPage(lastPos, doc),
-                    await doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, {
-                        startY: lastPos + 3,
-                        headerStyles: {
-                            fillColor: [0, 190, 255]
-                        },
-                        theme: 'striped',
-                        styles: {fontSize: 9},
-                    }),
-                    lastPos = doc.autoTableEndPosY()
             }
         }
 
-        async function getRealSensorInfo(doc, pageWidth) {
+        /**
+         * Adds the relevant information about the included real sensors if existing.
+         *
+         * @param doc to which this information should be added
+         */
+        async function getRealSensorInfo(doc) {
             const realSensorInfo = doc.autoTableHtmlToJson(document.getElementById("informationRealSensors"));
             const involvedRealSensors = doc.splitTextToSize("Involved real Sensors", pageWidth - 35, {});
 
-
             if (realSensorInfo !== null) {
-                return doc.setFontSize(12),
-                    doc.setTextColor(128, 128, 128),
-                    lastPos = lastPos + 10,
-                    addPage(lastPos, doc),
-                    await doc.text(involvedRealSensors, 14, lastPos),
-                    await doc.autoTable(realSensorInfo.columns, realSensorInfo.data, {
-                        startY: lastPos + 3,
-                        styles: {fontSize: 9},
-                        headerStyles: {
-                            fillColor: [0, 190, 255]
-                        },
-                        theme: 'striped',
+                doc.setFontSize(12)
+                doc.setTextColor(128, 128, 128)
 
-                    }),
-                    lastPos = doc.autoTableEndPosY();
+                // Add the header of the simulator information
+                lastPos = lastPos + 10
+                addPage(lastPos, doc)
+                doc.text(involvedRealSensors, 14, lastPos)
+
+                // Add the table with the information
+                await doc.autoTable(realSensorInfo.columns, realSensorInfo.data, {
+                    startY: lastPos + 3,
+                    styles: {fontSize: 9},
+                    headerStyles: {
+                        fillColor: [0, 190, 255]
+                    },
+                    theme: 'striped',
+
+                })
+                lastPos = doc.autoTableEndPosY();
 
             }
         }
 
+        /**
+         * Adds the chart with the generated sensor data during the test.
+         *
+         * @param doc to which the chart should be added
+         * @param chart png image of the chart
+         */
         async function getSensorChart(doc, chart) {
             const dimensionChart = await getImageDimensions(chart);
-            return addPage(lastPos, doc),
-                doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0),
-                doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0),
-                lastPos = (dimensionChart.h / 5) + lastPos;
+            addPage(lastPos, doc)
+            doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0)
+            lastPos = (dimensionChart.h / 5) + lastPos
         }
 
-        async function getAllRuleInformation(doc, pageWidth) {
-            const triggerRulesInfo = doc.autoTableHtmlToJson(document.getElementById("triggerRulesInfo"));
-            const ruleInfoText = doc.splitTextToSize("Rule Information of the tested IoT-Application ", pageWidth - 35, {});
-
-
+        /**
+         * Adds all relevant rule information to the test report.
+         * @param doc to which the information should be added
+         */
+        async function getAllRuleInformation(doc) {
             doc.setFontSize(12);
             doc.setTextColor(128, 128, 128);
 
-            addPage(lastPos + 15, doc);
+            const triggerRulesInfo = doc.autoTableHtmlToJson(document.getElementById("triggerRulesInfo"));
+            const ruleInfoText = doc.splitTextToSize("Rule Information of the tested IoT-Application ", pageWidth - 35, {});
+
+            // Adds the header of the rule information
+            addPage(lastPos + 15, doc)
             await doc.text(ruleInfoText, 14, lastPos + 15)
+
+            // Adds the table with the information which rules should be triggered and which were actually triggered
             await doc.autoTable(triggerRulesInfo.columns, triggerRulesInfo.data, {
                 startY: lastPos + 18,
                 headerStyles: {
@@ -235,9 +294,9 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 styles: {fontSize: 9}
             });
 
-            const bodyData = await getRuleInformation(testReport)
+            // Adds the table with the detailed information about the triggered rules.
             const headerData = ['Name', 'Condition', '# triggered', 'Trigger values'];
-
+            const bodyData = await getRuleInformation(testReport)
             doc.autoTable(headerData, bodyData, {
                 startY: doc.autoTableEndPosY() + 3,
                 headerStyles: {
@@ -256,24 +315,34 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             lastPos = doc.autoTableEndPosY();
         }
 
-        function getNextSteps(doc, testReport, pageWidth) {
-
+        /**
+         * Adds the next steps whether the test was not successful or an error occured during the test.
+         *
+         * @param doc to which the next steps should be added
+         * @param testReport with all relevant information about the executed test
+         */
+        function getNextSteps(doc, testReport) {
             doc.setFontSize(12);
             doc.setTextColor(128, 128, 128);
+
             lastPos = lastPos + 15;
             addPage(lastPos, doc);
             if (testReport.successful === "Not Successful") {
-                return doc.text("Next Steps", 14, lastPos),
-                    getNextStepsNoSuccess(doc, pageWidth, testReport);
-            } else if (testReport.successful === "Not Successful") {
-                return doc.text("Next Steps", 14, lastPos),
-                    getNextStepsError(doc);
+                doc.text("Next Steps", 14, lastPos)
+                getNextStepsNoSuccess(doc, testReport);
+            } else if (testReport.successful === "ERROR DURING TEST") {
+                doc.text("Next Steps", 14, lastPos)
+                getNextStepsError(doc);
             }
         }
 
+        /**
+         * Adds the footer with the page number to the pdf
+         * @param doc to which the page number should be added
+         */
         function addFooters(doc) {
             const pageCount = doc.internal.getNumberOfPages();
-            for (var i = 1; i <= pageCount; i++) {
+            for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
                 doc.setFontSize(7);
                 doc.setTextColor(80, 80, 80);
@@ -281,9 +350,15 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             }
         }
 
+        /**
+         * Creates an array with the relevant detailed rule information to add them to the table.
+         *
+         * @param testReport with the relevant information about the test
+         * @return {[]}
+         */
         function getRuleInformation(testReport) {
             const body = []
-            angular.forEach(testReport.ruleInformationBefore, function (info, bla) {
+            angular.forEach(testReport.ruleInformationBefore, function (info) {
                 const ruleInfo = []
                 ruleInfo.push(info.name);
                 ruleInfo.push(info.trigger.query);
@@ -303,25 +378,39 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         }
 
+        /**
+         * Adds the next steps if there occured an error during the test
+         *
+         * @param doc to which the next steps should be added
+         */
         function getNextStepsError(doc) {
-            const lineOne = "Possible actions to solve the problem that caused the error:"
-            const lineTwo = "• Check your WiFi and VPN connection."
-            const lineThree = "• Check your MQTT broker settings and may change the IP adress of your broker."
-            const lineFour = "• Reinstall / redeploy the default testing components via the settings."
-
             doc.setFontSize(9);
             doc.setTextColor(80, 80, 80);
-            doc.setFont(undefined, 'bold');
 
-            return addPage(lastPos + 15, doc), doc.text(lineOne, 14, lastPos + 15),
-                doc.setFont(undefined, 'normal'),
-                addPage(lastPos + 20, doc), doc.text(lineTwo, 19, lastPos + 20),
-                addPage(lastPos + 25, doc), doc.text(lineThree, 19, lastPos + 25),
-                addPage(lastPos + 30, doc), doc.text(lineFour, 19, lastPos + 30)
+            const lineOne = "Possible actions to solve the problem that caused the error:"
+            const lineTwo = "• Check your WiFi and VPN connection."
+            const lineThree = "• Check your MQTT broker settings and may change the IP address of your broker."
+            const lineFour = "• Reinstall / redeploy the default testing components via the settings."
+
+            doc.setFont(undefined, 'bold');
+            addPage(lastPos + 15, doc)
+            doc.text(lineOne, 14, lastPos + 15)
+            doc.setFont(undefined, 'normal')
+            addPage(lastPos + 20, doc)
+            doc.text(lineTwo, 19, lastPos + 20)
+            addPage(lastPos + 25, doc)
+            doc.text(lineThree, 19, lastPos + 25)
+            addPage(lastPos + 30, doc)
+            doc.text(lineFour, 19, lastPos + 30)
 
         }
 
-        function getNextStepsNoSuccess(doc, pageWidth) {
+        /**
+         * Adds the next steps if the test was not successful.
+         *
+         * @param doc to which the next steps should be added
+         */
+        function getNextStepsNoSuccess(doc) {
             const lineOne = "Rules were triggered that shouldn't have been triggered:"
             const lineTwo = "1. Check which values led to the triggering of this rule."
             const lineThree = "2. Check if it was just a sensor anomaly or if the condition of the rule was set too sensitively."
@@ -340,20 +429,36 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             doc.setTextColor(80, 80, 80);
             doc.setFont(undefined, 'bold');
 
-            return addPage(lastPos + 5, doc), doc.text(lineOne, 14, lastPos + 5).setFont(undefined, 'normal'),
-                addPage(lastPos + 10, doc), doc.text(lineTwo, 19, lastPos + 10),
-                addPage(lastPos + 15, doc), doc.text(lineThree, 19, lastPos + 15),
-                addPage(lastPos + 20, doc), doc.text(lineFour, 19, lastPos + 20),
-                addPage(lastPos + 25, doc), doc.text(lineFive, 24, lastPos + 25),
-                addPage(lastPos + 30, doc), doc.text(lineSix, 19, lastPos + 30),
-                addPage(lastPos + 35, doc), doc.text(lineSeven, 19, lastPos + 35),
-                addPage(lastPos + 40, doc), doc.setDrawColor(194, 194, 194), doc.line(14, lastPos + 40, pageWidth - 55, lastPos + 40),
-                addPage(lastPos + 45, doc), doc.setFont(undefined, 'bold'), doc.text(lineEight, 14, lastPos + 45).setFont(undefined, 'normal'),
-                addPage(lastPos + 50, doc), doc.text(lineNine, 19, lastPos + 50),
-                addPage(lastPos + 55, doc), doc.text(lineTen, 19, lastPos + 55),
-                addPage(lastPos + 60, doc), doc.text(lineEleven, 24, lastPos + 60),
-                addPage(lastPos + 65, doc), doc.text(lineTwelve, 19, lastPos + 65),
-                addPage(lastPos + 70, doc), doc.text(lineThirteen, 19, lastPos + 70)
+            addPage(lastPos + 5, doc)
+            doc.text(lineOne, 14, lastPos + 5).setFont(undefined, 'normal')
+            addPage(lastPos + 10, doc)
+            doc.text(lineTwo, 19, lastPos + 10)
+            addPage(lastPos + 15, doc)
+            doc.text(lineThree, 19, lastPos + 15)
+            addPage(lastPos + 20, doc)
+            doc.text(lineFour, 19, lastPos + 20)
+            addPage(lastPos + 25, doc)
+            doc.text(lineFive, 24, lastPos + 25)
+            addPage(lastPos + 30, doc)
+            doc.text(lineSix, 19, lastPos + 30)
+            addPage(lastPos + 35, doc)
+            doc.text(lineSeven, 19, lastPos + 35)
+            addPage(lastPos + 40, doc)
+            doc.setDrawColor(194, 194, 194)
+            doc.line(14, lastPos + 40, pageWidth - 55, lastPos + 40)
+            addPage(lastPos + 45, doc)
+            doc.setFont(undefined, 'bold')
+            doc.text(lineEight, 14, lastPos + 45).setFont(undefined, 'normal')
+            addPage(lastPos + 50, doc)
+            doc.text(lineNine, 19, lastPos + 50)
+            addPage(lastPos + 55, doc)
+            doc.text(lineTen, 19, lastPos + 55)
+            addPage(lastPos + 60, doc)
+            doc.text(lineEleven, 24, lastPos + 60)
+            addPage(lastPos + 65, doc)
+            doc.text(lineTwelve, 19, lastPos + 65)
+            addPage(lastPos + 70, doc)
+            doc.text(lineThirteen, 19, lastPos + 70)
         }
 
 
@@ -481,7 +586,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          */
         function getRealReportSensorList(report) {
             $scope.realSensorList = []
-            angular.forEach(report.sensor, function (sensor, key) {
+            angular.forEach(report.sensor, function (sensor) {
                 if (!sensor.name.includes("TESTING_")) {
                     $scope.realSensorList.push(sensor)
                 }
@@ -495,7 +600,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          */
         function getSimulatedSensorList(report) {
             $scope.simulatedSensorList = []
-            angular.forEach(report.sensor, function (sensor, key) {
+            angular.forEach(report.sensor, function (sensor) {
                 if (sensor.name.includes("TESTING_")) {
                     $scope.simulatedSensorList.push(sensor)
                 }
@@ -512,11 +617,11 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             let simulationConfig = [];
             let config = {};
 
-            angular.forEach(testReport.config, function (config, key) {
+            angular.forEach(testReport.config, function (config) {
                 let type = "";
                 let event = "";
                 let anomaly = "";
-                angular.forEach(config, function (configDetails, key) {
+                angular.forEach(config, function (configDetails) {
                     if (configDetails["name"] === "Type") {
                         type = configDetails["value"];
                     } else if (configDetails["name"] === "eventType") {
@@ -541,7 +646,6 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         //Expose public methods
         return {
-            generateReport: generateReport,
             openReport: $scope.openReport,
             getPDF: getPDF
 
