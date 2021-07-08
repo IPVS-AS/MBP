@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class SensorIoTTest extends BaseIoTTest {
 
-    private static String testScript = "#!/bin/bash\n" +
+    private final static String testScript = "#!/bin/bash\n" +
             "echo  $(date): Test Script was called | tee -a /home/mbp/calllog.log";
 
     @Container
@@ -155,9 +155,28 @@ public class SensorIoTTest extends BaseIoTTest {
         );
 
         deploySensor(sessionCookie, sensorResponse.getId());
-        // startSensor(sessionCookie, sensorResponse.getId());
-        CommandOutput commandOutput = device.runCommand(String.format("cat /home/mbp/scripts/mbp%s/mbp.properties", sensorResponse.getId()));
+        startSensor(sessionCookie, sensorResponse.getId());
+
+        // Assert that Tmux Server is running with a session
+        CommandOutput commandOutput = device.runCommand("ps aux");
         String stdoutString = commandOutput.getStdout();
+        System.out.println("Process List (ps aux):");
         System.out.println(stdoutString);
+        System.out.println();
+        assertThat(stdoutString).contains("tmux new-session");
+
+        commandOutput = device.runCommand("sudo tmux list-sessions");
+        stdoutString = commandOutput.getStdout();
+        System.out.println("tmux session list");
+        System.out.println(stdoutString);
+        assertThat(stdoutString.split("\n").length).isEqualTo(1);
+        assertThat(stdoutString).contains("scriptSession");
+
+        // Wait some time for data to be sent
+        System.out.println("Waiting for data to be Produced");
+        Thread.sleep(15000);
+
+        // Validate that data has been collected
+        Thread.sleep(3600_000);
     }
 }

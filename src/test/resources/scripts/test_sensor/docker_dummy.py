@@ -5,7 +5,7 @@ import sys
 import time
 import random
 
-INTERVAL_BETWEEN_SENDING_DATA = 15
+INTERVAL_BETWEEN_SENDING_DATA = 1
 
 def main(argv):
     mbp = MBPclient()
@@ -14,7 +14,7 @@ def main(argv):
         count = 0
         while True:
             count = count + 1
-            mbp.send_data(value)
+            mbp.send_data(count)
             time.sleep(INTERVAL_BETWEEN_SENDING_DATA)
     except:
         error = sys.exc_info()
