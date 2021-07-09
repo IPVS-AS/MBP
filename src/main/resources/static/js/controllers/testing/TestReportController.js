@@ -88,6 +88,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
 
         /**
+         * [Private]
+         *
          * Calculates if the new element can be added to the current page without overlapping the footer.
          * If the element would overlap the footer, a new page and the mbp logo are added
          *
@@ -96,7 +98,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          */
         function addPage(yPosition, doc) {
             if (yPosition >= footerHeight - 10) {
-                lastPos = 0;
+                lastPos = 15;
                 doc.addPage()
                 addLogo(doc, pageWidth);
             }
@@ -104,6 +106,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
 
         /**
+         * [Private]
+         *
          * Gets the mbp icon with its reference and adds it to the upper right corner of the pdf page.
          *
          * @param doc to which the mbp logo should be added
@@ -121,6 +125,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
 
         /**
+         * [Private]
+         *
          * Adds the general information (name, start- and end-time, success state, rerun information) to the pdf.
          * @param doc to which the general information should be added
          * @param testReport with the information needed to be displayed
@@ -151,7 +157,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             // Table with start-, end-time and success info
             doc.autoTable(generalInformation.columns, generalInformation.data, {
                 beforePageContent: header,
-                startY: lastPos+3,
+                startY: lastPos + 3,
                 headerStyles: {
 
                     fillColor: [0, 190, 255]
@@ -175,10 +181,12 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * If the test was a repetition of a other test, this information will be added
          *
-         * @param doc
-         * @param testReport
+         * @param doc to which this information should be added
+         * @param testReport with the information about the executed test
          */
         function addRepetitionInfo(doc, testReport) {
             if (testReport.useNewData === false) {
@@ -186,12 +194,14 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 doc.setFontSize(9)
                 doc.addImage(iconRepeatBase64, 'PNG', 14, lastPos + 4.5, 3, 3, 'repetition', "NONE", 0)
                 doc.text("This was a Test Rerun", 18, lastPos + 7)
-                lastPos = lastPos+7;
+                lastPos = lastPos + 7;
             }
 
         }
 
         /**
+         * [Private]
+         *
          * Adds the relevant information about the included sensor simulators if existing.
          *
          * @param doc to which this information should be added
@@ -224,6 +234,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Adds the relevant information about the included real sensors if existing.
          *
          * @param doc to which this information should be added
@@ -257,6 +269,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Adds the chart with the generated sensor data during the test.
          *
          * @param doc to which the chart should be added
@@ -270,6 +284,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Adds all relevant rule information to the test report.
          * @param doc to which the information should be added
          */
@@ -316,6 +332,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Adds the next steps whether the test was not successful or an error occured during the test.
          *
          * @param doc to which the next steps should be added
@@ -326,7 +344,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             doc.setTextColor(128, 128, 128);
 
             lastPos = lastPos + 15;
-            addPage(lastPos, doc);
+            addPage(lastPos + 5, doc);
             if (testReport.successful === "Not Successful") {
                 doc.text("Next Steps", 14, lastPos)
                 getNextStepsNoSuccess(doc, testReport);
@@ -337,6 +355,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Adds the footer with the page number to the pdf
          * @param doc to which the page number should be added
          */
@@ -351,6 +371,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Creates an array with the relevant detailed rule information to add them to the table.
          *
          * @param testReport with the relevant information about the test
@@ -379,86 +401,82 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * [Private]
+         *
          * Adds the next steps if there occured an error during the test
          *
          * @param doc to which the next steps should be added
          */
         function getNextStepsError(doc) {
+            let arrayNextSteps = ["Possible actions to solve the problem that caused the error:",
+                "• Check your WiFi and VPN connection.",
+                "• Check your MQTT broker settings and may change the IP address of your broker.",
+                "• Reinstall / redeploy the default testing components via the settings."
+            ]
+
             doc.setFontSize(9);
             doc.setTextColor(80, 80, 80);
+            doc.setFont(undefined, 'bold')
+            let xPos = 14;
 
-            const lineOne = "Possible actions to solve the problem that caused the error:"
-            const lineTwo = "• Check your WiFi and VPN connection."
-            const lineThree = "• Check your MQTT broker settings and may change the IP address of your broker."
-            const lineFour = "• Reinstall / redeploy the default testing components via the settings."
 
-            doc.setFont(undefined, 'bold');
-            addPage(lastPos + 15, doc)
-            doc.text(lineOne, 14, lastPos + 15)
-            doc.setFont(undefined, 'normal')
-            addPage(lastPos + 20, doc)
-            doc.text(lineTwo, 19, lastPos + 20)
-            addPage(lastPos + 25, doc)
-            doc.text(lineThree, 19, lastPos + 25)
-            addPage(lastPos + 30, doc)
-            doc.text(lineFour, 19, lastPos + 30)
+            for (let i = 0; i < arrayNextSteps.length; i++) {
+                if (i === 1) {
+                    doc.setFont(undefined, 'normal')
+                    xPos = 19;
+                }
+                addPage(lastPos + 5, doc)
+                doc.text(arrayNextSteps[i], xPos, lastPos + 5)
+                lastPos = lastPos + 5;
 
+            }
+            
         }
 
         /**
+         * [Private]
+         *
          * Adds the next steps if the test was not successful.
          *
          * @param doc to which the next steps should be added
          */
         function getNextStepsNoSuccess(doc) {
-            const lineOne = "Rules were triggered that shouldn't have been triggered:"
-            const lineTwo = "1. Check which values led to the triggering of this rule."
-            const lineThree = "2. Check if it was just a sensor anomaly or if the condition of the rule was set too sensitively."
-            const lineFour = "3. Adjust the condition of the rule accordingly."
-            const lineFive = "• For example: increase the time window / window length, set the average higher, ..."
-            const lineSix = "4. Repeat the test under the same conditions and check the result again."
-            const lineSeven = "5. Repeat this procedure until the test is completed successfully."
-            const lineEight = "Rules which should have been triggered weren't triggered:"
-            const lineNine = "1. Check the values of the test and the condition of the rule, why the rule was not triggered."
-            const lineTen = "2. Set the condition of the rule to be more sensitive to the values."
-            const lineEleven = "• For example: decrease the time window / window length, lower the average, ..."
-            const lineTwelve = "4. Repeat the test under the same conditions and check the result again."
-            const lineThirteen = "5. Repeat this procedure until the test is completed successfully."
+            const arrayNextSteps = ["Rules were triggered that shouldn't have been triggered:",
+                "1. Check which values led to the triggering of this rule.",
+                "2. Check if it was just a sensor anomaly or if the condition of the rule was set too sensitively.",
+                "3. Adjust the condition of the rule accordingly.",
+                "• For example: increase the time window / window length, set the average higher, ...",
+                "4. Repeat the test under the same conditions and check the result again.",
+                "5. Repeat this procedure until the test is completed successfully.",
+                "Rules which should have been triggered weren't triggered:",
+                "1. Check the values of the test and the condition of the rule, why the rule was not triggered.",
+                "2. Set the condition of the rule to be more sensitive to the values.",
+                "• For example: decrease the time window / window length, lower the average, ...",
+                "4. Repeat the test under the same conditions and check the result again.",
+                "5. Repeat this procedure until the test is completed successfully."
+            ]
+
 
             doc.setFontSize(9);
             doc.setTextColor(80, 80, 80);
             doc.setFont(undefined, 'bold');
 
-            addPage(lastPos + 5, doc)
-            doc.text(lineOne, 14, lastPos + 5).setFont(undefined, 'normal')
-            addPage(lastPos + 10, doc)
-            doc.text(lineTwo, 19, lastPos + 10)
-            addPage(lastPos + 15, doc)
-            doc.text(lineThree, 19, lastPos + 15)
-            addPage(lastPos + 20, doc)
-            doc.text(lineFour, 19, lastPos + 20)
-            addPage(lastPos + 25, doc)
-            doc.text(lineFive, 24, lastPos + 25)
-            addPage(lastPos + 30, doc)
-            doc.text(lineSix, 19, lastPos + 30)
-            addPage(lastPos + 35, doc)
-            doc.text(lineSeven, 19, lastPos + 35)
-            addPage(lastPos + 40, doc)
-            doc.setDrawColor(194, 194, 194)
-            doc.line(14, lastPos + 40, pageWidth - 55, lastPos + 40)
-            addPage(lastPos + 45, doc)
-            doc.setFont(undefined, 'bold')
-            doc.text(lineEight, 14, lastPos + 45).setFont(undefined, 'normal')
-            addPage(lastPos + 50, doc)
-            doc.text(lineNine, 19, lastPos + 50)
-            addPage(lastPos + 55, doc)
-            doc.text(lineTen, 19, lastPos + 55)
-            addPage(lastPos + 60, doc)
-            doc.text(lineEleven, 24, lastPos + 60)
-            addPage(lastPos + 65, doc)
-            doc.text(lineTwelve, 19, lastPos + 65)
-            addPage(lastPos + 70, doc)
-            doc.text(lineThirteen, 19, lastPos + 70)
+            for (let i = 0; i < arrayNextSteps.length; i++) {
+                doc.setFont(undefined, 'normal')
+                let xPos = 19;
+                if (i === 0 || i === 7) {
+                    doc.setFont(undefined, 'bold')
+                    xPos = 14;
+                }
+                if (i === 4 || i === 10) {
+                    xPos = 24;
+                }
+                addPage(lastPos + 5, doc)
+                doc.text(arrayNextSteps[i], xPos, lastPos + 5)
+                lastPos = lastPos + 5;
+
+            }
+
         }
 
 
@@ -478,6 +496,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Create a server request to get the sensor values generated during the test and create a chart out of them.
          * @param reportId
          * @return {*}
@@ -491,6 +510,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Convert the sensor values generated during the test to add them to the chart for the report.
          * @param response
          */
@@ -508,6 +528,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Creates the charts for the test reports with the generated sensor values during the test.
          * @param dataSeries
          */
@@ -543,6 +564,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Converts the structure of the value trigger list to show them correctly in the report.
          * @param triggerValues
          */
@@ -562,6 +584,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Convert the structure of the rule execution information to show this correctly in the report.
          * @param amountRulesTriggered
          */
@@ -581,6 +604,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Get a list of all real sensors included into the test, to display them in the test report.
          * @param report
          */
@@ -595,6 +619,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Get a list of all simulated sensors included into the test.
          * @param report
          */
@@ -610,6 +635,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         /**
          * [Private]
+         *
          * Converts structure of the sensor configurations of the sensor simulators to show them correctly in the report.
          * @param testReport
          */
