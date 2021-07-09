@@ -93,7 +93,6 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
         }
 
         //TODO calculate score using this.deviceTemplate and this.deviceDescriptions
-        //TODO but when re-deploying, always check if the score is better! Do not re-deploy for equal score
         return deviceDescription.getKeywords().size() * this.relatedDeviceDescriptions.size()
                 + (deviceDescription.getName().equals("asdf") ? 5 : 0);
     }
