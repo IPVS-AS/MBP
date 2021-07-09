@@ -3,17 +3,14 @@ package de.ipvs.as.mbp.domain.discovery.collections;
 
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 
-import javax.validation.constraints.NotNull;
-import java.util.Objects;
-
 /**
  * Extends {@link DeviceDescription}s for a field which captures the score value that is associated with the
  * device description.
- * */
+ */
 public class ScoredDeviceDescription extends DeviceDescription implements Comparable<ScoredDeviceDescription> {
 
     //Score of the device description
-    private int score;
+    private double score;
 
     /**
      * Creates a new scored device description from a given {@link DeviceDescription} and a score value that is
@@ -22,7 +19,7 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
      * @param deviceDescription The device description to use
      * @param score             The score value that is associated with the device description
      */
-    protected ScoredDeviceDescription(DeviceDescription deviceDescription, int score) {
+    protected ScoredDeviceDescription(DeviceDescription deviceDescription, double score) {
         super();
 
         //Sanity check
@@ -50,7 +47,7 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
      *
      * @return The score
      */
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
@@ -60,7 +57,7 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
      * @param score The score to set
      * @return The scored device description
      */
-    protected ScoredDeviceDescription setScore(int score) {
+    protected ScoredDeviceDescription setScore(double score) {
         //Sanity check
         if (score < 0) {
             throw new IllegalArgumentException("The score must be greater than or equal to zero.");
@@ -70,7 +67,6 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
         this.score = score;
         return this;
     }
-
 
 
     /**
@@ -120,7 +116,13 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
         }
 
         //Compare the scores
-        return scoredDeviceDescription.score - this.score;
+        if (scoredDeviceDescription.score == this.score) {
+            return 0;
+        } else if (scoredDeviceDescription.score > this.score) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
 
     /**
@@ -163,11 +165,11 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
      * general contract for the {@code hashCode} method, which states
      * that equal objects must have equal hash codes.
      *
-     * @param   o   the reference object with which to compare.
-     * @return  {@code true} if this object is the same as the obj
-     *          argument; {@code false} otherwise.
-     * @see     #hashCode()
-     * @see     java.util.HashMap
+     * @param o the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj
+     * argument; {@code false} otherwise.
+     * @see #hashCode()
+     * @see java.util.HashMap
      */
     @Override
     public boolean equals(Object o) {
@@ -204,9 +206,9 @@ public class ScoredDeviceDescription extends DeviceDescription implements Compar
      * as some function of an object's memory address at some point
      * in time.)
      *
-     * @return  a hash code value for this object.
-     * @see     java.lang.Object#equals(java.lang.Object)
-     * @see     java.lang.System#identityHashCode
+     * @return a hash code value for this object.
+     * @see java.lang.Object#equals(java.lang.Object)
+     * @see java.lang.System#identityHashCode
      */
     @Override
     public int hashCode() {

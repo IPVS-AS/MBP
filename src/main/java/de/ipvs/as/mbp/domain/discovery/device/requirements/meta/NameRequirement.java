@@ -105,7 +105,7 @@ public class NameRequirement extends DeviceRequirement {
 
         //Check match
         if ((match == null) || (match.isEmpty())) {
-            exception.addInvalidField(fieldPrefix + ".match", "The match must not be empty.");
+            exception.addInvalidField(fieldPrefix + ".match", "The match string must not be empty.");
         }
     }
 

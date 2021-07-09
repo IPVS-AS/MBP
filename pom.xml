@@ -190,6 +190,12 @@
             <version>0.9.12</version>
         </dependency>
 
+        <!-- Statistical Machine Intelligence and Learning Engine (SMILE) -->
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
     </dependencies>
 
     <build>

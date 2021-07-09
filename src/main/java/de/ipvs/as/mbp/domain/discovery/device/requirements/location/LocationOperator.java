@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.domain.discovery.device.requirements.location;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirementOperator;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceOperator;
 import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.discovery.location.circle.CircleLocationTemplate;
 import de.ipvs.as.mbp.domain.discovery.location.informal.InformalLocationTemplate;
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Enumeration of operators that can be used in location requirements.
  */
-public enum LocationOperator implements DeviceRequirementOperator {
+public enum LocationOperator implements DeviceOperator {
     DESCRIBED_BY("described_by", Collections.singletonList(InformalLocationTemplate.class)),
     AT_LOCATION("at_location", Collections.singletonList(PointLocationTemplate.class)),
     IN_AREA("in_area", Arrays.asList(CircleLocationTemplate.class, PolygonLocationTemplate.class));

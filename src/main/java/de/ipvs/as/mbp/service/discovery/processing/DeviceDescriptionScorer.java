@@ -86,15 +86,17 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
      * @param deviceDescription The device description for which the score is supposed to be calculated
      * @return The resulting score of the device description
      */
-    public int score(DeviceDescription deviceDescription) {
+    public double score(DeviceDescription deviceDescription) {
         //Sanity check
         if (deviceDescription == null) {
             throw new IllegalArgumentException("The device description must not be null.");
         }
 
-        //TODO calculate score using this.deviceTemplate and this.deviceDescriptions
-        return deviceDescription.getKeywords().size() * this.relatedDeviceDescriptions.size()
-                + (deviceDescription.getName().equals("asdf") ? 5 : 0);
+        //Stream trough the scoring criteria of the device template and sum the scores
+        return this.deviceTemplate.getScoringCriteria().stream()
+                .filter(Objects::nonNull) //Eliminate null criteria
+                .mapToDouble(c -> c.getScoreIncrement(deviceDescription, this)) //Apply criteria and retrieve their score
+                .sum(); //Sum all score increments/decrements
     }
 
     /**
@@ -148,7 +150,17 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
             return 1;
         }
 
-        //Calculate the scores of both device descriptions and compare them
-        return score(d2) - score(d1);
+        //Calculate the scores of both device descriptions
+        double d1Score = score(d1);
+        double d2Score = score(d2);
+
+        //Compare the scores
+        if (d1Score == d2Score) {
+            return 0;
+        } else if (d1Score > d2Score) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
 }

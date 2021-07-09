@@ -9,6 +9,9 @@ import org.json.JSONObject;
  * Abstract base class for device requirements.
  */
 public abstract class DeviceRequirement {
+    /**
+     * Creates a new device requirement.
+     */
     public DeviceRequirement() {
 
     }

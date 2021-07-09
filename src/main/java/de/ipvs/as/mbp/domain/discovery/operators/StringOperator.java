@@ -3,23 +3,47 @@ package de.ipvs.as.mbp.domain.discovery.operators;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.function.BiFunction;
+
 /**
- * Enumeration of operators that can be applied to string attributes.
+ * Enumeration of operators that can be applied to string attributes. Each operator consists out of a externally
+ * visible name and a application function that allows to apply the operator to given target and match strings and
+ * retrieve the corresponding boolean results.
  */
 public enum StringOperator implements DiscoveryTemplateOperator {
-    EQUALS("equals"), CONTAINS("contains"), BEGINS_WITH("begins_with"), ENDS_WITH("ends_with"),
-    NOT_EQUALS("not_equals");
+    EQUALS("equals", String::equalsIgnoreCase),
+    CONTAINS("contains", (target, match) -> target.toLowerCase().contains(match.toLowerCase())),
+    BEGINS_WITH("begins_with", (target, match) -> target.toLowerCase().startsWith(match.toLowerCase())),
+    ENDS_WITH("ends_with", (target, match) -> target.toLowerCase().endsWith(match.toLowerCase())),
+    NOT_EQUALS("not_equals", (target, match) -> !target.equalsIgnoreCase(match));
 
     //Externally visible name of the operator
     private String name;
+    //Function (target, match, result) that applies the operator to given target and match strings
+    private BiFunction<String, String, Boolean> applicationFunction;
 
     /**
-     * Creates a new string operator with a given name.
+     * Creates a new string operator from a given name and a given application function that allows to apply
+     * the operator to given target and match strings.
      *
-     * @param name The desired name of the operator
+     * @param name                The desired name of the operator
+     * @param applicationFunction The function that applies the operator to given target and match strings
      */
-    StringOperator(String name) {
+    StringOperator(String name, BiFunction<String, String, Boolean> applicationFunction) {
         setName(name);
+        setApplicationFunction(applicationFunction);
+    }
+
+    /**
+     * Applies the string operator to given target and match strings and returns the boolean result.
+     *
+     * @param target The target string to apply the operator to
+     * @param match  The match string to use
+     * @return True, if a match between the target and the match string is found; false otherwise
+     */
+    public boolean apply(String target, String match) {
+        //Apply the application function
+        return applicationFunction.apply(target, match);
     }
 
     /**
@@ -28,6 +52,11 @@ public enum StringOperator implements DiscoveryTemplateOperator {
      * @param name The name to set
      */
     private void setName(String name) {
+        //Sanity check
+        if ((name == null) || (name.isEmpty())) {
+            throw new IllegalArgumentException("The name must not be null or empty.");
+        }
+
         this.name = name;
     }
 
@@ -39,6 +68,30 @@ public enum StringOperator implements DiscoveryTemplateOperator {
     @JsonValue
     public String value() {
         return this.name;
+    }
+
+    /**
+     * Returns the function that applies the operator to given target and match strings and returns the result as
+     * boolean.
+     *
+     * @return The application function
+     */
+    public BiFunction<String, String, Boolean> getApplicationFunction() {
+        return applicationFunction;
+    }
+
+    /**
+     * Sets the function that applies the operator to given target and match strings and returns the result as boolean.
+     *
+     * @param applicationFunction The application function to set
+     */
+    public void setApplicationFunction(BiFunction<String, String, Boolean> applicationFunction) {
+        //Null check
+        if (applicationFunction == null) {
+            throw new IllegalArgumentException("The application function must not be null.");
+        }
+
+        this.applicationFunction = applicationFunction;
     }
 
     /**

@@ -111,7 +111,9 @@ app.controller('DeviceTemplateListController',
                         vm.deviceLocationMapApi.viewAllLocations();
 
                         //Clear displayed validation errors
-                        vm.addDeviceTemplateCtrl.item.errors = {};
+                        $timeout(() => {
+                            vm.addDeviceTemplateCtrl.item.errors = {};
+                        }, 10);
 
                         //After animation completed, scroll to the top of the visible card
                         $('html, body').animate({

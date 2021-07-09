@@ -45,7 +45,7 @@ public class DeviceTemplateCreateValidator implements ICreateValidator<DeviceTem
         //Iterate over all scoring criteria for validation
         List<ScoringCriterion> criteria = deviceTemplate.getScoringCriteria();
         for (int i = 0; i < criteria.size(); i++) {
-            //Ask current criterion to validate itself
+            //Ask current scoring criterion to validate itself
             criteria.get(i).validate(exception, "scoringCriteria[" + i + "]");
         }
 

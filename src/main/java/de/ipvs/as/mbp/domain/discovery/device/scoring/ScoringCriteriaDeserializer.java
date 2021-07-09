@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.device.requirements;
+package de.ipvs.as.mbp.domain.discovery.device.scoring;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,44 +13,44 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Deserializer for arrays of {@link DeviceRequirement}s, provided as JSON.
+ * Deserializer for arrays of {@link ScoringCriterion}s, provided as JSON.
  */
-public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequirement>> {
+public class ScoringCriteriaDeserializer extends StdDeserializer<List<ScoringCriterion>> {
 
-    private static final String REQUIREMENTS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.device.requirements";
-    private final static Map<String, Class<? extends DeviceRequirement>> REQUIREMENT_TYPES = new HashMap<>();
+    private static final String CRITERIA_PACKAGE = "de.ipvs.as.mbp.domain.discovery.device.scoring";
+    private final static Map<String, Class<? extends ScoringCriterion>> CRITERIA_TYPES = new HashMap<>();
 
     static {
-        //Get all available requirement classes
-        Reflections reflections = new Reflections(REQUIREMENTS_PACKAGE);
-        Set<Class<? extends DeviceRequirement>> requirementClasses = reflections.getSubTypesOf(DeviceRequirement.class);
+        //Get all available scoring criteria classes
+        Reflections reflections = new Reflections(CRITERIA_PACKAGE);
+        Set<Class<? extends ScoringCriterion>> scoringCriteriaClasses = reflections.getSubTypesOf(ScoringCriterion.class);
 
-        //Iterate over all requirement classes
-        for (Class<? extends DeviceRequirement> reqClass : requirementClasses) {
+        //Iterate over all scoring criteria classes
+        for (Class<? extends ScoringCriterion> criteriaClass : scoringCriteriaClasses) {
             try {
                 //Create new instance of class
-                DeviceRequirement requirement = reqClass.getDeclaredConstructor().newInstance();
+                ScoringCriterion scoringCriteria = criteriaClass.getDeclaredConstructor().newInstance();
 
-                //Get and remember the name of this requirement type
-                REQUIREMENT_TYPES.put(requirement.getTypeName().toLowerCase(), reqClass);
+                //Get and remember the name of this criteria type
+                CRITERIA_TYPES.put(scoringCriteria.getTypeName().toLowerCase(), criteriaClass);
             } catch (Exception ignore) {
             }
         }
     }
 
     /**
-     * Creates the requirements deserializer without any parameters. Required for bean instantiation.
+     * Creates the scoring criteria deserializer without any parameters. Required for bean instantiation.
      */
-    public RequirementsDeserializer() {
+    public ScoringCriteriaDeserializer() {
         this(null);
     }
 
     /**
-     * Creates a new requirements deserializer for a given class.
+     * Creates a new scoring criteria deserializer for a given class.
      *
      * @param vc The class to use
      */
-    protected RequirementsDeserializer(Class<?> vc) {
+    protected ScoringCriteriaDeserializer(Class<?> vc) {
         super(vc);
     }
 
@@ -104,7 +104,7 @@ public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequire
      * @return Deserialized value
      */
     @Override
-    public List<DeviceRequirement> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public List<ScoringCriterion> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         //Retrieve root node
         JsonNode rootNode = jsonParser.getCodec().readTree(jsonParser);
 
@@ -114,33 +114,33 @@ public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequire
         }
 
         //Create result list
-        List<DeviceRequirement> requirementsList = new ArrayList<>();
+        List<ScoringCriterion> scoringCriteriaList = new ArrayList<>();
 
-        //Iterate over the array of requirements
+        //Iterate over the array of criteria
         for (JsonNode node : rootNode) {
             //Check if type field is present
             if ((!node.has("type")) || (!node.get("type").isTextual())) {
                 continue;
             }
 
-            //Get requirement type
+            //Get criterion type
             String type = node.get("type").asText("").toLowerCase();
 
-            //Check if a requirement with this type exists
-            if (!REQUIREMENT_TYPES.containsKey(type)) {
+            //Check if a criterion with this type exists
+            if (!CRITERIA_TYPES.containsKey(type)) {
                 continue;
             }
 
-            //Deserialize requirement for its corresponding class
-            DeviceRequirement requirement = Json.MAPPER.treeToValue(node, REQUIREMENT_TYPES.get(type));
+            //Deserialize scoring criterion for its corresponding class
+            ScoringCriterion scoringCriterion = Json.MAPPER.treeToValue(node, CRITERIA_TYPES.get(type));
 
-            //Check if requirement is valid and add it to list
-            if (requirement != null) {
-                requirementsList.add(requirement);
+            //Check if scoring criterion is valid and add it to list
+            if (scoringCriterion != null) {
+                scoringCriteriaList.add(scoringCriterion);
             }
         }
 
-        //Return resulting requirements list
-        return requirementsList;
+        //Return resulting criteria list
+        return scoringCriteriaList;
     }
 }
