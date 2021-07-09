@@ -40,6 +40,10 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
     @Autowired
     private CEPValueLogParser cepValueLogParser;
 
+    // To store incoming ValueLogs temporarily for the case that the ValueLog was not already saved in the MongoDB
+    @Autowired
+    private CEPValueLogCache cepValueLogCache;
+
     //The CEP engine instance to use
     private CEPEngine engine;
 
@@ -118,6 +122,9 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
      */
     @Override
     public void onValueReceived(ValueLog valueLog) {
+        // Pass the valueLog to the cache to have later access to it, even if it is not already written in the mongoDB
+        cepValueLogCache.addValueLog(valueLog);
+
         // Let the parser parse the valuelog
         Map<String, Object> parsedLog = cepValueLogParser.parseValueLog(valueLog,
                 CEPValueLogEvent.generateEventTypeName(valueLog.getIdref(), valueLog.getComponent())

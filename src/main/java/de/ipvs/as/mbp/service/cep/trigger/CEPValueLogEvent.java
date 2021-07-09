@@ -34,18 +34,18 @@ public class CEPValueLogEvent extends CEPEvent {
         //Get Instant object from value log
         Instant time = valueLog.getTime();
 
-        //Get epoch seconds
-        long unixSeconds = time.getEpochSecond();
+        //Get epoch millis
+        long unixMillis = time.toEpochMilli();
 
         if (this.valueLog.getComponent().equals("MONOTORING") || this.valueLog.getComponent().equals("DEVICE")) {
             // Set event fields for monitoring operators and devices which aren't expected to have data models
             double value = ((Document) valueLog.getValue().get("value")).getDouble("value");
             this.addValue("value", value);
-            this.addValue("time", unixSeconds);
+            this.addValue("time", unixMillis);
             return;
         }
 
-        this.addValue("time", unixSeconds);
+        this.addValue("time", unixMillis);
 
         // Set event fields for actuator and sensor components
         for (Map.Entry<String, Object> entry : parsedLog.entrySet()) {
