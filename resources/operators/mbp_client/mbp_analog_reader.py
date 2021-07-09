@@ -40,3 +40,7 @@ class AnalogInputReader(object):
       return resistenceSensor
     else:
       return 0
+
+  def read_sound(self):
+    v0 = self.get_level()
+    return v0[1] 

@@ -30,7 +30,8 @@ $ mosquitto_pub.exe -t 'sensor/596cafaa6c0ccd5d29da0e90' -m '{"component":"SENSO
 - [Adafruit_DHT-temperature_raspberry-pi](Adafruit_DHT-temperature_raspberry-pi) :thermometer: :droplet: : scripts to extract sensor data from a DHT sensor. 
 - [bosch-xdk_mqtt-gateway](bosch-xdk_mqtt-gateway) :thermometer: :partly_sunny: :droplet: : operator scripts to extract sensor data from Bosch XDK devices.
 - [LK-light_raspberry-pi](LK-light_raspberry-pi) :partly_sunny:: operator scripts to extract sensor data from a LK light sensor.
-- [LK-temperature_raspberry-pi](LK-temperature_raspberry-pi) :thermometer:: operator scripts to extract sensor data from a LK temperature sensor. 
+- [LK-temperature_raspberry-pi](LK-temperature_raspberry-pi) :thermometer:: operator scripts to extract sensor data from a LK temperature sensor.
+- [LK-sound_raspberry-pi](LK-sound_raspberry-pi) :microphone:: operator scripts to extract sensor data from a LK sound sensor.
 -  [miflora-plant_raspberry-pi](miflora-plant_raspberry-pi):seedling: :thermometer: :partly_sunny: :droplet: : scripts to extract several sensor data from a MiFlora plant sensor.
 - [temperature_stub](temperature_stub) :thermometer: : operator scripts to simulate the extraction of temperature sensor data. 
 - [temperature_stub_param](temperature_stub_param) :thermometer:: operator scripts to simulate the extraction of temperature sensor data, which take input parameters upon their deployment. 
