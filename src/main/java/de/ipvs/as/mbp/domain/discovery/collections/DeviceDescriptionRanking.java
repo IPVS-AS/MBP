@@ -44,8 +44,13 @@ public class DeviceDescriptionRanking implements Iterable<ScoredDeviceDescriptio
      * @param deviceTemplate The device template to use for calculating the scores
      */
     public DeviceDescriptionRanking(DeviceTemplate deviceTemplate, Collection<DeviceDescription> deviceDescriptions) {
-        //Set device template
-        setDeviceTemplate(deviceTemplate);
+        //Sanity check
+        if (deviceTemplate == null) {
+            throw new IllegalArgumentException("The device template must not be null.");
+        }
+
+        //Store device template
+        this.deviceTemplate = deviceTemplate;
 
         //Add device descriptions
         this.addAll(deviceDescriptions);

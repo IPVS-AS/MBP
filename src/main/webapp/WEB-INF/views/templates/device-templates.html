@@ -485,7 +485,7 @@
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].exactMatchScore'] }">
                                                                     <input type="number" class="form-control"
                                                                            placeholder="Score for exact matches" min="0"
-                                                                           step="1" g-model="criterion.exactMatchScore">
+                                                                           step="1" ng-model="criterion.exactMatchScore">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].exactMatchScore']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].exactMatchScore']}}</span>

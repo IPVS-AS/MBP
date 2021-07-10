@@ -2,10 +2,19 @@ package de.ipvs.as.mbp.service.discovery.processing;
 
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.scoring.description.DeviceDescriptionTokenizer;
+import smile.nlp.Corpus;
+import smile.nlp.SimpleCorpus;
+import smile.nlp.Text;
+import smile.nlp.dictionary.EnglishPunctuations;
+import smile.nlp.dictionary.EnglishStopWords;
+import smile.nlp.tokenizer.SimpleSentenceSplitter;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Objects of this class can be used to calculate scores for {@link DeviceDescription}s, based on the scoring criteria
@@ -17,8 +26,14 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
     //Device template to use for calculating the scores
     private DeviceTemplate deviceTemplate;
 
-    //Set of related device descriptions for calculating relative scores
+    //Collection of related device descriptions for calculating relative scores
     private Collection<DeviceDescription> relatedDeviceDescriptions;
+
+    //Corpus of pre-processed description fields
+    private SimpleCorpus descriptionCorpus;
+
+    //Map (device MAC --> description) of pre-processed description fields
+    private Map<String, Text> descriptionMap;
 
     /**
      * Creates a new device scorer from a given {@link DeviceTemplate} and a collection of {@link DeviceDescription}s
@@ -66,7 +81,8 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
     }
 
     /**
-     * Sets the collection of {@link DeviceDescription} to which the calculated scores are relative.
+     * Sets the collection of {@link DeviceDescription} to which the calculated scores are relative. Furthermore,
+     * the description fields are extracted and pre-processed, thus allowing their usage within the score calculations.
      *
      * @param relatedDeviceDescriptions The collection of device descriptions to set
      */
@@ -77,6 +93,29 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
         }
 
         this.relatedDeviceDescriptions = relatedDeviceDescriptions;
+
+        //Pre-process the descriptions
+        preprocessDescriptions();
+    }
+
+    /**
+     * Returns the corpus of pre-processed device description fields as originating from the collection of related
+     * device descriptions.
+     *
+     * @return The corpus of pre-processed description fields
+     */
+    public SimpleCorpus getDescriptionCorpus() {
+        return this.descriptionCorpus;
+    }
+
+    /**
+     * Returns a map (device MAC --> pre-processed description) of the individual pre-processed device description
+     * fields, associated with the MAC address of the corresponding device.
+     *
+     * @return The map of pre-processed device description fields
+     */
+    public Map<String, Text> getDescriptionMap() {
+        return this.descriptionMap;
     }
 
     /**
@@ -155,12 +194,22 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
         double d2Score = score(d2);
 
         //Compare the scores
-        if (d1Score == d2Score) {
-            return 0;
-        } else if (d1Score > d2Score) {
-            return -1;
-        } else {
-            return 1;
-        }
+        return Double.compare(d2Score, d1Score);
+    }
+
+    /**
+     * Pre-processes the device description fields that can be retrieved from the collection of related device
+     * descriptions. The results of the pre-processing are stored in a corpus.
+     */
+    private void preprocessDescriptions() {
+        //Create new simple document corpus
+        this.descriptionCorpus = new SimpleCorpus(SimpleSentenceSplitter.getInstance(),
+                new DeviceDescriptionTokenizer(),
+                EnglishStopWords.DEFAULT, EnglishPunctuations.getInstance());
+
+        //Stream through the related device descriptions and add them to the corpus
+        this.descriptionMap = this.relatedDeviceDescriptions.stream()
+                .map(d -> this.descriptionCorpus.add(new Text(d.getIdentifiers().getMacAddress(), "", d.getDescription())))
+                .collect(Collectors.toMap(t -> t.id, t -> t)); //Collect the pre-processed descriptions to the map
     }
 }
