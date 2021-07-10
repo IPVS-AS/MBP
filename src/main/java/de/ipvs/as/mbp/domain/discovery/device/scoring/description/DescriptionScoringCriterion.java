@@ -30,9 +30,6 @@ public class DescriptionScoringCriterion extends ScoringCriterion {
     //Type name of this scoring criterion
     private static final String TYPE_NAME = "description";
 
-    //Tokenizer to use
-    private static final Tokenizer TOKENIZER = new DeviceDescriptionTokenizer();
-
     //Scoring scheme to use
     private static final RelevanceRanker SCORING_SCHEME = new ImprovedBM25();
 
@@ -116,7 +113,7 @@ public class DescriptionScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Validates the device requirement by extending the provided exception with information about invalid fields.
+     * Validates the device scoring criterion by extending the provided exception with information about invalid fields.
      *
      * @param exception   The exception to extend as part of the validation
      * @param fieldPrefix Prefix that is supposed to be added to the fields that are validated
@@ -182,7 +179,7 @@ public class DescriptionScoringCriterion extends ScoringCriterion {
         //Calculate BM25 score for "optimal" document
         double goodBM25Score = StreamSupport.stream(queryDocument.unique().spliterator(), false)
                 .distinct() //Get rid of duplicated query terms
-                .mapToDouble(t -> SCORING_SCHEME.rank(corpus, queryDocument, t, queryDocument.tf(t) * 2, invertedIndex.getOrDefault(t, Collections.emptyList()).size()))
+                .mapToDouble(t -> SCORING_SCHEME.rank(corpus, queryDocument, t, queryDocument.tf(t), invertedIndex.getOrDefault(t, Collections.emptyList()).size()))
                 .sum(); //Sum the scores for all terms
 
         //Calculate BM25 score for device description
@@ -192,7 +189,10 @@ public class DescriptionScoringCriterion extends ScoringCriterion {
                 .sum(); //Sum the scores for all terms
 
         //Calculate final score relative to the score for an exact match
-        return (this.exactMatchScore / goodBM25Score) * descriptionBM25Score;
+        double finalScore = (this.exactMatchScore / goodBM25Score) * descriptionBM25Score;
+
+        //Return no score larger than the user-provided one
+        return Math.min(finalScore, this.exactMatchScore);
     }
 
     /**

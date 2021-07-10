@@ -526,6 +526,14 @@ app.controller('DeviceTemplateListController',
                 });
             }
 
+
+            //Watch addition of requirements or scoring criteria and enable popovers
+            $scope.$watchGroup([() => (vm.addDeviceTemplateCtrl.item.requirements||[]).length,
+                () => (vm.addDeviceTemplateCtrl.item.scoringCriteria||[]).length], () => {
+                    $('[data-toggle="popover"]').popover({container: 'body'});
+                }
+            );
+
             //Watch controller result of device template additions
             $scope.$watch(() => vm.addDeviceTemplateCtrl.result, (data) => {
                     //Sanity check

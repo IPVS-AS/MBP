@@ -22,7 +22,10 @@ public class LocationRequirement extends DeviceRequirement {
     //Type name of this requirement
     private static final String TYPE_NAME = "location";
 
+    //Operator to use
     private LocationOperator operator;
+
+    //ID of the location template to use
     private String locationTemplateId;
 
     /**
@@ -209,7 +212,7 @@ public class LocationRequirement extends DeviceRequirement {
         //Resolve location template
         Optional<Object> template = SimpleEntityResolver.resolve(LocationTemplateRepository.class, locationTemplateId);
 
-        //Return template or null of not found
+        //Return template or null if not found
         return (LocationTemplate) template.orElse(null);
     }
 }

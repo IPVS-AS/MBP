@@ -119,6 +119,8 @@ div.discovery-template-menu .bubble-item .bubble-connector {
 
 #edit-templates-group #edit-devices .criteria-list > .list-group-item div.row > div:first-child i.material-icons {
     margin-top: 4px;
+    user-select: none;
+    cursor: pointer;
 }
 
 #edit-templates-group #edit-devices .criteria-list > .list-group-item .form-group {

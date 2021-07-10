@@ -145,7 +145,7 @@ public class TermScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Validates the device requirement by extending the provided exception with information about invalid fields.
+     * Validates the device scoring criterion by extending the provided exception with information about invalid fields.
      *
      * @param exception   The exception to extend as part of the validation
      * @param fieldPrefix Prefix that is supposed to be added to the fields that are validated

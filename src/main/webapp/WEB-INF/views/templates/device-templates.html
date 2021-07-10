@@ -393,7 +393,11 @@
                                                         <div class="col-lg-1" ng-switch="criterion.type">
                                                             <i class="material-icons"
                                                                ng-switch-when="term">text_fields</i>
-                                                            <i class="material-icons" ng-switch-when="description">comment</i>
+                                                            <i class="material-icons" ng-switch-when="description"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Scoring by description"
+                                                               data-content="Uses the <i>BM25+</i> weighing scheme in order to estimate the relevance of the devices in reference to a given query, based on their descriptions. The descriptions and the query are pre-processed to improve the results.<br/><br/><strong>Query:</strong> A textual description of the required device, similar to queries in web search engines.</br><strong>Score:</strong> Reference value indicating the score that should be added to devices whose descriptions match the query exactly.">comment</i>
                                                             <i class="material-icons" ng-switch-when="proximity">location_on</i>
                                                             <i class="material-icons"
                                                                ng-switch-when="capability">list</i>
@@ -455,7 +459,7 @@
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].scoreIncrement'] }">
                                                                     <input type="number" class="form-control"
-                                                                           placeholder="+/- score" step="1"
+                                                                           placeholder="Score" step="1"
                                                                            ng-model="criterion.scoreIncrement">
                                                                 </div>
                                                                 <span class="help-block"
@@ -485,7 +489,8 @@
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].exactMatchScore'] }">
                                                                     <input type="number" class="form-control"
                                                                            placeholder="Score for exact matches" min="0"
-                                                                           step="1" ng-model="criterion.exactMatchScore">
+                                                                           step="1"
+                                                                           ng-model="criterion.exactMatchScore">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].exactMatchScore']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].exactMatchScore']}}</span>
@@ -510,15 +515,15 @@
 
                                                         <div class="col-lg-3" ng-show="criterion.type === 'proximity'">
                                                             <div class="form-group"
-                                                                 ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maxScore'] }">
+                                                                 ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maximumScore'] }">
                                                                 <div class="form-line"
-                                                                     ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maxScore'] }">
+                                                                     ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maximumScore'] }">
                                                                     <input type="number" class="form-control"
                                                                            placeholder="Max. score" min="0" step="1"
-                                                                           ng-model="criterion.maxScore">
+                                                                           ng-model="criterion.maximumScore">
                                                                 </div>
                                                                 <span class="help-block"
-                                                                      ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maxScore']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maxScore']}}</span>
+                                                                      ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maximumScore']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].maximumScore']}}</span>
                                                             </div>
                                                         </div>
 
@@ -528,9 +533,7 @@
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].halfScoreDistance'] }">
                                                                     <input type="number" class="form-control"
-                                                                           placeholder="Half score distance (m)" min="0"
-                                                                           step="1"
-                                                                           ng-model="criterion.halfScoreDistance">
+                                                                           placeholder="Half score distance (m)" step="1" ng-model="criterion.halfScoreDistance">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].halfScoreDistance']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].halfScoreDistance']}}</span>
@@ -590,7 +593,7 @@
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].scoreIncrement'] }">
                                                                     <input type="number" class="form-control"
-                                                                           placeholder="+/- score" step="1"
+                                                                           placeholder="Score" step="1"
                                                                            ng-model="criterion.scoreIncrement">
                                                                 </div>
                                                                 <span class="help-block"
@@ -625,7 +628,7 @@
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].trueScoreIncrement'] }">
                                                                     <input type="number" class="form-control"
-                                                                           placeholder="+/- score for 'true'" step="1"
+                                                                           placeholder="Score for 'true'" step="1"
                                                                            ng-model="criterion.trueScoreIncrement">
                                                                 </div>
                                                                 <span class="help-block"
@@ -640,7 +643,7 @@
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement'] }">
                                                                     <input type="number" class="form-control"
-                                                                           placeholder="+/- score for 'false'" step="1"
+                                                                           placeholder="Score for 'false'" step="1"
                                                                            ng-model="criterion.falseScoreIncrement">
                                                                 </div>
                                                                 <span class="help-block"
@@ -716,7 +719,7 @@
                                         <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Keywords</th>
+                                            <th class="text-center">Keywords</th>
                                             <th class="text-center">Score&nbsp;<i class="material-icons help-icon"
                                                                                   data-toggle="popover"
                                                                                   data-placement="top"
@@ -733,7 +736,7 @@
                                             <td>{{result.name}}</td>
                                             <td><span class="badge bg-teal" style="margin-right: 5px;"
                                                       ng-repeat="k in result.keywords">{{k}}</span></td>
-                                            <td class="text-center">{{result.score}}</td>
+                                            <td class="text-center">{{result.score.toFixed(3)}}</td>
                                             <td style="width: 95px;">
                                                 <button type="button"
                                                         class="btn btn-sm bg-white waves-effect waves-float"
