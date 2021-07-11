@@ -370,17 +370,17 @@
                                                         <li role="separator" class="divider"></li>
                                                         <li>
                                                             <a href="#" class=" waves-effect waves-block"
-                                                               ng-click="addDeviceTemplateCtrl.item.scoringCriteria.push({'type': 'capability', 'data': 'string'});">Capability
+                                                               ng-click="addDeviceTemplateCtrl.item.scoringCriteria.push({'type': 'string_capability'});">Capability
                                                                 (string)</a>
                                                         </li>
                                                         <li>
                                                             <a href="#" class=" waves-effect waves-block"
-                                                               ng-click="addDeviceTemplateCtrl.item.scoringCriteria.push({'type': 'capability', 'data': 'number'});">Capability
+                                                               ng-click="addDeviceTemplateCtrl.item.scoringCriteria.push({'type': 'number_capability'});">Capability
                                                                 (number)</a>
                                                         </li>
                                                         <li>
                                                             <a href="#" class=" waves-effect waves-block"
-                                                               ng-click="addDeviceTemplateCtrl.item.scoringCriteria.push({'type': 'capability', 'data': 'boolean'});">Capability
+                                                               ng-click="addDeviceTemplateCtrl.item.scoringCriteria.push({'type': 'boolean_capability'});">Capability
                                                                 (bool)</a>
                                                         </li>
                                                     </ul>
@@ -391,16 +391,27 @@
                                                    ng-repeat="criterion in addDeviceTemplateCtrl.item.scoringCriteria">
                                                     <div class="row clearfix">
                                                         <div class="col-lg-1" ng-switch="criterion.type">
-                                                            <i class="material-icons"
-                                                               ng-switch-when="term">text_fields</i>
+                                                            <i class="material-icons" ng-switch-when="term"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Scoring by terms"
+                                                               data-content="Increases or decreases the device score based on the occurrence of terms and patterns in the device description fields.<br/><br/><strong>Field:</strong> The device description field to which the criterion is supposed to be applied.</br><strong>Operator:</strong> The string operator to use for evaluating the match string on the selected field.<br><strong>Match:</strong>The match string that is supposed to be evaluated on the selected field with the selected operator.">text_fields</i>
                                                             <i class="material-icons" ng-switch-when="description"
                                                                data-toggle="popover" data-placement="top"
                                                                data-trigger="hover" data-html="true"
                                                                title="Scoring by description"
                                                                data-content="Uses the <i>BM25+</i> weighing scheme in order to estimate the relevance of the devices in reference to a given query, based on their descriptions. The descriptions and the query are pre-processed to improve the results.<br/><br/><strong>Query:</strong> A textual description of the required device, similar to queries in web search engines.</br><strong>Score:</strong> Reference value indicating the score that should be added to devices whose descriptions match the query exactly.">comment</i>
-                                                            <i class="material-icons" ng-switch-when="proximity">location_on</i>
+                                                            <i class="material-icons" ng-switch-when="proximity"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Scoring by proximity"
+                                                               data-content="Increases the device score based on the geographic distance of the devices to a certain point. Since the resolution of interest decreases for larger distances, an exponential function is used to map distances to scores.<br/><br/><strong>Origin:</strong> A location template indicating the origin point to which the distances should be calculated.</br><strong>Max. score:</strong> The maximum score that should be assigned to devices that are very close to the origin.<br><strong>Half score distance:</strong>The distance in meters at which only half of the score should be assigned to the devices.">location_on</i>
                                                             <i class="material-icons"
-                                                               ng-switch-when="capability">list</i>
+                                                               ng-switch-when="string_capability">list</i>
+                                                            <i class="material-icons"
+                                                               ng-switch-when="number_capability">list</i>
+                                                            <i class="material-icons"
+                                                               ng-switch-when="boolean_capability">list</i>
                                                         </div>
                                                         <div class="col-lg-3" ng-show="criterion.type === 'term'">
                                                             <div class="form-group"
@@ -533,34 +544,36 @@
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].halfScoreDistance'] }">
                                                                     <input type="number" class="form-control"
-                                                                           placeholder="Half score distance (m)" step="1" ng-model="criterion.halfScoreDistance">
+                                                                           placeholder="Half score distance (m)"
+                                                                           step="1"
+                                                                           ng-model="criterion.halfScoreDistance">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].halfScoreDistance']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].halfScoreDistance']}}</span>
                                                             </div>
                                                         </div>
 
-                                                        <div class="col-lg-3" ng-show="criterion.type === 'capability'">
+                                                        <div class="col-lg-3"
+                                                             ng-show="['string_capability', 'number_capability', 'boolean_capability'].includes(criterion.type)">
                                                             <div class="form-group"
-                                                                 ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].cap_name'] }">
+                                                                 ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].capabilityName'] }">
                                                                 <div class="form-line"
-                                                                     ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].cap_name'] }">
+                                                                     ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].capabilityName'] }">
                                                                     <input type="text" class="form-control"
                                                                            placeholder="Capability name"
-                                                                           ng-model="criterion.cap_name">
+                                                                           ng-model="criterion.capabilityName">
                                                                 </div>
                                                                 <span class="help-block"
-                                                                      ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].cap_name']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].cap_name']}}</span>
+                                                                      ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].capabilityName']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].capabilityName']}}</span>
                                                             </div>
                                                         </div>
                                                         <div class="col-lg-3"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'string'">
+                                                             ng-show="criterion.type === 'string_capability'">
                                                             <div class="form-group"
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].operator'] }">
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].operator'] }">
-                                                                    <select class="form-control show-tick"
-                                                                            ng-model="criterion.operator">
+                                                                    <select class="form-control show-tick" ng-model="criterion.operator">
                                                                         <option value="">Select operator...</option>
                                                                         <option value="equals">equals</option>
                                                                         <option value="contains">contains</option>
@@ -573,7 +586,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="col-lg-2"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'string'">
+                                                             ng-show="criterion.type === 'string_capability'">
                                                             <div class="form-group"
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].match'] }">
                                                                 <div class="form-line"
@@ -587,7 +600,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="col-lg-2"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'string'">
+                                                             ng-show="criterion.type === 'string_capability'">
                                                             <div class="form-group"
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].scoreIncrement'] }">
                                                                 <div class="form-line"
@@ -602,27 +615,24 @@
                                                         </div>
 
                                                         <div class="col-lg-2 text-right"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'number'"
+                                                             ng-show="criterion.type === 'number_capability'"
                                                              style="line-height: 2.5">
                                                             <span class=""><code>score(x)=</code></span>
                                                         </div>
                                                         <div class="col-lg-5"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'number'">
+                                                             ng-show="criterion.type === 'number_capability'">
                                                             <div class="form-group"
-                                                                 ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformation'] }">
-                                                                <div class="form-line"
-                                                                     ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformation'] }">
-                                                                    <input type="text" class="form-control"
-                                                                           placeholder="Transformation function"
-                                                                           ng-model="criterion.transformation">
+                                                                 ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression'] }">
+                                                                <div class="form-line" ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression'] }">
+                                                                    <input type="text" class="form-control" placeholder="Transformation expression" ng-model="criterion.transformationExpression">
                                                                 </div>
                                                                 <span class="help-block"
-                                                                      ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformation']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformation']}}</span>
+                                                                      ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression']}}</span>
                                                             </div>
                                                         </div>
 
                                                         <div class="col-lg-3"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'boolean'">
+                                                             ng-show="criterion.type === 'boolean_capability'">
                                                             <div class="form-group"
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].trueScoreIncrement'] }">
                                                                 <div class="form-line"
@@ -637,14 +647,12 @@
                                                         </div>
 
                                                         <div class="col-lg-4"
-                                                             ng-show="criterion.type === 'capability' && criterion.data === 'boolean'">
+                                                             ng-show="criterion.type === 'boolean_capability'">
                                                             <div class="form-group"
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement'] }">
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement'] }">
-                                                                    <input type="number" class="form-control"
-                                                                           placeholder="Score for 'false'" step="1"
-                                                                           ng-model="criterion.falseScoreIncrement">
+                                                                    <input type="number" class="form-control" placeholder="Score for 'false'" step="1" ng-model="criterion.falseScoreIncrement">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement']}}</span>

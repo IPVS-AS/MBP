@@ -42,6 +42,11 @@ public enum StringOperator implements DiscoveryTemplateOperator {
      * @return True, if a match between the target and the match string is found; false otherwise
      */
     public boolean apply(String target, String match) {
+        //Null check
+        if ((target == null) || (match == null)) {
+            return false;
+        }
+
         //Apply the application function
         return applicationFunction.apply(target, match);
     }

@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.service.discovery.processing;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.device.scoring.description.DeviceDescriptionTokenizer;
-import smile.nlp.Corpus;
 import smile.nlp.SimpleCorpus;
 import smile.nlp.Text;
 import smile.nlp.dictionary.EnglishPunctuations;
@@ -132,10 +131,13 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
         }
 
         //Stream trough the scoring criteria of the device template and sum the scores
-        return this.deviceTemplate.getScoringCriteria().stream()
+        double scoreSum = this.deviceTemplate.getScoringCriteria().stream()
                 .filter(Objects::nonNull) //Eliminate null criteria
                 .mapToDouble(c -> c.getScoreIncrement(deviceDescription, this)) //Apply criteria and retrieve their score
                 .sum(); //Sum all score increments/decrements
+
+        //Check resulting score for NaN and return the final score
+        return Double.isNaN(scoreSum) ? 0 : scoreSum;
     }
 
     /**

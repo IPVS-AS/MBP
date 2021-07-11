@@ -1,13 +1,36 @@
 package de.ipvs.as.mbp.domain.discovery.description;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Objects of this class describe capabilities of devices within {@link DeviceDescription}s. Thereby, each capability
  * consists out of a name, a value of type {@link String}, {@link Double} or {@link Boolean} and an optional flag
  * indicating whether the capability behaves cumulative.
  */
-public class DeviceDescriptionCapability  {
+public class DeviceDescriptionCapability {
+
+    /**
+     * Exception that is thrown in case a capability value is of a type that was not expected by the caller that
+     * tried to access it.
+     */
+    public static class TypeMismatchException extends RuntimeException {
+        /**
+         * Creates a new {@link TypeMismatchException} from a given error message.
+         *
+         * @param message The error message to use
+         */
+        public TypeMismatchException(String message) {
+            super(message);
+        }
+    }
+
+    //Name of the capability
     private String name;
+
+    //Value of the capability
     private Object value;
+
+    //Whether the capability behaves cumulative
     private boolean cumulative = false;
 
     /**
@@ -52,6 +75,81 @@ public class DeviceDescriptionCapability  {
 
         this.name = name;
         return this;
+    }
+
+    /**
+     * Checks and returns whether the value of this capability is of type string or null.
+     *
+     * @return True, if the capability value is of type string or null; false otherwise
+     */
+    public boolean isString() {
+        //Check for null and type
+        return (this.value == null) || (this.value instanceof String);
+    }
+
+    /**
+     * Checks and returns whether the value of this capability is of type number.
+     *
+     * @return True, if the capability value is of type number; false otherwise
+     */
+    public boolean isNumber() {
+        //Check for null and type
+        return (this.value != null) && (this.value instanceof Double);
+    }
+
+    /**
+     * Checks and returns whether the value of this capability is of type boolean.
+     *
+     * @return True, if the capability value is of type boolean; false otherwise
+     */
+    public boolean isBoolean() {
+        //Check for null and type
+        return (this.value != null) && (this.value instanceof Boolean);
+    }
+
+    /**
+     * Returns the value of this capability as string. If the capability value is not of type string, an exception
+     * is thrown.
+     *
+     * @return The capability value as string
+     */
+    @JsonIgnore
+    public String getValueAsString() {
+        //Type check
+        if (!isString()) throw new TypeMismatchException("The capability value is not of type string.");
+
+        //Parse the value as string
+        return this.value.toString();
+    }
+
+    /**
+     * Returns the value of this capability as double. If the capability value is not of type number, an exception
+     * is thrown.
+     *
+     * @return The capability value as double
+     */
+    @JsonIgnore
+    public double getValueAsDouble() {
+        //Type check
+        if (!isNumber()) throw new TypeMismatchException("The capability value is not of type double.");
+
+        //Parse the value as string
+        return (Double) this.value;
+    }
+
+    /**
+     * Returns the value of this capability as boolean. If the capability value is not of type boolean, an exception
+     * is thrown.
+     *
+     * @return The capability value as boolean
+     */
+    @JsonIgnore
+    public boolean getValueAsBoolean() {
+        //Type check
+        if (!isBoolean()) throw new TypeMismatchException("The capability value is not of type boolean.");
+
+        //Parse the value as string
+        return (Boolean) this.value;
     }
 
     /**

@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.util.Json;
 import org.reflections.Reflections;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -27,6 +28,9 @@ public class ScoringCriteriaDeserializer extends StdDeserializer<List<ScoringCri
 
         //Iterate over all scoring criteria classes
         for (Class<? extends ScoringCriterion> criteriaClass : scoringCriteriaClasses) {
+            //Skip abstract classes
+            if (Modifier.isAbstract(criteriaClass.getModifiers())) continue;
+
             try {
                 //Create new instance of class
                 ScoringCriterion scoringCriteria = criteriaClass.getDeclaredConstructor().newInstance();

@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.util.Json;
 import org.reflections.Reflections;
 
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -27,6 +28,9 @@ public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequire
 
         //Iterate over all requirement classes
         for (Class<? extends DeviceRequirement> reqClass : requirementClasses) {
+            //Skip abstract classes
+            if (Modifier.isAbstract(reqClass.getModifiers())) continue;
+
             try {
                 //Create new instance of class
                 DeviceRequirement requirement = reqClass.getDeclaredConstructor().newInstance();

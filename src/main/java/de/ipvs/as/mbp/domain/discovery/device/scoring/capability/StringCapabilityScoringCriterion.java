@@ -1,78 +1,64 @@
-package de.ipvs.as.mbp.domain.discovery.device.scoring.term;
+package de.ipvs.as.mbp.domain.discovery.device.scoring.capability;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
-import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionCapability;
 import de.ipvs.as.mbp.domain.discovery.operators.StringOperator;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionScorer;
 
+import java.util.Optional;
+
 /**
- * Objects of this class represent term scoring criteria for devices.
+ * Objects of this class represent scoring criteria for capabilities of devices that are expressed as strings.
  */
 @JsonIgnoreProperties
-public class TermScoringCriterion extends ScoringCriterion {
+public class StringCapabilityScoringCriterion extends CapabilityScoringCriterion {
     //Type name of this scoring criterion
-    private static final String TYPE_NAME = "term";
+    private static final String TYPE_NAME = "string_capability";
 
-    private TermScoringCriterionField field; //Field to which the criterion is supposed to be applied
-    private StringOperator operator; //Operator to use
-    private String match; //Match string to use
-    private double scoreIncrement; //Increment/decrement of the score
+    //The operator use
+    private StringOperator operator;
+
+    //The match string to use
+    private String match;
+
+    //Increment/decrement of the score
+    private double scoreIncrement;
 
     /**
-     * Creates a new term scoring criterion.
+     * Creates a new scoring criterion for a capability that is expressed as string.
      */
-    public TermScoringCriterion() {
+    public StringCapabilityScoringCriterion() {
 
     }
 
     /**
-     * Creates a new term scoring criterion from a given device description field, a string operator, a match
-     * string and a score increment/decrement.
+     * Creates a new scoring criterion for a capability that is expressed as string by using the name of the pertaining
+     * capability, a string operator, a match string and a score increment/decrement.
      *
-     * @param field          The field of the device description to which this criterion is supposed to be applied
-     * @param operator       The {@link StringOperator} to apply to the field
-     * @param match          The match string to apply to the field, using the operator
+     * @param capabilityName The name of the capability to which this criterion is supposed to be applied
+     * @param operator       The {@link StringOperator} to apply to the capability value
+     * @param match          The match string to apply to the capability value, using the operator
      * @param scoreIncrement The score increment/decrement that is supposed to be added to the score of the device
      *                       description in case of a match.
      */
     @JsonCreator
-    public TermScoringCriterion(@JsonProperty("field") TermScoringCriterionField field,
-                                @JsonProperty("operator") StringOperator operator,
-                                @JsonProperty("match") String match,
-                                @JsonProperty("scoreIncrement") double scoreIncrement) {
+    public StringCapabilityScoringCriterion(@JsonProperty("capabilityName") String capabilityName,
+                                            @JsonProperty("operator") StringOperator operator,
+                                            @JsonProperty("match") String match,
+                                            @JsonProperty("scoreIncrement") double scoreIncrement) {
         //Set fields
-        setField(field);
+        super(capabilityName);
         setOperator(operator);
         setMatch(match);
         setScoreIncrement(scoreIncrement);
     }
 
     /**
-     * Returns the field of the device description to which this criterion is supposed to be applied.
-     *
-     * @return The field
-     */
-    public TermScoringCriterionField getField() {
-        return field;
-    }
-
-    /**
-     * Sets the field of the device description to which this criterion is supposed to be applied.
-     *
-     * @param field The field to set
-     * @return The term scoring criterion
-     */
-    public TermScoringCriterion setField(TermScoringCriterionField field) {
-        this.field = field;
-        return this;
-    }
-
-    /**
-     * Returns the operator that is applied to the field of the device description.
+     * Returns the operator that is applied to the value of the pertaining capability.
      *
      * @return The operator
      */
@@ -81,18 +67,18 @@ public class TermScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Sets the operator that is applied to the field of the device description.
+     * Sets the operator that is applied to the value of the pertaining capability.
      *
      * @param operator The operator to set
-     * @return The term scoring criterion
+     * @return The string capability scoring criterion
      */
-    public TermScoringCriterion setOperator(StringOperator operator) {
+    public StringCapabilityScoringCriterion setOperator(StringOperator operator) {
         this.operator = operator;
         return this;
     }
 
     /**
-     * Returns the match string that is applied to the field of the device description.
+     * Returns the match string that is applied to the value of the pertaining capability.
      *
      * @return The match string
      */
@@ -101,12 +87,12 @@ public class TermScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Sets the match string that is applied to the field of the device description.
+     * Sets the match string that is applied to the value of the pertaining capability.
      *
      * @param match The match string to set
-     * @return The term scoring criterion
+     * @return The string capability scoring criterion
      */
-    public TermScoringCriterion setMatch(String match) {
+    public StringCapabilityScoringCriterion setMatch(String match) {
         this.match = match;
         return this;
     }
@@ -126,15 +112,15 @@ public class TermScoringCriterion extends ScoringCriterion {
      * to the score of the device description in case of a match.
      *
      * @param scoreIncrement The score increment to set
-     * @return The term scoring criterion
+     * @return The string capability scoring criterion
      */
-    public TermScoringCriterion setScoreIncrement(double scoreIncrement) {
+    public StringCapabilityScoringCriterion setScoreIncrement(double scoreIncrement) {
         this.scoreIncrement = scoreIncrement;
         return this;
     }
 
     /**
-     * Returns the name of the scoring criteria.
+     * Returns the name of the requirement.
      *
      * @return The name
      */
@@ -152,10 +138,8 @@ public class TermScoringCriterion extends ScoringCriterion {
      */
     @Override
     public void validate(EntityValidationException exception, String fieldPrefix) {
-        //Check device description field
-        if (field == null) {
-            exception.addInvalidField(fieldPrefix + ".field", "A device description field must be selected.");
-        }
+        //Call validation method of super class
+        super.validate(exception, fieldPrefix);
 
         //Check operator
         if (operator == null) {
@@ -189,10 +173,17 @@ public class TermScoringCriterion extends ScoringCriterion {
      */
     @Override
     public double getScoreIncrement(DeviceDescription deviceDescription, DeviceDescriptionScorer scorer) {
-        //Retrieve field as string
-        String fieldString = this.field.retrieveField(deviceDescription);
+        //Try to find a capability that matches the name and is of type string
+        Optional<DeviceDescriptionCapability> capability =
+                this.findCapability(deviceDescription, DeviceDescriptionCapability::isString);
 
-        //Apply the operator to the field and return the corresponding score increment
-        return this.operator.apply(fieldString, match) ? this.scoreIncrement : 0;
+        //Check if capability was found and determine the score increment using the operator
+        if (capability.isPresent() && this.operator.apply(capability.get().getValueAsString(), this.match)) {
+            //Capability was found and operator matches
+            return this.scoreIncrement;
+        }
+
+        //No match
+        return 0;
     }
 }

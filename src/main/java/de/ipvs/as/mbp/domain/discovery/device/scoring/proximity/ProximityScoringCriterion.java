@@ -133,7 +133,7 @@ public class ProximityScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Returns the name of the requirement.
+     * Returns the name of the scoring criteria.
      *
      * @return The name
      */

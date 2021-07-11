@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.ipvs.as.mbp.domain.discovery.description.deserializer.DeviceDescriptionCapabilitiesDeserializer;
 import de.ipvs.as.mbp.util.InstantFromEpochMilliDeserializer;
-import de.ipvs.as.mbp.util.InstantToEpochMilliSerializer;
 import de.ipvs.as.mbp.util.InstantToStringSerializer;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -54,7 +54,9 @@ public class DeviceDescription {
      * Creates a new, empty device description.
      */
     public DeviceDescription() {
-
+        //Initialize lists
+        this.capabilities = new ArrayList<>();
+        this.attachments = new ArrayList<>();
     }
 
     /**

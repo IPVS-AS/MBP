@@ -16,7 +16,7 @@ public abstract class ScoringCriterion {
     }
 
     /**
-     * Returns the name of the requirement.
+     * Returns the name of the scoring criteria.
      *
      * @return The name
      */
