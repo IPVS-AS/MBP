@@ -219,13 +219,23 @@
                                                    ng-repeat="req in addDeviceTemplateCtrl.item.requirements">
                                                     <div class="row clearfix">
                                                         <div class="col-lg-1" ng-switch="req.type">
-                                                            <i class="material-icons" ng-switch-when="name">format_color_text</i>
-                                                            <i class="material-icons"
-                                                               ng-switch-when="description">comment</i>
+                                                            <i class="material-icons" ng-switch-when="name"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Name requirement"
+                                                               data-content="Selects only devices whose names match a given term or pattern, based on a specified string operator.<br/><br/><strong>Operator:</strong> The string operator to use for evaluating the match string on the device name.<br/><strong>Match:</strong> The match string that is supposed to be evaluated on the device name with the selected operator.">format_color_text</i>
+                                                            <i class="material-icons" ng-switch-when="description"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Description requirement"
+                                                               data-content="Selects only devices whose textual descriptions contain one or multiple specified terms.<br/><br/><strong>Match:</strong> A list of terms, separated by spaces, that must occur in the device description.<br/><strong>Operator:</strong> Specifies whether only a single or all provided terms must occur in the description.">comment</i>
                                                             <i class="material-icons"
                                                                ng-switch-when="keywords">vpn_key</i>
-                                                            <i class="material-icons"
-                                                               ng-switch-when="location">location_on</i>
+                                                            <i class="material-icons" ng-switch-when="location"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Location requirement"
+                                                               data-content="Selects only devices that match the requirements of previously defined location template.<br/><br/><strong>Operator:</strong> Specifies the location template type from which the requirement should be created.<br/><strong>Location template:</strong> The location template from which the requirement should be created">location_on</i>
                                                             <i class="material-icons"
                                                                ng-switch-when="identifier">label</i>
                                                             <i class="material-icons"
@@ -395,23 +405,33 @@
                                                                data-toggle="popover" data-placement="top"
                                                                data-trigger="hover" data-html="true"
                                                                title="Scoring by terms"
-                                                               data-content="Increases or decreases the device score based on the occurrence of terms and patterns in the device description fields.<br/><br/><strong>Field:</strong> The device description field to which the criterion is supposed to be applied.</br><strong>Operator:</strong> The string operator to use for evaluating the match string on the selected field.<br><strong>Match:</strong>The match string that is supposed to be evaluated on the selected field with the selected operator.">text_fields</i>
+                                                               data-content="Increases or decreases the device score based on the occurrence of terms and patterns in the device description fields.<br/><br/><strong>Field:</strong> The device description field to which the criterion is supposed to be applied.<br/><strong>Operator:</strong> The string operator to use for evaluating the match string on the selected field.<br/><strong>Match:</strong> The match string that is supposed to be evaluated on the selected field with the selected operator.<br/><strong>Score:</strong> The value to add or remove from the device score in case of a match.">text_fields</i>
                                                             <i class="material-icons" ng-switch-when="description"
                                                                data-toggle="popover" data-placement="top"
                                                                data-trigger="hover" data-html="true"
                                                                title="Scoring by description"
-                                                               data-content="Uses the <i>BM25+</i> weighing scheme in order to estimate the relevance of the devices in reference to a given query, based on their descriptions. The descriptions and the query are pre-processed to improve the results.<br/><br/><strong>Query:</strong> A textual description of the required device, similar to queries in web search engines.</br><strong>Score:</strong> Reference value indicating the score that should be added to devices whose descriptions match the query exactly.">comment</i>
+                                                               data-content="Uses the <i>Okapi BM25+</i> weighing scheme in order to estimate the relevance of the devices in reference to a given query, based on their descriptions. The descriptions and the query are pre-processed to improve the results.<br/><br/><strong>Query:</strong> A textual description of the required device, similar to queries in web search engines.<br/><strong>Score:</strong> Reference value indicating the score that should be added to devices whose descriptions match the query exactly.">comment</i>
                                                             <i class="material-icons" ng-switch-when="proximity"
                                                                data-toggle="popover" data-placement="top"
                                                                data-trigger="hover" data-html="true"
                                                                title="Scoring by proximity"
-                                                               data-content="Increases the device score based on the geographic distance of the devices to a certain point. Since the resolution of interest decreases for larger distances, an exponential function is used to map distances to scores.<br/><br/><strong>Origin:</strong> A location template indicating the origin point to which the distances should be calculated.</br><strong>Max. score:</strong> The maximum score that should be assigned to devices that are very close to the origin.<br><strong>Half score distance:</strong>The distance in meters at which only half of the score should be assigned to the devices.">location_on</i>
+                                                               data-content="Increases the device score based on the geographic distance of the devices to a certain point. Since the resolution of interest decreases for larger distances, an exponential function is used to map distances to scores.<br/><br/><strong>Origin:</strong> A location template indicating the origin point to which the distances should be calculated.<br/><strong>Max. score:</strong> The maximum score that should be assigned to devices that are very close to the origin.<br><strong>Half score distance:</strong>The distance in meters at which only half of the score should be assigned to the devices.">location_on</i>
+                                                            <i class="material-icons" ng-switch-when="string_capability"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Scoring by string capability"
+                                                               data-content="Increases or decreases the device score based on the occurrence of terms and patterns in the value of a string capability of a given name. If no capability with the name is found for a device, its score will not be influenced.<br/><br/><strong>Name:</strong> The name of the capability to evaluate.<br/><strong>Operator:</strong> The string operator to use for evaluating the match string on the capability.<br/><strong>Match:</strong> The match string that is supposed to be evaluated on the selected field with the selected operator.<br/><strong>Score:</strong> The value to add or remove from the device score in case of a match.">list</i>
+                                                            <i class="material-icons" ng-switch-when="number_capability"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Scoring by number capability"
+                                                               data-content="Influences the device score based on the value of a numeric capability of a given name. If no capability with the name is found for a device, its score will not be influenced.<br/><br/><strong>Name:</strong> The name of the capability to evaluate.<br/><strong>Transformation expression:</strong> A custom function term that describes how the capability value should be mapped to a score value.">list</i>
                                                             <i class="material-icons"
-                                                               ng-switch-when="string_capability">list</i>
-                                                            <i class="material-icons"
-                                                               ng-switch-when="number_capability">list</i>
-                                                            <i class="material-icons"
-                                                               ng-switch-when="boolean_capability">list</i>
+                                                               ng-switch-when="boolean_capability"
+                                                               data-toggle="popover" data-placement="top"
+                                                               data-trigger="hover" data-html="true"
+                                                               title="Scoring by boolean capability"
+                                                               data-content="Increases or decreases the device score based on the truth value of a boolean capability of a given name. If no capability with the name is found for a device, its score will not be influenced.<br/><br/><strong>Name:</strong> The name of the capability to evaluate.<br/><strong>True score:</strong> The value to add/remove from the device score in case the capability value is <code>true</code>.<br/><strong>False score:</strong> The value to add/remove from the device score in case the capability value is <code>false</code>.">list</i>
                                                         </div>
                                                         <div class="col-lg-3" ng-show="criterion.type === 'term'">
                                                             <div class="form-group"
@@ -573,7 +593,8 @@
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].operator'] }">
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].operator'] }">
-                                                                    <select class="form-control show-tick" ng-model="criterion.operator">
+                                                                    <select class="form-control show-tick"
+                                                                            ng-model="criterion.operator">
                                                                         <option value="">Select operator...</option>
                                                                         <option value="equals">equals</option>
                                                                         <option value="contains">contains</option>
@@ -623,8 +644,11 @@
                                                              ng-show="criterion.type === 'number_capability'">
                                                             <div class="form-group"
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression'] }">
-                                                                <div class="form-line" ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression'] }">
-                                                                    <input type="text" class="form-control" placeholder="Transformation expression" ng-model="criterion.transformationExpression">
+                                                                <div class="form-line"
+                                                                     ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression'] }">
+                                                                    <input type="text" class="form-control"
+                                                                           placeholder="Transformation expression"
+                                                                           ng-model="criterion.transformationExpression">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].transformationExpression']}}</span>
@@ -652,7 +676,9 @@
                                                                  ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement'] }">
                                                                 <div class="form-line"
                                                                      ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement'] }">
-                                                                    <input type="number" class="form-control" placeholder="Score for 'false'" step="1" ng-model="criterion.falseScoreIncrement">
+                                                                    <input type="number" class="form-control"
+                                                                           placeholder="Score for 'false'" step="1"
+                                                                           ng-model="criterion.falseScoreIncrement">
                                                                 </div>
                                                                 <span class="help-block"
                                                                       ng-show="addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement']">{{addDeviceTemplateCtrl.item.errors['scoringCriteria[' + $index + '].falseScoreIncrement']}}</span>
