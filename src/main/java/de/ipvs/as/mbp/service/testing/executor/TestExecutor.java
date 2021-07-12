@@ -251,7 +251,7 @@ public class TestExecutor {
 
     private String setReportInformation(TestDetails testDetails) {
         TestReport testReport = new TestReport();
-        String reportId = null;
+        String reportId = testReport.getId();
 
         try {
             // Set the exact start time of the test

@@ -18,10 +18,10 @@ app.controller('TestingDetailsController',
             const COMPONENT_ID = $routeParams.id;
             const RERUN_PREFIX = "RERUN_";
             // Constant list of the sensor simulators, that can be included in the test
-            const SIMULATOR_LIST = ['TestingTemperatureSensor',
-                'TestingTemperatureSensorPl',
-                'TestingHumiditySensor',
-                'TestingHumiditySensorPl'];
+            const SIMULATOR_LIST = ['TESTING_TemperatureSensor',
+                'TESTING_TemperatureSensorPl',
+                'TESTING_HumiditySensor',
+                'TESTING_HumiditySensorPl'];
 
 
             // Storing variables

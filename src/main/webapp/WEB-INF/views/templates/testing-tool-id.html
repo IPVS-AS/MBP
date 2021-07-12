@@ -598,7 +598,7 @@
                                             which room
                                             should the humidity rise/fall be simulated:*</label>
                                         </td>
-                                        <td>
+                                        <td  ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
                                             <select class="form-control show-tick"
                                                     name="room" ng-model="config.roomHum">
                                                 <option value="">Select a room</option>
@@ -660,7 +660,7 @@
                                     <select class="form-control selectpicker" title="Rules"
                                             ng-model="selectedRules.rules"
                                             data-header="Rules to be observed"
-                                            ng-options="rule as rule.name for rule in ctrl.ruleList"
+                                            ng-options="rule as rule.name for rule in ruleList"
                                             multiple>
                                     </select>
                                 </div>

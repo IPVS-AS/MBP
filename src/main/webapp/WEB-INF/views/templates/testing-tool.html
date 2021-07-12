@@ -132,7 +132,8 @@
                                             </button>
                                         </h3>
                                         <div ng-show="ctrl.addSimulator">
-                                            <select class="form-control selectpicker" title="Select sensor type to be simulated *"
+                                            <select class="form-control selectpicker"
+                                                    title="Select sensor type to be simulated *"
                                                     data-header="Select sensor type to be simulated *"
                                                     ng-model="ctrl.selectedSensors"
                                                     ng-options="sensor for sensor in availableSensors"
@@ -438,7 +439,83 @@
                                         </tbody>
                                     </table>
                                 </div>
-
+                                <div ng-if="ctrl.selectedSensors.includes('TESTING_HumiditySensorPl')">
+                                    <h3>Configuration Planned Humidity Sensor Simulator</h3>
+                                    <table class="table parameter-table">
+                                        <thead></thead>
+                                        <tbody>
+                                        <tr>
+                                            <td><label>Type of simulation:*</label></td>
+                                            <td>
+                                                <select class="form-control show-tick" name="event"
+                                                        ng-model="ctrl.config.eventHumPl">
+                                                    <option value="">Select the event to be simulated</option>
+                                                    <option ng-option class="ng-binding ng-scope" value="1">
+                                                        Humidity rise
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="2">
+                                                        Humidity decrease
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="3">Outlier
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="4">Missing
+                                                        values
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="5">Wrong value
+                                                        type
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'"><label>Combination
+                                                with an anomaly:*</label>
+                                            </td>
+                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
+                                                <select class="form-control show-tick"
+                                                        name="anomaly" ng-model="ctrl.config.anomalyHumPl">
+                                                    <option value="">Select the combination with an anomaly</option>
+                                                    <option ng-option class="ng-binding ng-scope" value="3">Outliers
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="4">Missing
+                                                        values
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="5">Wrong value
+                                                        type
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="6">No
+                                                        combination
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'"><label> For
+                                                which room
+                                                should the humidity rise/fall be simulated:*</label>
+                                            </td>
+                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
+                                                <select class="form-control show-tick"
+                                                        name="room" ng-model="ctrl.config.roomHumPl">
+                                                    <option value="">Select a room</option>
+                                                    <option ng-option class="ng-binding ng-scope" value="a">Living room
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="b">Office
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="c">Bedroom
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="d">Bathroom
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="e">Kitchen
+                                                    </option>
+                                                    <option ng-option class="ng-binding ng-scope" value="f">Basement
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                                 <div class="form-line"
                                      ng-if="ctrl.selectedSensors.includes('TESTING_HumiditySensorPl') || ctrl.selectedSensors.includes('TESTING_TemperatureSensorPl')">
 
@@ -451,7 +528,7 @@
                                             <td>
                                                 <div>
                                                     <input class="form-control" type="text" id="simTime"
-                                                           ng-model="config.simTime" placeholder="hours"/>
+                                                           ng-model="ctrl.config.simTime" placeholder="hours"/>
                                                 </div>
                                             </td>
                                         </tr>
@@ -535,7 +612,6 @@
         </div>
         <!-- #END# Modal -->
     </div>
-
 
 
 </div>
