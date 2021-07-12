@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ###########################################################################################
 # This script removes the software components installed with the MBP installation script. #
@@ -25,6 +25,7 @@ sudo rm -rf /var/lib/tomcat*/webapps/MBP
 if [[ $un_tomcat == "Y" || $un_tomcat == "y" ]]; then
 	echo "Uninstalling Tomcat..."
 	sudo systemctl stop tomcat*
+	sudo systemctl disable tomcat*.service
 	sudo apt-get remove -qy tomcat*
 	sudo apt purge -qy tomcat*
 fi
@@ -33,9 +34,10 @@ fi
 # Uninstall MongoDB if desired
 if [[ $un_mongo == "Y" || $un_mongo == "y" ]]; then
 	echo "Uninstalling MongoDb..."
-	sudo systemctl stop mongodb
+	sudo systemctl stop mongod
+	sudo systemctl disable mongod.service 
 	sudo apt-get remove -qy mongodb-server
-	sudo apt purge -qy mongodb-server
+	sudo apt purge -qy mongodb-org*
 	sudo rm -r /var/log/mongodb
 	sudo rm -r /var/lib/mongodb
 fi
@@ -45,6 +47,7 @@ fi
 if [[ $un_mosquitto == "Y" || $un_mosquitto == "y" ]]; then
 	echo "Uninstalling mosquitto..."
 	sudo systemctl stop mosquitto
+	sudo systemctl disable mosquitto.service
 	sudo apt-get remove -qy mosquitto
 	sudo apt purge -qy mosquitto
 fi

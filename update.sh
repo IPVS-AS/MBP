@@ -17,9 +17,9 @@ sudo mvn clean install
 echo "Deploying .war file..." 
 find target/ -name "MBP-*.war" -print0 | xargs -0 -I {} sudo mv {} /var/lib/tomcat8/webapps/MBP.war
 
-# Restarts tomcat8
+# Restarts tomcat9
 echo "Restarting tomcat..." 
-sudo service tomcat8 restart
+sudo service tomcat9 restart
 
 echo "Update finished. Good luck! ;)" 
 # You now can find your modified application in localhost:8080/MBP
