@@ -230,9 +230,11 @@ public class DefaultTestingComponents {
                     testingActuator.setName(ACTUATOR_NAME);
                     testingActuator.setOwner(null);
                     testingActuator.setComponentType("Buzzer");
-                    if (deviceRepository.findByName(TEST_DEVICE).isPresent() && operatorRepository.findByName(ACTUATOR_NAME).isPresent()) {
-                        testingActuator.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
-                        testingActuator.setOperator(operatorRepository.findByName(ACTUATOR_NAME).get());
+                    boolean deviceoptional = deviceRepository.findFirstByName(TEST_DEVICE).isPresent();
+                    System.out.println(deviceoptional);
+                    if (deviceRepository.findFirstByName(TEST_DEVICE).isPresent() && operatorRepository.findFirstByName(ACTUATOR_NAME).isPresent()) {
+                        testingActuator.setDevice(deviceRepository.findFirstByName(TEST_DEVICE).get());
+                        testingActuator.setOperator(operatorRepository.findFirstByName(ACTUATOR_NAME).get());
                     }
 
                     // Validate, insert and add event handler for the new actuator
@@ -243,6 +245,7 @@ public class DefaultTestingComponents {
                 }
             }
         } catch (Exception exception) {
+
             exception.printStackTrace();
 
         }

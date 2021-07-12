@@ -1,15 +1,27 @@
 package de.ipvs.as.mbp.domain.component;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.repository.ActuatorRepository;
+import de.ipvs.as.mbp.repository.ComponentRepository;
+import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import sun.util.locale.LanguageTag;
 
 /**
  * Creation validator for component entities.
  */
 @Service
 public class ComponentCreateValidator implements ICreateValidator<Component> {
+
+    @Autowired
+    SensorRepository sensorRepository;
+
+    @Autowired
+    ActuatorRepository actuatorRepository;
 
     /**
      * Validates a given entity that is supposed to be created and throws an exception with explanations
@@ -30,6 +42,16 @@ public class ComponentCreateValidator implements ICreateValidator<Component> {
         //Check name
         if (Validation.isNullOrEmpty(entity.getName())) {
             exception.addInvalidField("name", "The name must not be empty.");
+        }
+
+        if(entity.getComponentTypeName().equals("actuator")){
+            if(actuatorRepository.existsByName(entity.getName())){
+                exception.addInvalidField("name", "The name must be unique.");
+            }
+        } else if(entity.getComponentTypeName().equals("sensor")){
+            if(sensorRepository.existsByName(entity.getName())){
+                exception.addInvalidField("name", "The name must be unique.");
+            }
         }
 
         //Check component type

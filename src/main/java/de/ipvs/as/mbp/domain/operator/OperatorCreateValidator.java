@@ -2,8 +2,10 @@ package de.ipvs.as.mbp.domain.operator;
 
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.repository.OperatorRepository;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -14,6 +16,9 @@ import java.util.Set;
  */
 @Service
 public class OperatorCreateValidator implements ICreateValidator<Operator> {
+    @Autowired
+    private OperatorRepository operatorRepository;
+
     //Max length of parameter units
     private static final int PARAMETER_UNIT_MAX_LENGTH = 20;
 
@@ -36,6 +41,8 @@ public class OperatorCreateValidator implements ICreateValidator<Operator> {
         //Check name
         if (Validation.isNullOrEmpty(entity.getName())) {
             exception.addInvalidField("name", "The name must not be empty.");
+        } else if(operatorRepository.existsByName(entity.getName())){
+            exception.addInvalidField("name", "The name must be unique.");
         }
 
 
