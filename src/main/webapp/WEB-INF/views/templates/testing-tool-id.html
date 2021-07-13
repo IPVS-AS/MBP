@@ -458,7 +458,7 @@
                                                     simulated:*</label></td>
                                             <td ng-if="config.eventTempPl == '1' ||config.eventTempPl == '2'">
                                                 <select class="form-control show-tick"
-                                                        name="room" ng-model="ctrl.config.roomTempPl">
+                                                        name="room" ng-model="config.roomTempPl">
                                                     <option value="">Select a room</option>
                                                     <option ng-option class="ng-binding ng-scope" value="a">Living
                                                         room
@@ -598,9 +598,9 @@
                                             which room
                                             should the humidity rise/fall be simulated:*</label>
                                         </td>
-                                        <td  ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
+                                        <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
                                             <select class="form-control show-tick"
-                                                    name="room" ng-model="config.roomHum">
+                                                    name="room" ng-model="config.roomHumPl">
                                                 <option value="">Select a room</option>
                                                 <option ng-option class="ng-binding ng-scope" value="a">Living room
                                                 </option>
@@ -763,7 +763,8 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    </tbody>simulatedSensorInfo
+                                    </tbody>
+                                    simulatedSensorInfo
                                 </table>
                             </div>
                         </div>
