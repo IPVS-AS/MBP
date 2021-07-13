@@ -390,7 +390,9 @@ public class TestExecutor {
             testReport.setEndTestTimeNow();
             testReport.setSuccessful("ERROR DURING TEST");
             List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
+            stopTest(test.getId());
             saveAmountRulesTriggered(testReport.getId(), rulesAfter);
+
         }
     }
 
