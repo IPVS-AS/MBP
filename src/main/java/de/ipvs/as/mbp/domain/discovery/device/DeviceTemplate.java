@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Objects of this class represent device templates that describe requirements and criteria for the discovery of devices.
@@ -163,5 +164,19 @@ public class DeviceTemplate extends UserEntity {
     public DeviceTemplate setScoringCriteria(List<ScoringCriterion> scoringCriteria) {
         this.scoringCriteria = scoringCriteria;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DeviceTemplate)) return false;
+        if (id == null) return false;
+        DeviceTemplate that = (DeviceTemplate) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

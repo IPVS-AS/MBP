@@ -459,6 +459,45 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            //Dynamic peripheral list
+            .when(viewPrefix + '/dynamic-peripherals', {
+                category: 'dynamic-peripherals',
+                templateUrl: 'templates/dynamic-peripherals',
+                controller: 'DynamicPeripheralListController as ctrl',
+                resolve: {
+                    dynamicPeripheralList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/dynamic-peripherals', 'dynamicPeripherals');
+                    }],
+                    addDynamicPeripheral: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'discovery/dynamic-peripherals');
+                    }],
+                    deleteDynamicPeripheral: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'discovery/dynamic-peripherals');
+                    }],
+                    operatorList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('operators');
+                    }],
+                    deviceTemplateList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/device-templates', 'deviceTemplates');
+                    }],
+                    requestTopicList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/request-topics', 'requestTopics');
+                    }]
+                }
+            })
+
+            //Dynamic peripheral details
+            .when(viewPrefix + '/dynamic-peripherals/:id', {
+                category: 'dynamic-peripherals',
+                templateUrl: 'templates/dynamic-peripherals-id',
+                controller: 'DynamicPeripheralDetailsController as ctrl',
+                resolve: {
+                    dynamicPeripheralDetails: ['$route', 'HttpService', function ($route, HttpService) {
+                        return HttpService.getOne('discovery/dynamic-peripherals', $route.current.params.id);
+                    }]
+                }
+            })
+
             //Operators list
             .when(viewPrefix + '/operators', {
                 category: 'operators',

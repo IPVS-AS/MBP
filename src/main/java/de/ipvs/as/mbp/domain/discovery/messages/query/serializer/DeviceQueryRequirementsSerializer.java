@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
-import de.ipvs.as.mbp.domain.discovery.messages.query.DeviceQueryRequest;
+import de.ipvs.as.mbp.domain.discovery.messages.query.CandidateDevicesRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Serializer for {@link DeviceRequirement}s of {@link DeviceQueryRequest}s.
+ * Serializer for {@link DeviceRequirement}s of {@link CandidateDevicesRequest}s.
  */
 public class DeviceQueryRequirementsSerializer extends JsonSerializer<List<DeviceRequirement>> {
 

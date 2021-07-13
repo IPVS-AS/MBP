@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
-import de.ipvs.as.mbp.domain.discovery.operators.BooleanOperator;
+import de.ipvs.as.mbp.domain.discovery.device.operators.BooleanOperator;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.domain.discovery.messages.query;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
 import de.ipvs.as.mbp.domain.discovery.messages.query.serializer.DeviceQueryRequirementsSerializer;
@@ -11,13 +12,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Request message that is supposed to query the discovery repositories for their registered device descriptions
- * by using various requirements as conditions and optionally various scoring criteria for ranking them.
- * Furthermore, it can be specified whether asynchronous subscriptions for changes in the result set of the query
- * are supposed to be created on the repositories.
+ * Request message that is supposed to request a collection of suitable candidate devices that match a certain
+ * {@link DeviceTemplate} from the discovery repositories. For this, requirements and scoring criteria that
+ * were derived from the {@link DeviceTemplate} can be added to the body of the request message, such that the
+ * repositories can determine matching devices, optionally score and rank them based on the given criteria
+ * and send the descriptions of the determined devices back as reply.
+ * Furthermore, it can be specified in the request message whether asynchronous subscriptions are supposed to be
+ * created on the repositories. By using them, the MBP can become notified when the collection of suitable candidate
+ * devices for the {@link DeviceTemplate} changes over time at the corresponding repository.
  */
 @DomainMessageTemplate(value = "device_query", topicSuffix = "query")
-public class DeviceQueryRequest extends DomainMessageBody {
+public class CandidateDevicesRequest extends DomainMessageBody {
     //List of requirements that serve as conditions within the query
     @JsonSerialize(using = DeviceQueryRequirementsSerializer.class)
     private List<DeviceRequirement> requirements;
@@ -29,9 +34,9 @@ public class DeviceQueryRequest extends DomainMessageBody {
     private RepositorySubscriptionDetails subscription = null;
 
     /**
-     * Creates a new, empty device query request message.
+     * Creates a new, empty candidate devices request message.
      */
-    public DeviceQueryRequest() {
+    public CandidateDevicesRequest() {
         //Initialize lists
         this.requirements = new ArrayList<>();
         this.scoringCriteria = new ArrayList<>();
@@ -50,9 +55,9 @@ public class DeviceQueryRequest extends DomainMessageBody {
      * Sets the list of requirements.
      *
      * @param requirements The list of requirements to set
-     * @return The device query request
+     * @return The candidate devices request
      */
-    public DeviceQueryRequest setRequirements(List<DeviceRequirement> requirements) {
+    public CandidateDevicesRequest setRequirements(List<DeviceRequirement> requirements) {
         this.requirements = requirements;
         return this;
     }
@@ -70,9 +75,9 @@ public class DeviceQueryRequest extends DomainMessageBody {
      * Sets the list of scoring criteria
      *
      * @param scoringCriteria The list of scoring criteria to set
-     * @return The device query request
+     * @return The candidate devices request
      */
-    public DeviceQueryRequest setScoringCriteria(List<ScoringCriterion> scoringCriteria) {
+    public CandidateDevicesRequest setScoringCriteria(List<ScoringCriterion> scoringCriteria) {
         this.scoringCriteria = scoringCriteria;
         return this;
     }
@@ -87,12 +92,12 @@ public class DeviceQueryRequest extends DomainMessageBody {
     }
 
     /**
-     * Sets the subscription details. If null, no subscription will be cretaed.
+     * Sets the subscription details. If null, no subscription will be created.
      *
      * @param subscription The subscription details to set
-     * @return The device query request
+     * @return The candidate devices request
      */
-    public DeviceQueryRequest setSubscription(RepositorySubscriptionDetails subscription) {
+    public CandidateDevicesRequest setSubscription(RepositorySubscriptionDetails subscription) {
         this.subscription = subscription;
         return this;
     }

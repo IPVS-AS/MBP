@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionCapability;
-import de.ipvs.as.mbp.domain.discovery.operators.StringOperator;
+import de.ipvs.as.mbp.domain.discovery.device.operators.StringOperator;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionScorer;
 

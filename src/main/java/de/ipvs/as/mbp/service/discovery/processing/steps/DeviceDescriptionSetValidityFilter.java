@@ -1,21 +1,21 @@
 package de.ipvs.as.mbp.service.discovery.processing.steps;
 
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionSet;
+import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionCollection;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 
 import java.util.function.Predicate;
 
 /**
- * Filters out and discards invalid {@link DeviceDescriptionSet}s, such that only the valid ones remain.
+ * Filters out and discards invalid {@link DeviceDescriptionCollection}s, such that only the valid ones remain.
  */
-public class DeviceDescriptionSetValidityFilter implements Predicate<DeviceDescriptionSet> {
+public class DeviceDescriptionSetValidityFilter implements Predicate<DeviceDescriptionCollection> {
 
     //Device template for which the sets were supposed to be retrieved
     private DeviceTemplate deviceTemplate;
 
     /**
-     * Creates a new validity filter for {@link DeviceDescriptionSet}s from a given {@link DeviceTemplate} for which
-     * the {@link DeviceDescriptionSet}s were supposed to be retrieved.
+     * Creates a new validity filter for {@link DeviceDescriptionCollection}s from a given {@link DeviceTemplate} for which
+     * the {@link DeviceDescriptionCollection}s were supposed to be retrieved.
      *
      * @param deviceTemplate The device template to use
      */
@@ -27,28 +27,28 @@ public class DeviceDescriptionSetValidityFilter implements Predicate<DeviceDescr
     /**
      * Evaluates this predicate on the given argument.
      *
-     * @param deviceDescriptionSet the input argument
+     * @param deviceDescriptionCollection the input argument
      * @return {@code true} if the input argument matches the predicate,
      * otherwise {@code false}
      */
     @Override
-    public boolean test(DeviceDescriptionSet deviceDescriptionSet) {
+    public boolean test(DeviceDescriptionCollection deviceDescriptionCollection) {
         //Null check
-        if (deviceDescriptionSet == null) {
+        if (deviceDescriptionCollection == null) {
             return false;
         }
 
         //Check if IDs are available at all
-        if((this.deviceTemplate.getId() == null) || (deviceDescriptionSet.getDeviceTemplateId() == null)){
+        if((this.deviceTemplate.getId() == null) || (deviceDescriptionCollection.getDeviceTemplateId() == null)){
             return true;
         }
 
         //Check whether the referenced device template matches the one of this object
-        return deviceDescriptionSet.getDeviceTemplateId().equals(this.deviceTemplate.getId());
+        return deviceDescriptionCollection.getDeviceTemplateId().equals(this.deviceTemplate.getId());
     }
 
     /**
-     * Sets the device template for which the {@link DeviceDescriptionSet}s were supposed to be retrieved.
+     * Sets the device template for which the {@link DeviceDescriptionCollection}s were supposed to be retrieved.
      *
      * @param deviceTemplate The device template to set
      */

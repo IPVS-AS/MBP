@@ -1,6 +1,6 @@
-package de.ipvs.as.mbp.domain.discovery.location.polygon;
+package de.ipvs.as.mbp.domain.discovery.device.location.polygon;
 
-import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import org.json.JSONArray;
 import org.json.JSONException;

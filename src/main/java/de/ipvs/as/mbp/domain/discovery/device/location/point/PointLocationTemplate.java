@@ -1,38 +1,37 @@
-package de.ipvs.as.mbp.domain.discovery.location.informal;
+package de.ipvs.as.mbp.domain.discovery.device.location.point;
 
-import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.operators.StringOperator;
+import de.ipvs.as.mbp.domain.discovery.device.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Objects of this class represent location templates for informal location descriptions.
+ * Objects of this class represent location templates for location points.
  */
-@MBPEntity(createValidator = InformalLocationTemplateCreateValidator.class)
-public class InformalLocationTemplate extends LocationTemplate {
-    private StringOperator operator;
-    private String match;
+@MBPEntity(createValidator = PointLocationTemplateCreateValidator.class)
+public class PointLocationTemplate extends LocationTemplate {
+    private double latitude;
+    private double longitude;
 
-    public InformalLocationTemplate() {
-        super();
+    public PointLocationTemplate() {
+
     }
 
-    public StringOperator getOperator() {
-        return operator;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public InformalLocationTemplate setOperator(StringOperator operator) {
-        this.operator = operator;
+    public PointLocationTemplate setLatitude(double latitude) {
+        this.latitude = latitude;
         return this;
     }
 
-    public String getMatch() {
-        return match;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public InformalLocationTemplate setMatch(String match) {
-        this.match = match;
+    public PointLocationTemplate setLongitude(double longitude) {
+        this.longitude = longitude;
         return this;
     }
 
@@ -49,8 +48,8 @@ public class InformalLocationTemplate extends LocationTemplate {
     @Override
     public JSONObject toQueryRequirementDetails(JSONObject jsonObject) throws JSONException {
         //Add fields
-        jsonObject.put("operator", this.operator.value());
-        jsonObject.put("match", this.match);
+        jsonObject.put("lat", this.latitude);
+        jsonObject.put("lon", this.longitude);
 
         //Return extended JSONObject
         return jsonObject;

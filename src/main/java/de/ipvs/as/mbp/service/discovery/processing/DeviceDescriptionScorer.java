@@ -136,8 +136,8 @@ public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
                 .mapToDouble(c -> c.getScoreIncrement(deviceDescription, this)) //Apply criteria and retrieve their score
                 .sum(); //Sum all score increments/decrements
 
-        //Check resulting score for NaN and return the final score
-        return Double.isNaN(scoreSum) ? 0 : scoreSum;
+        //Check resulting score for NaN and negative values and return the final score
+        return (Double.isNaN(scoreSum) || scoreSum < 0) ? 0 : scoreSum;
     }
 
     /**

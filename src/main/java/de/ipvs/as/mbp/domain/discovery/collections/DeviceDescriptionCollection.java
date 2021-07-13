@@ -7,10 +7,10 @@ import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * Objects of this class represent sets of device descriptions that were received from a certain repository, identified
- * by its name, for a certain {@link DeviceTemplate}.
+ * Objects of this class represent collections of device descriptions that were received from a certain repository,
+ * identified by its name, for a certain {@link DeviceTemplate}.
  */
-public class DeviceDescriptionSet implements Set<DeviceDescription> {
+public class DeviceDescriptionCollection implements Set<DeviceDescription> {
     //Name of the repository from which the set origins
     private String repositoryName;
 
@@ -18,7 +18,7 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
     private String deviceTemplateId;
 
     //Collection of the individual device descriptions
-    private Set<DeviceDescription> deviceDescriptions;
+    private List<DeviceDescription> deviceDescriptions;
 
     /**
      * Creates a new device description set from a given repository name and a given device template ID.
@@ -26,9 +26,9 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
      * @param repositoryName   The repository name to use
      * @param deviceTemplateId The device template ID to use
      */
-    public DeviceDescriptionSet(String repositoryName, String deviceTemplateId) {
+    public DeviceDescriptionCollection(String repositoryName, String deviceTemplateId) {
         //Initialize set of device descriptions
-        this.deviceDescriptions = new HashSet<>();
+        this.deviceDescriptions = new ArrayList<>();
 
         //Set fields
         setRepositoryName(repositoryName);
@@ -50,7 +50,7 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
      * @param repositoryName The name of the repository to set
      * @return The device description set
      */
-    public DeviceDescriptionSet setRepositoryName(String repositoryName) {
+    public DeviceDescriptionCollection setRepositoryName(String repositoryName) {
         //Sanity check
         if ((repositoryName == null) || (repositoryName.isEmpty())) {
             throw new IllegalArgumentException("Repository name must nut be null or empty.");
@@ -76,28 +76,28 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
      * @param deviceTemplateId The ID of the device template to set
      * @return The device description set
      */
-    public DeviceDescriptionSet setDeviceTemplateId(String deviceTemplateId) {
+    public DeviceDescriptionCollection setDeviceTemplateId(String deviceTemplateId) {
         this.deviceTemplateId = deviceTemplateId;
         return this;
     }
 
     /**
-     * Returns the set of device descriptions that were received from the repository.
+     * Returns the collection of device descriptions that were received from the repository.
      *
-     * @return The set of device descriptions
+     * @return The collection of device descriptions
      */
-    public Set<DeviceDescription> getDeviceDescriptions() {
+    public List<DeviceDescription> getDeviceDescriptions() {
         return deviceDescriptions;
     }
 
     /**
-     * Sets the set of device descriptions that were received from the repository.
+     * Sets the collection of device descriptions that were received from the repository.
      *
-     * @param deviceDescriptions The set of device descriptions to set
-     * @return The device description set
+     * @param deviceDescriptions The collection of device descriptions to set
+     * @return The device description collection
      */
-    public DeviceDescriptionSet setDeviceDescriptions(Set<DeviceDescription> deviceDescriptions) {
-        this.deviceDescriptions = deviceDescriptions;
+    public DeviceDescriptionCollection setDeviceDescriptions(Collection<DeviceDescription> deviceDescriptions) {
+        this.deviceDescriptions = new ArrayList<>(deviceDescriptions);
         return this;
     }
 
@@ -107,7 +107,7 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
      * @param deviceDescriptions The collection of device descriptions to add
      * @return The device description set
      */
-    public DeviceDescriptionSet addDeviceDescriptions(Collection<DeviceDescription> deviceDescriptions) {
+    public DeviceDescriptionCollection addDeviceDescriptions(Collection<DeviceDescription> deviceDescriptions) {
         //Add the device descriptions
         this.deviceDescriptions.addAll(deviceDescriptions);
         return this;
@@ -440,7 +440,7 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
 
     /**
      * Checks and returns whether a given object equals the current one. For this, the deposited repository name
-     * and device template ID of both {@link DeviceDescriptionSet}s are compared.
+     * and device template ID of both {@link DeviceDescriptionCollection}s are compared.
      *
      * @param o The object to check against the current one
      * @return True, if both objects can be considered equal; false otherwise
@@ -448,13 +448,13 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DeviceDescriptionSet)) return false;
-        DeviceDescriptionSet that = (DeviceDescriptionSet) o;
+        if (!(o instanceof DeviceDescriptionCollection)) return false;
+        DeviceDescriptionCollection that = (DeviceDescriptionCollection) o;
         return Objects.equals(repositoryName, that.repositoryName) && Objects.equals(deviceTemplateId, that.deviceTemplateId);
     }
 
     /**
-     * Calculates a hash code for the {@link DeviceDescriptionSet} from its repository name and device template ID.
+     * Calculates a hash code for the {@link DeviceDescriptionCollection} from its repository name and device template ID.
      *
      * @return The resulting hash code
      */

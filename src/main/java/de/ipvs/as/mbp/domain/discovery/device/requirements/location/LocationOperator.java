@@ -3,11 +3,11 @@ package de.ipvs.as.mbp.domain.discovery.device.requirements.location;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceOperator;
-import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.location.circle.CircleLocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.location.informal.InformalLocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.location.point.PointLocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.location.polygon.PolygonLocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.LocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.circle.CircleLocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.informal.InformalLocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.point.PointLocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.polygon.PolygonLocationTemplate;
 
 import java.util.Arrays;
 import java.util.Collections;

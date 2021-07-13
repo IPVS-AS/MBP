@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.operators;
+package de.ipvs.as.mbp.domain.discovery.device.operators;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

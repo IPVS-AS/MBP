@@ -12,13 +12,40 @@ public class RepositorySubscriptionDetails {
     //Return topic under which notifications are supposed to be published
     private String returnTopic;
 
+    //Whether all previous subscriptions of the MBP should be cancelled
+    private boolean cancelAllPreviousSubscriptions = false;
+
     /**
-     * Creates a new subscription details model from a given reference ID and return topic.
+     * Creates a new, empty subscription details object.
+     */
+    public RepositorySubscriptionDetails() {
+
+    }
+
+    /**
+     * Creates a new subscription details object from a given reference ID and return topic.
+     *
+     * @param referenceId The reference ID to use
+     * @param returnTopic The return topic to use
      */
     public RepositorySubscriptionDetails(String referenceId, String returnTopic) {
         //Set fields
         setReferenceId(referenceId);
         setReturnTopic(returnTopic);
+    }
+
+    /**
+     * Creates a new subscription details object from a given reference ID, return topic and cancel flag.
+     *
+     * @param referenceId                    The reference ID to use
+     * @param returnTopic                    The return topic to use
+     * @param cancelAllPreviousSubscriptions Whether all previous subscriptions of the MBP should be cancelled
+     */
+    public RepositorySubscriptionDetails(String referenceId, String returnTopic, boolean cancelAllPreviousSubscriptions) {
+        //Set fields
+        setReferenceId(referenceId);
+        setReturnTopic(returnTopic);
+        setCancelAllPreviousSubscriptions(cancelAllPreviousSubscriptions);
     }
 
     /**
@@ -58,6 +85,26 @@ public class RepositorySubscriptionDetails {
      */
     public RepositorySubscriptionDetails setReturnTopic(String returnTopic) {
         this.returnTopic = returnTopic;
+        return this;
+    }
+
+    /**
+     * Returns whether all previous subscriptions of the MBP at the repositories are supposed to be cancelled.
+     *
+     * @return True, if this is the case; false otherwise
+     */
+    public boolean isCancelAllPreviousSubscriptions() {
+        return cancelAllPreviousSubscriptions;
+    }
+
+    /**
+     * Sets whether all previous subscriptions of the MBP at the repositories are supposed to be cancelled.
+     *
+     * @param cancelAllPreviousSubscriptions True, if this is the case; false otherwise
+     * @return The subscription details object
+     */
+    public RepositorySubscriptionDetails setCancelAllPreviousSubscriptions(boolean cancelAllPreviousSubscriptions) {
+        this.cancelAllPreviousSubscriptions = cancelAllPreviousSubscriptions;
         return this;
     }
 }

@@ -1,0 +1,150 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-8">
+                    <h2>Dynamic peripherals
+                        <small>Represent actuators and sensors that do not make use of a fixed device,
+                            but use a device template in order to dynamically and automatically search for fitting
+                            devices on which the user-defined operators can be deployed, installed and executed.</small>
+                    </h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+                            data-target="#addDynamicPeripheralModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection"
+                       st-safe-src="dynamicPeripheralListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="align-center">Operator</th>
+                        <th class="align-center">Device template</th>
+                        <th class="align-center">Owner</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{peripheral.id}}" ng-repeat="peripheral in displayedCollection">
+                        <td><a ng-href="{{'view/dynamic-peripherals/' + peripheral.id}}">{{peripheral.name}}</a></td>
+                        <td class="align-center">{{peripheral.operator.name}}</td>
+                        <td class="align-center">{{peripheral.deviceTemplate.name}}</td>
+                        <td class="align-center">{{peripheral.ownerName ? peripheral.ownerName : "None"}}</td>
+                        <td>
+                            <form ng-submit="deleteDynamicPeripheralCtrl.deleteItem()" style="display: inline-block">
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                        ng-click="deleteDynamicPeripheralCtrl.item.id = peripheral.id">
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="dynamicPeripheralListCtrl.items.length === 0">
+                        <td colspan="5">No dynamic peripherals registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addDynamicPeripheralModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new dynamic peripheral
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addDynamicPeripheralCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicPeripheralCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDynamicPeripheralCtrl.item.errors.global">
+			                      {{addDynamicPeripheralCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicPeripheralCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicPeripheralCtrl.item.errors.name }">
+                                    <input class="form-control" type="text" placeholder="Name"
+                                           ng-model="addDynamicPeripheralCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDynamicPeripheralCtrl.item.errors.name">{{addDynamicPeripheralCtrl.item.errors.name}}</span>
+                            </div>
+                            <!-- item.operator group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicPeripheralCtrl.item.errors.operator }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicPeripheralCtrl.item.errors.operator }">
+                                    <select class="form-control selectpicker show-tick" title="Operator *"
+                                            data-header="Operator *"
+                                            ng-model="addDynamicPeripheralCtrl.item.operator"
+                                            ng-options="t.id as (t.name) for t in ctrl.operatorList | filter:hideSimulators()">
+                                        <option value="" selected></option>
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDynamicPeripheralCtrl.item.errors.operator">{{addDynamicPeripheralCtrl.item.errors.operator}}</span>
+                            </div>
+                            <!-- item.deviceTemplate group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicPeripheralCtrl.item.errors.deviceTemplate }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicPeripheralCtrl.item.errors.deviceTemplate }">
+                                    <select class="form-control selectpicker show-tick" title="Device template *"
+                                            data-header="Device template *"
+                                            ng-model="addDynamicPeripheralCtrl.item.deviceTemplate"
+                                            ng-options="t.id as (t.name) for t in ctrl.deviceTemplateList">
+                                        <option value="" selected></option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addDynamicPeripheralCtrl.item.errors.deviceTemplate">{{addDynamicPeripheralCtrl.item.errors.deviceTemplate}}</span>
+                            </div>
+                            <!-- item.requestTopics group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicPeripheralCtrl.item.errors.requestTopics }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicPeripheralCtrl.item.errors.requestTopics }">
+                                    <select class="form-control selectpicker" title="Request topics *"
+                                            data-header="Request topics *"
+                                            ng-options="topic.id as (topic.suffix) for topic in ctrl.requestTopicList"
+                                            ng-model="addDynamicPeripheralCtrl.item.requestTopics" multiple>
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDynamicPeripheralCtrl.item.errors.requestTopics">{{addDynamicPeripheralCtrl.item.errors.requestTopics}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

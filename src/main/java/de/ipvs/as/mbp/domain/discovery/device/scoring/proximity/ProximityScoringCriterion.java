@@ -9,7 +9,7 @@ import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionGeoPoint;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionLocation;
 import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
-import de.ipvs.as.mbp.domain.discovery.location.point.PointLocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.point.PointLocationTemplate;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.discovery.LocationTemplateRepository;
 import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionScorer;

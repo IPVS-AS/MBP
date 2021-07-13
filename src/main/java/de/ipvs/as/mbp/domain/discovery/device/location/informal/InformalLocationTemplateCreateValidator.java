@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.location.informal;
+package de.ipvs.as.mbp.domain.discovery.device.location.informal;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;

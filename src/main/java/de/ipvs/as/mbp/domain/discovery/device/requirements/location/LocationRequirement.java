@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.SimpleEntityResolver;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
-import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.LocationTemplate;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.discovery.LocationTemplateRepository;
 import org.json.JSONException;

@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.location;
+package de.ipvs.as.mbp.domain.discovery.device.location;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;

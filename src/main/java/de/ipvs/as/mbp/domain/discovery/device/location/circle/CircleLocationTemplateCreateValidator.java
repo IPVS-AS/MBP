@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.location.circle;
+package de.ipvs.as.mbp.domain.discovery.device.location.circle;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;

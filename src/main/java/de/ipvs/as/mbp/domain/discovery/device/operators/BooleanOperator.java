@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.operators;
+package de.ipvs.as.mbp.domain.discovery.device.operators;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -27,6 +27,11 @@ public enum BooleanOperator implements DiscoveryTemplateOperator {
      * @param name The name to set
      */
     private void setName(String name) {
+        //Sanity check
+        if((name == null) || name.isEmpty()){
+            throw new IllegalArgumentException("The name must not be null or empty.");
+        }
+
         this.name = name;
     }
 

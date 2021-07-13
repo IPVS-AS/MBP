@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.service.discovery;
 import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
+import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +54,7 @@ public class DiscoveryService {
         }
 
         //Use the discovery engine to retrieve the ranking of device descriptions
-        return discoveryEngine.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
+        return discoveryEngine.getDeviceCandidates(deviceTemplate, requestTopics);
     }
 
 

@@ -1,19 +1,20 @@
-package de.ipvs.as.mbp.domain.discovery.location.point;
+package de.ipvs.as.mbp.domain.discovery.device.location.circle;
 
-import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Objects of this class represent location templates for location points.
+ * Objects of this class represent location templates for circle areas.
  */
-@MBPEntity(createValidator = PointLocationTemplateCreateValidator.class)
-public class PointLocationTemplate extends LocationTemplate {
+@MBPEntity(createValidator = CircleLocationTemplateCreateValidator.class)
+public class CircleLocationTemplate extends LocationTemplate {
     private double latitude;
     private double longitude;
+    private double radius;
 
-    public PointLocationTemplate() {
+    public CircleLocationTemplate() {
 
     }
 
@@ -21,7 +22,7 @@ public class PointLocationTemplate extends LocationTemplate {
         return latitude;
     }
 
-    public PointLocationTemplate setLatitude(double latitude) {
+    public CircleLocationTemplate setLatitude(double latitude) {
         this.latitude = latitude;
         return this;
     }
@@ -30,8 +31,17 @@ public class PointLocationTemplate extends LocationTemplate {
         return longitude;
     }
 
-    public PointLocationTemplate setLongitude(double longitude) {
+    public CircleLocationTemplate setLongitude(double longitude) {
         this.longitude = longitude;
+        return this;
+    }
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public CircleLocationTemplate setRadius(double radius) {
+        this.radius = radius;
         return this;
     }
 
@@ -50,6 +60,7 @@ public class PointLocationTemplate extends LocationTemplate {
         //Add fields
         jsonObject.put("lat", this.latitude);
         jsonObject.put("lon", this.longitude);
+        jsonObject.put("radius", this.radius);
 
         //Return extended JSONObject
         return jsonObject;
