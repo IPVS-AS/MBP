@@ -468,10 +468,11 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'"><label>Combination
-                                                with an anomaly:*</label>
+                                            <td ng-if="ctrl.config.eventHumPl == '1' ||ctrl.config.eventHumPl == '2'">
+                                                <label>Combination
+                                                    with an anomaly:*</label>
                                             </td>
-                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
+                                            <td ng-if="ctrl.config.eventHumPl == '1' ||ctrl.config.eventHumPl == '2'">
                                                 <select class="form-control show-tick"
                                                         name="anomaly" ng-model="ctrl.config.anomalyHumPl">
                                                     <option value="">Select the combination with an anomaly</option>
@@ -490,11 +491,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'"><label> For
-                                                which room
-                                                should the humidity rise/fall be simulated:*</label>
+                                            <td ng-if="ctrl.config.eventHumPl == '1' ||ctrl.config.eventHumPl == '2'">
+                                                <label> For
+                                                    which room
+                                                    should the humidity rise/fall be simulated:*</label>
                                             </td>
-                                            <td ng-if="config.eventHumPl == '1' ||config.eventHumPl == '2'">
+                                            <td ng-if="ctrl.config.eventHumPl == '1' ||ctrl.config.eventHumPl == '2'">
                                                 <select class="form-control show-tick"
                                                         name="room" ng-model="ctrl.config.roomHumPl">
                                                     <option value="">Select a room</option>
