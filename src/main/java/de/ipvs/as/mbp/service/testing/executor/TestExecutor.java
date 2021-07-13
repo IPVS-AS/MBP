@@ -477,10 +477,10 @@ public class TestExecutor {
 
         assert eventInstance != null;
         event = Integer.parseInt(eventInstance.getValue().toString());
-        if (event != 1 || event != 2) {
-            convertedConfig.add(getAnomalyType(Integer.parseInt(eventInstance.getValue().toString())));
-        } else {
+        if (event == 1 || event == 2) {
             convertedConfig.add(getAnomalyType(Integer.parseInt(anomalyInstance.getValue().toString())));
+        } else {
+            convertedConfig.add(getAnomalyType(Integer.parseInt(eventInstance.getValue().toString())));
         }
 
         return convertedConfig;
