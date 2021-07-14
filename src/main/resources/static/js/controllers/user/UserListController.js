@@ -116,7 +116,7 @@ app.controller('UserListController',
                 return Swal.fire({
                     title: 'Delete user',
                     icon: 'warning',
-                    html: "Are you sure you want to delete the user \"<strong>" + userName + "</strong>\"?",
+                    html: "Are you sure you want to delete the user \"<strong>" + userName + "</strong>\"? All the corresponding data owned by the user will also be deleted, including models, devices, operators, rules, policies, etc.",
                     showCancelButton: true,
                     confirmButtonText: 'Delete',
                     confirmButtonClass: 'bg-red',

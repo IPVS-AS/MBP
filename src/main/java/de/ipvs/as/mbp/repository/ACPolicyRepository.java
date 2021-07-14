@@ -25,10 +25,10 @@ public interface ACPolicyRepository extends MongoRepository<ACPolicy, String> {
 	boolean existsByName(@Param("name") String name);
 	
 	@Query(value = "{ 'conditionId' : :#{#conditionId} }", count = true)
-	public Long countUsingCondition(@Param("conditionId") String conditionId);
+	Long countUsingCondition(@Param("conditionId") String conditionId);
 	
 	@Query(value = "{ 'conditionId' : :#{#effectId} }", count = true)
-	public Long countUsingEffect(@Param("effectId") String effectId);
+	Long countUsingEffect(@Param("effectId") String effectId);
 	
 	@Query("{ $and : [ { 'ownerId' : :#{#ownerId} }, { 'conditionId' : :#{#conditionId} } ] }")
 	List<ACPolicy> findByOwnerAndCondition(@Param("ownerId") String ownerId, @Param("conditionId") String conditionId, Pageable pageable);
@@ -56,5 +56,6 @@ public interface ACPolicyRepository extends MongoRepository<ACPolicy, String> {
 	
 	@Query(value = "{ $and : [ { 'id' : { $in : :#{#ids} } }, { 'accessTypes' : { $all : :#{#accessTypes} } } ] }", exists = true)
 	boolean existsByIdAnyAndAccessTypeAll(@Param("ids") List<String> ids, @Param("accessTypes") List<String> accessTypes);
-	
+
+	void deleteByOwnerId(String ownerId);
 }

@@ -21,6 +21,8 @@ public interface TestDetailsRepository extends MongoRepository<TestDetails, Stri
 
     List<TestDetails> findAllBySensorId(@Param("sensor") String id);
 
+    Optional<TestDetails> findOneBySensorId(@Param("sensor") String id);
+
     List<TestDetails> findAllBySensorName(@Param("sensor") String name);
 
     List<TestDetails> findAllByRulesId(@Param("rules") String id);

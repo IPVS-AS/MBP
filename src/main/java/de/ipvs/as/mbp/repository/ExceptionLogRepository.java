@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExceptionLogRepository extends MongoRepository<ExceptionLog, String> {
 
+    void deleteByUsername(String username);
+
 }
