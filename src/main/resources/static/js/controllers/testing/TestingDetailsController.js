@@ -8,10 +8,11 @@ app.controller('TestingDetailsController',
         function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
-            vm.ruleList = [];
+            vm.ruleList = ruleList;
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
+
 
 
             // ID of the Test
