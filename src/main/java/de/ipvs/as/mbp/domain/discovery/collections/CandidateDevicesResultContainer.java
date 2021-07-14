@@ -5,7 +5,6 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.GeneratedValue;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,15 +25,13 @@ import java.util.stream.Stream;
  */
 @Document
 public class CandidateDevicesResultContainer {
-    @Id
-    @GeneratedValue
-    private String id;
 
-    //The ID of the device template for which the candidate devices were retrieved
+    //The ID of the device template for which the candidate devices were retrieve
+    @Id
     private String deviceTemplateId;
 
     //Map (repository name --> candidate devices) of candidate device collections
-    private final Map<String, CandidateDevicesCollection> candidateDevices;
+    private Map<String, CandidateDevicesCollection> candidateDevices;
 
     /**
      * Creates a new, empty candidate devices result container.
@@ -52,12 +49,9 @@ public class CandidateDevicesResultContainer {
      * @param candidateDevices The {@link CandidateDevicesCollection}s of the candidate devices to add
      */
     public CandidateDevicesResultContainer(String deviceTemplateId, Collection<CandidateDevicesCollection> candidateDevices) {
-        //Set device template Id
+        //Set fields
         setDeviceTemplateId(deviceTemplateId);
-
-        //Stream through the collections of candidate devices and add them to the map
-        this.candidateDevices = candidateDevices.stream()
-                .collect(Collectors.toMap(CandidateDevicesCollection::getRepositoryName, c -> c));
+        setCandidateDevices(candidateDevices);
     }
 
     /**
@@ -70,6 +64,18 @@ public class CandidateDevicesResultContainer {
     public CandidateDevicesCollection get(String repositoryName) {
         //Retrieve corresponding candidate devices from map
         return this.candidateDevices.get(repositoryName);
+    }
+
+    /**
+     * Sets all candidate devices that were retrieved for the various discovery repositories. Thereby, each
+     * {@link CandidateDevicesCollection} represents the candidate devices that were received from one repository.
+     *
+     * @param candidateDevices The candidate devices to set
+     */
+    public void setCandidateDevices(Collection<CandidateDevicesCollection> candidateDevices) {
+        //Stream through the collections of candidate devices and create a map from them
+        this.candidateDevices = candidateDevices.stream()
+                .collect(Collectors.toMap(CandidateDevicesCollection::getRepositoryName, c -> c));
     }
 
     /**

@@ -83,7 +83,7 @@ public class RestDiscoveryController {
         }
 
         //Retrieve the device descriptions and process them to a ranking
-        CandidateDevicesRanking ranking = discoveryService.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
+        CandidateDevicesRanking ranking = discoveryService.getRankedDeviceCandidates(deviceTemplate, requestTopics);
 
         //Return device descriptions and their associated scores
         return new ResponseEntity<>(ranking.toList(), HttpStatus.OK);

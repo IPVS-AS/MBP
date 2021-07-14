@@ -1,12 +1,16 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
+import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralStatus;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
+import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentExecutor;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
@@ -16,8 +20,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This components manages the overall discovery process by orchestrating the various involved components and takes
@@ -26,27 +29,31 @@ import java.util.concurrent.Executors;
 @Component
 public class DiscoveryEngine implements CandidateDevicesSubscriber {
 
-    //Number of threads to use in the thread pool that executes deployment tasks
-    private static final int THREAD_POOL_SIZE = 5;
 
     /*
     Auto-wired components
      */
     @Autowired
+    private DiscoveryGateway discoveryGateway;
+
+    @Autowired
     private CandidateDevicesProcessor candidateDevicesProcessor;
 
     @Autowired
-    private DiscoveryGateway discoveryGateway;
+    private DiscoveryDeploymentExecutor discoveryDeploymentExecutor;
 
-    //Executor service for executing deployment tasks asynchronously
-    private ExecutorService executorService;
+    @Autowired
+    private DynamicPeripheralRepository dynamicPeripheralRepository;
+
+    @Autowired
+    private CandidateDevicesRepository candidateDevicesRepository;
+
 
     /**
      * Creates the discovery engine.
      */
     public DiscoveryEngine() {
-        //Create executor service
-        this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+
     }
 
     /**
@@ -69,14 +76,43 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
 
     }
 
-    public void enableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
-        //Step 1: Check if already enabled and if yes, ignore
-        //Step 2: Check if there is already data for the device template
-        //Step 2.1: If not: Retrieve the data synchronously NOW and create subscription
-        //Step 2.2 Store the data
-        //Step 3: Set status of peripheral to deploying
-        //Step 4: Calculate ranking from the data and pass everything to the deployer to take care (async task!)
-        //Step 5: Return
+    public synchronized void enableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
+        /* Steps to perform:
+        Step 1: Check if already enabled and if yes, ignore
+        Step 2: Check if there is already data for the device template
+                --> If not: Retrieve the data (blocking), store it and create subscription
+        Step 3: Set status of peripheral to deploying
+        Step 4: Calculate ranking from the data and pass everything to the deployer to take care (async task!)
+        Step 5: Return */
+
+        //Null check
+        if (dynamicPeripheral == null) {
+            throw new IllegalArgumentException("The dynamic peripheral must not be null.");
+        }
+
+        //Check if dynamic peripheral is already enabled by the user
+        if (dynamicPeripheral.isEnabled()) {
+            //return; TODO
+        }
+
+        //Set dynamic peripheral to enabled in order to avoid duplicated executions
+        setDynamicPeripheralEnabledState(dynamicPeripheral, true);
+
+        //Get candidate devices and update them in the database if necessary
+        CandidateDevicesResultContainer candidateDevices = retrieveAndUpdateCandidateDevices(dynamicPeripheral, false);
+
+        //Calculate ranking from the candidate devices
+        CandidateDevicesRanking ranking = candidateDevicesProcessor.process(candidateDevices, dynamicPeripheral.getDeviceTemplate());
+
+        //Deploy from the ranking
+        CompletableFuture<DiscoveryDeploymentExecutor.DeploymentResult> deploymentTask =
+                this.discoveryDeploymentExecutor.deployByRanking(dynamicPeripheral, ranking);
+
+        //Update status of dynamic peripheral
+        dynamicPeripheral.setStatus(DynamicPeripheralStatus.DEPLOYING);
+
+        System.out.println("hier");
+
     }
 
     public void disableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
@@ -118,14 +154,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
      * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as list of {@link CandidateDevicesCollection}s, containing one collection
-     * per repository. No subscription is created at the repositories as part of this request.
+     * in response are processed, scored with respect to to the {@link DeviceTemplate} and transformed to a ranking,
+     * which is subsequently returned as {@link CandidateDevicesRanking}.
      *
      * @param deviceTemplate The device template to find suitable candidate devices for
      * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @return The resulting list of {@link CandidateDevicesCollection}s
+     * @return The resulting {@link CandidateDevicesRanking}
      */
-    public CandidateDevicesRanking getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesRanking getRankedDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity checks
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
@@ -138,5 +174,39 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
 
         //Use the processor to filter, aggregate, score and rank the candidate devices
         return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
+    }
+
+    private CandidateDevicesResultContainer retrieveAndUpdateCandidateDevices(DynamicPeripheral dynamicPeripheral, boolean force) {
+        DeviceTemplate deviceTemplate = dynamicPeripheral.getDeviceTemplate();
+
+        if ((!force) && candidateDevicesRepository.existsById(deviceTemplate.getId())) {
+            return candidateDevicesRepository.findById(deviceTemplate.getId()).orElse(null);
+        }
+
+        CandidateDevicesResultContainer candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(deviceTemplate, dynamicPeripheral.getRequestTopics(), this);
+        candidateDevicesRepository.save(candidateDevices);
+
+        return candidateDevices;
+    }
+
+    private void setDynamicPeripheralStatus(DynamicPeripheral dynamicPeripheral, DynamicPeripheralStatus status) {
+        //Update status
+        dynamicPeripheral.setStatus(status);
+
+        //Update enable state as well if necessary
+        if (status.equals(DynamicPeripheralStatus.DISABLED)) {
+            dynamicPeripheral.setEnabled(false);
+        }
+
+        //Update in repository
+        this.dynamicPeripheralRepository.save(dynamicPeripheral);
+    }
+
+    private void setDynamicPeripheralEnabledState(DynamicPeripheral dynamicPeripheral, boolean enabled) {
+        //Update enable state
+        dynamicPeripheral.setEnabled(enabled);
+
+        //Update in repository
+        dynamicPeripheralRepository.save(dynamicPeripheral);
     }
 }

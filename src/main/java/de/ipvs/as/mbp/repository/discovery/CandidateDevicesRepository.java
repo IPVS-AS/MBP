@@ -2,7 +2,6 @@ package de.ipvs.as.mbp.repository.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
-import de.ipvs.as.mbp.repository.UserEntityRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

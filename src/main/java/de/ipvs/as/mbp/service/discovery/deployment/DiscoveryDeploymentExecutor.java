@@ -9,9 +9,14 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class DiscoveryDeploymentExecutor {
+
+    //Number of threads to use in the thread pool that executes deployment tasks
+    private static final int THREAD_POOL_SIZE = 5;
 
     /**
      * Enumeration of possible results of deployment tasks.
@@ -20,17 +25,22 @@ public class DiscoveryDeploymentExecutor {
         DEPLOYED, EMPTY_RANKING, ALL_FAILED;
     }
 
+
     @Autowired
     private DeployerDispatcher deployerDispatcher;
 
     //The deployer to use, retrieved from the dispatcher
     private IDeployer deployer;
 
+    //Executor service for executing deployment tasks asynchronously
+    private ExecutorService executorService;
+
     /**
      * Creates the deployment executor.
      */
     public DiscoveryDeploymentExecutor() {
-
+        //Create executor service
+        this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     }
 
     /**
@@ -43,6 +53,10 @@ public class DiscoveryDeploymentExecutor {
     }
 
     public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking) {
+        return deployByRanking(dynamicPeripheral, ranking, -1);
+    }
+
+    public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking, double minScoreExclusive) {
         //Check and remember whether the dynamic peripheral is currently deployed (based on the device details)
         //Go through the ranking and check every device for deployability
         //Thereby skip the device on which the peripheral is currently deployed

@@ -17,13 +17,21 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
     private List<DeviceDescription> candidateDevices;
 
     /**
+     * Creates a new, empty candidate devices collection.
+     */
+    public CandidateDevicesCollection() {
+        //Initialize collection of candidate devices
+        this.candidateDevices = new ArrayList<>();
+    }
+
+    /**
      * Creates a new candidate devices collection from a given repository name.
      *
      * @param repositoryName The repository name to use
      */
     public CandidateDevicesCollection(String repositoryName) {
-        //Initialize collection of candidate devices
-        this.candidateDevices = new ArrayList<>();
+        //Call default constructor
+        this();
 
         //Set fields
         setRepositoryName(repositoryName);

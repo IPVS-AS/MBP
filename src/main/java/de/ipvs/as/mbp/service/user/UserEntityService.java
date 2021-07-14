@@ -209,6 +209,9 @@ public class UserEntityService {
             requirePermission(repository, entityId, ACAccessType.UPDATE, accessRequest);
         }
 
+        //Copy user data to updatedEntity
+        updatedEntity.setOwner(entity.getOwner());
+
         //Get all create validators that are associated with this entity type
         MBPEntity[] annotations = entity.getClass().getAnnotationsByType(MBPEntity.class);
         List<ICreateValidator<E>> validators = new ArrayList<>();

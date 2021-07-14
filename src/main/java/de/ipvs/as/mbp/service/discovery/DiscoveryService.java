@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
@@ -36,16 +37,17 @@ public class DiscoveryService {
     }
 
     /**
-     * Retrieves device descriptions that match the requirements of a given {@link DeviceTemplate} from discovery
-     * repositories that are available under a given collection of {@link RequestTopic}s. The resulting device
-     * descriptions from the repositories are then aggregated, processed, scored and ranked with respect to the scoring
-     * criteria of the device template. The result is subsequently returned as {@link CandidateDevicesRanking}.
+     * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
+     * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
+     * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
+     * in response are processed, scored with respect to to the {@link DeviceTemplate} and transformed to a ranking,
+     * which is subsequently returned as {@link CandidateDevicesRanking}.
      *
-     * @param deviceTemplate The device template for which the device descriptions are supposed to be retrieved
-     * @param requestTopics  The collection of request topics to use for querying the discovery repositories
-     * @return The resulting ranking of the device descriptions
+     * @param deviceTemplate The device template to find suitable candidate devices for
+     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
+     * @return The resulting {@link CandidateDevicesRanking}
      */
-    public CandidateDevicesRanking retrieveDeviceDescriptions(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesRanking getRankedDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity checks
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
@@ -54,7 +56,7 @@ public class DiscoveryService {
         }
 
         //Use the discovery engine to retrieve the ranking of device descriptions
-        return discoveryEngine.getDeviceCandidates(deviceTemplate, requestTopics);
+        return discoveryEngine.getRankedDeviceCandidates(deviceTemplate, requestTopics);
     }
 
 
