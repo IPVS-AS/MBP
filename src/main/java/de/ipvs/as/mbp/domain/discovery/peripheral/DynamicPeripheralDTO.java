@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.domain.discovery.peripheral;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +23,14 @@ public class DynamicPeripheralDTO {
 
     //Ids of the request topics to use
     @JsonProperty("requestTopics")
-    private List<String> requestTopicIds;
+    private List<String> requestTopicIds = new ArrayList<>();
+
+    /**
+     * Creates a new, empty DTO for a {@link DynamicPeripheral}.
+     */
+    public DynamicPeripheralDTO() {
+
+    }
 
     /**
      * Returns the name of the dynamic peripheral.

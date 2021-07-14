@@ -57,7 +57,7 @@ public class ScatterGatherRequest<T> {
 
         //Try to execute the request
         try {
-            //Execute completable future
+            //Block for results of completable future
             overallFuture.get();
 
             //Merge and return the results of the individual futures

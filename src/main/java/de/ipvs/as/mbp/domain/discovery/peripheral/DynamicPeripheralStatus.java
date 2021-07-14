@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Enumeration of states in which {@link DynamicPeripheral}s can be.
  */
-public enum DynamicPeripheralState {
+public enum DynamicPeripheralStatus {
     DISABLED("disabled"), //Dynamic peripheral has not been enabled yet by the user
-    SEARCHING("searching"), //Search for candidate devices in progress
-    NO_CANDIDATE("no_candidate"),  //No candidate device found or deployment failed for all
+    DEPLOYING("deploying"), //Deployment for candidate devices in progress
+    NO_CANDIDATE("no_candidate"),  //No candidate device found or deployment failed for all candidates
     RUNNING("running"); //Candidate found and deployed
 
     //Externally visible name of the state
@@ -20,7 +20,7 @@ public enum DynamicPeripheralState {
      *
      * @param name The desired name of the state
      */
-    DynamicPeripheralState(String name) {
+    DynamicPeripheralStatus(String name) {
         setName(name);
     }
 
@@ -56,14 +56,14 @@ public enum DynamicPeripheralState {
      * @return The corresponding state or null if not found
      */
     @JsonCreator
-    public static DynamicPeripheralState create(String name) {
+    public static DynamicPeripheralStatus create(String name) {
         //Sanity check for provided name
         if ((name == null) || name.isEmpty()) {
             return null;
         }
 
         //Compare every available state against the provided name
-        for (DynamicPeripheralState state : values()) {
+        for (DynamicPeripheralStatus state : values()) {
             if (name.equalsIgnoreCase(state.value())) {
                 //Matching state found
                 return state;

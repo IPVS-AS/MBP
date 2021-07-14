@@ -45,10 +45,13 @@ public class DynamicPeripheral extends UserEntity {
     private List<RequestTopic> requestTopics;
 
     //Whether the dynamic peripheral is currently enabled by the user or not
-    private boolean enabled = false;
+    //private boolean enabled = false; //TODO check if we really need it, probably not
 
-    //MAC address of the currently used device
-    private String latestDeviceMac;
+    //Details about the currently used device
+    private DynamicPeripheralDeviceDetails lastDeviceDetails;
+
+    //The current status of the dynamic peripheral
+    private DynamicPeripheralStatus status = DynamicPeripheralStatus.DISABLED;
 
     //Set of devices to ignore as potential candidates
     private DeviceBlockSet blockSet;
@@ -164,12 +167,13 @@ public class DynamicPeripheral extends UserEntity {
         return this;
     }
 
+
     /**
      * Returns whether the dynamic peripheral is currently enabled by the user.
      *
      * @return True, if enabled; false otherwise
      */
-    public boolean isEnabled() {
+    /*public boolean isEnabled() {
         return enabled;
     }
 
@@ -179,28 +183,29 @@ public class DynamicPeripheral extends UserEntity {
      * @param enabled True, if enabled; false otherwise
      * @return The dynamic peripheral
      */
-    public DynamicPeripheral setEnabled(boolean enabled) {
+    /*public DynamicPeripheral setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
-    }
+    }*/
+
 
     /**
-     * Returns the MAC address of the device that was most recently used for the the dynamic peripheral.
+     * Returns the status of the dynamic peripheral.
      *
-     * @return The MAC address
+     * @return The status
      */
-    public String getLatestDeviceMac() {
-        return latestDeviceMac;
+    public DynamicPeripheralStatus getStatus() {
+        return status;
     }
 
     /**
-     * Sets the MAC address of the device that was most recently used for the the dynamic peripheral.
+     * Sets the status of the dynamic peripheral.
      *
-     * @param latestDeviceMac The MAC address to set
+     * @param status The status to set
      * @return The dynamic peripheral
      */
-    public DynamicPeripheral setLatestDeviceMac(String latestDeviceMac) {
-        this.latestDeviceMac = latestDeviceMac;
+    public DynamicPeripheral setStatus(DynamicPeripheralStatus status) {
+        this.status = status;
         return this;
     }
 

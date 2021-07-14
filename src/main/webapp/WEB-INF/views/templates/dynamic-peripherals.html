@@ -100,7 +100,6 @@
                                             data-header="Operator *"
                                             ng-model="addDynamicPeripheralCtrl.item.operator"
                                             ng-options="t.id as (t.name) for t in ctrl.operatorList | filter:hideSimulators()">
-                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -115,7 +114,6 @@
                                             data-header="Device template *"
                                             ng-model="addDynamicPeripheralCtrl.item.deviceTemplate"
                                             ng-options="t.id as (t.name) for t in ctrl.deviceTemplateList">
-                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addDynamicPeripheralCtrl.item.errors.deviceTemplate">{{addDynamicPeripheralCtrl.item.errors.deviceTemplate}}</span>

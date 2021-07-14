@@ -5,11 +5,13 @@ import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralDTO;
+import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.OperatorRepository;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -42,6 +45,9 @@ public class RestDynamicPeripheralController {
 
     @Autowired
     private DeviceTemplateRepository deviceTemplateRepository;
+
+    @Autowired
+    private RequestTopicRepository requestTopicRepository;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -85,16 +91,25 @@ public class RestDynamicPeripheralController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new dynamic peripheral.", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Dynamic peripheral is invalid."), @ApiResponse(code = 401, message = "Not authorized to access the provided operator or device template."), @ApiResponse(code = 404, message = "Provided operator or device template not found.")})
-    public ResponseEntity<EntityModel<DynamicPeripheral>> create(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DynamicPeripheralDTO dynamicPeripheralDTO) throws EntityNotFoundException, MissingPermissionException {
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Dynamic peripheral is invalid."), @ApiResponse(code = 401, message = "Not authorized to access the provided operator, device template or request topics."), @ApiResponse(code = 404, message = "Provided operator, device template, request topics or user not found.")})
+    public ResponseEntity<EntityModel<DynamicPeripheral>> create(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DynamicPeripheralDTO requestDTO) throws EntityNotFoundException, MissingPermissionException {
         //Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
+        //Create list of request topics
+        List<RequestTopic> requestTopics = new ArrayList<>();
+
+        //Populate the list using the request topic IDs of the DTO
+        for (String requestTopicId : requestDTO.getRequestTopicIds()) {
+            requestTopics.add(userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, requestTopicId, ACAccessType.READ, accessRequest));
+        }
+
         //Transform DTO to dynamic peripheral
         DynamicPeripheral dynamicPeripheral = new DynamicPeripheral()
-                .setName(dynamicPeripheralDTO.getName())
-                .setOperator(userEntityService.getForIdWithAccessControlCheck(operatorRepository, dynamicPeripheralDTO.getOperatorId(), ACAccessType.READ, accessRequest))
-                .setDeviceTemplate(userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, dynamicPeripheralDTO.getDeviceTemplateId(), ACAccessType.READ, accessRequest));
+                .setName(requestDTO.getName())
+                .setOperator(requestDTO.getOperatorId() == null ? null : userEntityService.getForIdWithAccessControlCheck(operatorRepository, requestDTO.getOperatorId(), ACAccessType.READ, accessRequest))
+                .setDeviceTemplate(requestDTO.getDeviceTemplateId() == null ? null : userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, requestDTO.getDeviceTemplateId(), ACAccessType.READ, accessRequest))
+                .setRequestTopics(requestTopics);
 
         //Save dynamic peripheral in repository
         DynamicPeripheral createdDynamicPeripheral = userEntityService.create(dynamicPeripheralRepository, dynamicPeripheral);
