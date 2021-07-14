@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.discovery;
 
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
@@ -39,13 +39,13 @@ public class DiscoveryService {
      * Retrieves device descriptions that match the requirements of a given {@link DeviceTemplate} from discovery
      * repositories that are available under a given collection of {@link RequestTopic}s. The resulting device
      * descriptions from the repositories are then aggregated, processed, scored and ranked with respect to the scoring
-     * criteria of the device template. The result is subsequently returned as {@link DeviceDescriptionRanking}.
+     * criteria of the device template. The result is subsequently returned as {@link CandidateDevicesRanking}.
      *
      * @param deviceTemplate The device template for which the device descriptions are supposed to be retrieved
      * @param requestTopics  The collection of request topics to use for querying the discovery repositories
      * @return The resulting ranking of the device descriptions
      */
-    public DeviceDescriptionRanking retrieveDeviceDescriptions(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesRanking retrieveDeviceDescriptions(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity checks
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");

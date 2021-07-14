@@ -25,15 +25,6 @@ public class CommandMessage<T extends DomainMessageBody> extends DomainMessage<T
     }
 
     /**
-     * Creates a new command message from a given message body.
-     *
-     * @param messageBody The message body to use
-     */
-    public CommandMessage(T messageBody, String returnTopic) {
-        super(messageBody);
-    }
-
-    /**
      * Returns the sender name that is displayed in messages which are published by the MBP in order to make the
      * MBP identifiable. The sender name is directly retrieved from the settings by using the {@link SettingsService}.
      *

@@ -45,7 +45,7 @@ public class DynamicPeripheral extends UserEntity {
     private List<RequestTopic> requestTopics;
 
     //Whether the dynamic peripheral is currently enabled by the user or not
-    //private boolean enabled = false; //TODO check if we really need it, probably not
+    private boolean enabled = false;
 
     //Details about the currently used device
     private DynamicPeripheralDeviceDetails lastDeviceDetails;
@@ -173,7 +173,7 @@ public class DynamicPeripheral extends UserEntity {
      *
      * @return True, if enabled; false otherwise
      */
-    /*public boolean isEnabled() {
+    public boolean isEnabled() {
         return enabled;
     }
 
@@ -183,10 +183,10 @@ public class DynamicPeripheral extends UserEntity {
      * @param enabled True, if enabled; false otherwise
      * @return The dynamic peripheral
      */
-    /*public DynamicPeripheral setEnabled(boolean enabled) {
+    public DynamicPeripheral setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
-    }*/
+    }
 
 
     /**

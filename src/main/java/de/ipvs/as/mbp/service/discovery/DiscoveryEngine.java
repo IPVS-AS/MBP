@@ -1,20 +1,20 @@
 package de.ipvs.as.mbp.service.discovery;
 
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionCollection;
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
-import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionProcessor;
+import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,7 +33,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     Auto-wired components
      */
     @Autowired
-    private DeviceDescriptionProcessor deviceDescriptionProcessor;
+    private CandidateDevicesProcessor candidateDevicesProcessor;
 
     @Autowired
     private DiscoveryGateway discoveryGateway;
@@ -94,10 +94,10 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      *
      * @param deviceTemplate          The device template for which the candidate devices are retrieved
      * @param repositoryName          The name of the repository that issued the notification
-     * @param updatedCandidateDevices The updated collection of candidate devices as {@link DeviceDescriptionCollection}
+     * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
      */
     @Override
-    public void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, DeviceDescriptionCollection updatedCandidateDevices) {
+    public void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
         //Step 0: Fetch previous candidate device results for the given device template
         //Step 1: Create copy of the previous raw results and integrate the updatedCandidateDevices by replacing by repoName
         //       Remark: Create own class for List<DeviceDescriptionCollection> that holds the template ID and offers methods for replacing parts
@@ -118,14 +118,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
      * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as list of {@link DeviceDescriptionCollection}s, containing one collection
+     * in response are returned as list of {@link CandidateDevicesCollection}s, containing one collection
      * per repository. No subscription is created at the repositories as part of this request.
      *
      * @param deviceTemplate The device template to find suitable candidate devices for
      * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @return The resulting list of {@link DeviceDescriptionCollection}s
+     * @return The resulting list of {@link CandidateDevicesCollection}s
      */
-    public DeviceDescriptionRanking getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesRanking getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity checks
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
@@ -133,10 +133,10 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
             throw new IllegalArgumentException("The request topics must not be null or empty.");
         }
 
-        //Use the gateway to find all device descriptions that match the device template
-        List<DeviceDescriptionCollection> deviceDescriptionCollections = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
+        //Use the gateway to find all candidate devices that match the device template
+        CandidateDevicesResultContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
 
-        //Use the processor to filter, aggregate, score and rank the descriptions
-        return deviceDescriptionProcessor.process(deviceDescriptionCollections, deviceTemplate);
+        //Use the processor to filter, aggregate, score and rank the candidate devices
+        return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
     }
 }

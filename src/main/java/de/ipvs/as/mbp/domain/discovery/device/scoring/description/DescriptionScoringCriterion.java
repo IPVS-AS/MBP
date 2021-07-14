@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
 import de.ipvs.as.mbp.error.EntityValidationException;
-import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionScorer;
+import de.ipvs.as.mbp.service.discovery.processing.CandidateDeviceScorer;
 import smile.nlp.SimpleCorpus;
 import smile.nlp.SimpleText;
 import smile.nlp.Text;
@@ -14,7 +14,6 @@ import smile.nlp.dictionary.EnglishPunctuations;
 import smile.nlp.dictionary.EnglishStopWords;
 import smile.nlp.relevance.RelevanceRanker;
 import smile.nlp.tokenizer.SimpleSentenceSplitter;
-import smile.nlp.tokenizer.Tokenizer;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -134,19 +133,19 @@ public class DescriptionScoringCriterion extends ScoringCriterion {
     /**
      * Applies the scoring criterion to a given {@link DeviceDescription} and returns the resulting scoring increment
      * (positive number) or scoring decrement (negative number) for this description as result. In addition, a
-     * reference to the {@link DeviceDescriptionScorer} that currently performs the overall score calculations is
+     * reference to the {@link CandidateDeviceScorer} that currently performs the overall score calculations is
      * provided, which may contain additional information about the collection of {@link DeviceDescription}s that are
      * currently subject to the scoring process and thus enables the calculation of relative scores.
      *
      * @param deviceDescription The device description for which the score increment of this scoring criterion is
      *                          supposed to be calculated
-     * @param scorer            The {@link DeviceDescriptionScorer} that currently performs the overall score
+     * @param scorer            The {@link CandidateDeviceScorer} that currently performs the overall score
      *                          calculations for a collection of {@link DeviceDescription}s.
      * @return The score increment/decrement that results from the application of this scoring criterion to the given
      * device description
      */
     @Override
-    public double getScoreIncrement(DeviceDescription deviceDescription, DeviceDescriptionScorer scorer) {
+    public double getScoreIncrement(DeviceDescription deviceDescription, CandidateDeviceScorer scorer) {
         //Retrieve corpus pf pre-processed device descriptions from the scorer
         SimpleCorpus corpus = scorer.getDescriptionCorpus();
 

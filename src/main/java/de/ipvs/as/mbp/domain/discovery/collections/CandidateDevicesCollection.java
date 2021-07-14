@@ -1,42 +1,36 @@
 package de.ipvs.as.mbp.domain.discovery.collections;
 
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
-import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 
 import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * Objects of this class represent collections of device descriptions that were received from a certain repository,
- * identified by its name, for a certain {@link DeviceTemplate}.
+ * Objects of this class represent collections of candidate devices, represented by their {@link DeviceDescription}s,
+ * that that were received from a certain repository with an unique name.
  */
-public class DeviceDescriptionCollection implements Set<DeviceDescription> {
-    //Name of the repository from which the set origins
+public class CandidateDevicesCollection implements Set<DeviceDescription> {
+    //Name of the repository from which the collection origins
     private String repositoryName;
 
-    //ID of the device template for which the set was received
-    private String deviceTemplateId;
-
-    //Collection of the individual device descriptions
-    private List<DeviceDescription> deviceDescriptions;
+    //Descriptions of the individual candidate devices
+    private List<DeviceDescription> candidateDevices;
 
     /**
-     * Creates a new device description set from a given repository name and a given device template ID.
+     * Creates a new candidate devices collection from a given repository name.
      *
-     * @param repositoryName   The repository name to use
-     * @param deviceTemplateId The device template ID to use
+     * @param repositoryName The repository name to use
      */
-    public DeviceDescriptionCollection(String repositoryName, String deviceTemplateId) {
-        //Initialize set of device descriptions
-        this.deviceDescriptions = new ArrayList<>();
+    public CandidateDevicesCollection(String repositoryName) {
+        //Initialize collection of candidate devices
+        this.candidateDevices = new ArrayList<>();
 
         //Set fields
         setRepositoryName(repositoryName);
-        setDeviceTemplateId(deviceTemplateId);
     }
 
     /**
-     * Returns the name of the repository from which the set of device descriptions were received.
+     * Returns the name of the repository from which the collection of device descriptions were received.
      *
      * @return The repository name
      */
@@ -45,12 +39,12 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
     }
 
     /**
-     * Sets the name of the repository from which the set of device descriptions were received.
+     * Sets the name of the repository from which the collection of candidate devices were received.
      *
      * @param repositoryName The name of the repository to set
-     * @return The device description set
+     * @return The candidate devices collection
      */
-    public DeviceDescriptionCollection setRepositoryName(String repositoryName) {
+    public CandidateDevicesCollection setRepositoryName(String repositoryName) {
         //Sanity check
         if ((repositoryName == null) || (repositoryName.isEmpty())) {
             throw new IllegalArgumentException("Repository name must nut be null or empty.");
@@ -62,54 +56,34 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
     }
 
     /**
-     * Returns the ID of the device template for which the device descriptions were received.
+     * Returns the descriptions of the candidate devices that were received from the repository.
      *
-     * @return The ID of the device template
+     * @return The descriptions of the candidate devices
      */
-    public String getDeviceTemplateId() {
-        return deviceTemplateId;
+    public List<DeviceDescription> getCandidateDevices() {
+        return candidateDevices;
     }
 
     /**
-     * Sets the ID of the device template for which the device descriptions were received.
+     * Sets the descriptions of the candidate devices that were received from the repository.
      *
-     * @param deviceTemplateId The ID of the device template to set
-     * @return The device description set
+     * @param candidateDevices The descriptions of the candidate devices to set
+     * @return The candidate devices collection
      */
-    public DeviceDescriptionCollection setDeviceTemplateId(String deviceTemplateId) {
-        this.deviceTemplateId = deviceTemplateId;
+    public CandidateDevicesCollection setCandidateDevices(Collection<DeviceDescription> candidateDevices) {
+        this.candidateDevices = new ArrayList<>(candidateDevices);
         return this;
     }
 
     /**
-     * Returns the collection of device descriptions that were received from the repository.
+     * Adds multiple candidate devices, given as {@link DeviceDescription}s, to the collection.
      *
-     * @return The collection of device descriptions
+     * @param candidateDevices The descriptions of the candidate devicesto add
+     * @return The candidate devices collection
      */
-    public List<DeviceDescription> getDeviceDescriptions() {
-        return deviceDescriptions;
-    }
-
-    /**
-     * Sets the collection of device descriptions that were received from the repository.
-     *
-     * @param deviceDescriptions The collection of device descriptions to set
-     * @return The device description collection
-     */
-    public DeviceDescriptionCollection setDeviceDescriptions(Collection<DeviceDescription> deviceDescriptions) {
-        this.deviceDescriptions = new ArrayList<>(deviceDescriptions);
-        return this;
-    }
-
-    /**
-     * Adds a given collection of {@link DeviceDescription}s to the set.
-     *
-     * @param deviceDescriptions The collection of device descriptions to add
-     * @return The device description set
-     */
-    public DeviceDescriptionCollection addDeviceDescriptions(Collection<DeviceDescription> deviceDescriptions) {
+    public CandidateDevicesCollection addCandidateDevices(Collection<DeviceDescription> candidateDevices) {
         //Add the device descriptions
-        this.deviceDescriptions.addAll(deviceDescriptions);
+        this.candidateDevices.addAll(candidateDevices);
         return this;
     }
 
@@ -123,7 +97,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public int size() {
-        return this.deviceDescriptions.size();
+        return this.candidateDevices.size();
     }
 
     /**
@@ -133,7 +107,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public boolean isEmpty() {
-        return this.deviceDescriptions.isEmpty();
+        return this.candidateDevices.isEmpty();
     }
 
     /**
@@ -153,7 +127,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public boolean contains(Object o) {
-        return this.deviceDescriptions.contains(o);
+        return this.candidateDevices.contains(o);
     }
 
     /**
@@ -165,7 +139,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public Iterator<DeviceDescription> iterator() {
-        return this.deviceDescriptions.iterator();
+        return this.candidateDevices.iterator();
     }
 
     /**
@@ -186,7 +160,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public Object[] toArray() {
-        return this.deviceDescriptions.toArray();
+        return this.candidateDevices.toArray();
     }
 
     /**
@@ -233,7 +207,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public <T> T[] toArray(T[] a) {
-        return this.deviceDescriptions.toArray(a);
+        return this.candidateDevices.toArray(a);
     }
 
     /**
@@ -273,7 +247,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
             throw new IllegalArgumentException("The device description must not be null.");
         }
 
-        return this.deviceDescriptions.add(deviceDescription);
+        return this.candidateDevices.add(deviceDescription);
     }
 
     /**
@@ -299,7 +273,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public boolean remove(Object o) {
-        return this.deviceDescriptions.remove(o);
+        return this.candidateDevices.remove(o);
     }
 
     /**
@@ -323,7 +297,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public boolean containsAll(Collection<?> c) {
-        return this.deviceDescriptions.containsAll(c);
+        return this.candidateDevices.containsAll(c);
     }
 
     /**
@@ -353,7 +327,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
             throw new IllegalArgumentException("The device descriptions must not be null.");
         }
 
-        return this.deviceDescriptions.addAll(c);
+        return this.candidateDevices.addAll(c);
     }
 
     /**
@@ -379,7 +353,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public boolean retainAll(Collection<?> c) {
-        return this.deviceDescriptions.retainAll(c);
+        return this.candidateDevices.retainAll(c);
     }
 
     /**
@@ -405,7 +379,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public boolean removeAll(Collection<?> c) {
-        return this.deviceDescriptions.removeAll(c);
+        return this.candidateDevices.removeAll(c);
     }
 
     /**
@@ -417,7 +391,7 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public void clear() {
-        this.deviceDescriptions.clear();
+        this.candidateDevices.clear();
     }
 
     /**
@@ -435,12 +409,12 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
      */
     @Override
     public Stream<DeviceDescription> stream() {
-        return this.deviceDescriptions.stream();
+        return this.candidateDevices.stream();
     }
 
     /**
-     * Checks and returns whether a given object equals the current one. For this, the deposited repository name
-     * and device template ID of both {@link DeviceDescriptionCollection}s are compared.
+     * Checks and returns whether a given object equals the current one. For this, the repository names
+     * of both {@link CandidateDevicesCollection}s are compared.
      *
      * @param o The object to check against the current one
      * @return True, if both objects can be considered equal; false otherwise
@@ -448,18 +422,18 @@ public class DeviceDescriptionCollection implements Set<DeviceDescription> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DeviceDescriptionCollection)) return false;
-        DeviceDescriptionCollection that = (DeviceDescriptionCollection) o;
-        return Objects.equals(repositoryName, that.repositoryName) && Objects.equals(deviceTemplateId, that.deviceTemplateId);
+        if (!(o instanceof CandidateDevicesCollection)) return false;
+        CandidateDevicesCollection that = (CandidateDevicesCollection) o;
+        return Objects.equals(repositoryName, that.repositoryName);
     }
 
     /**
-     * Calculates a hash code for the {@link DeviceDescriptionCollection} from its repository name and device template ID.
+     * Calculates a hash code for the {@link CandidateDevicesCollection} from its repository name.
      *
      * @return The resulting hash code
      */
     @Override
     public int hashCode() {
-        return Objects.hash(repositoryName, deviceTemplateId);
+        return Objects.hash(repositoryName);
     }
 }

@@ -3,8 +3,8 @@ package de.ipvs.as.mbp.web.rest.discovery;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
-import de.ipvs.as.mbp.domain.discovery.collections.ScoredDeviceDescription;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateCreateValidator;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateTestDTO;
@@ -49,19 +49,19 @@ public class RestDiscoveryController {
      * Retrieves device descriptions that match the requirements of a given {@link DeviceTemplate} from discovery
      * repositories that are available under a given collection of {@link RequestTopic}s, provided as set
      * of their IDs. The resulting device descriptions are then processed and and ranked with respect to the scoring
-     * criteria of the device template. The resulting {@link DeviceDescriptionRanking} is subsequently returned as
+     * criteria of the device template. The resulting {@link CandidateDevicesRanking} is subsequently returned as
      * response. This way, the query results of a device template can be tested before the template is actually created.
      *
      * @param accessRequestHeader   Access request headers
      * @param deviceTemplateTestDTO A DTO containing the device template to test and the set of request topic IDs
-     * @return A response containing the resulting {@link DeviceDescriptionRanking}
+     * @return A response containing the resulting {@link CandidateDevicesRanking}
      * @throws EntityNotFoundException    In case a request topic or user could not be found
      * @throws MissingPermissionException In case of insufficient permissions to access one of the request topics
      */
     @PostMapping("/testDeviceTemplate")
     @ApiOperation(value = "Retrieves device descriptions that match the requirements of a given device template and processes them to a ranking.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "The device template is invalid!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
-    public ResponseEntity<List<ScoredDeviceDescription>> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
+    public ResponseEntity<List<ScoredCandidateDevice>> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
         //Unpack the DTO
         DeviceTemplate deviceTemplate = deviceTemplateTestDTO.getDeviceTemplate();
         Set<String> requestTopicIds = deviceTemplateTestDTO.getRequestTopicIds();
@@ -83,7 +83,7 @@ public class RestDiscoveryController {
         }
 
         //Retrieve the device descriptions and process them to a ranking
-        DeviceDescriptionRanking ranking = discoveryService.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
+        CandidateDevicesRanking ranking = discoveryService.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
 
         //Return device descriptions and their associated scores
         return new ResponseEntity<>(ranking.toList(), HttpStatus.OK);

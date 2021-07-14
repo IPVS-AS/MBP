@@ -25,6 +25,16 @@ public class CancelSubscriptionMessage extends DomainMessageBody {
     }
 
     /**
+     * Creates a new cancel subscription message from a given reference ID.
+     *
+     * @param referenceId The reference ID of the subscription to chancel
+     */
+    public CancelSubscriptionMessage(String referenceId) {
+        this();
+        setReferenceId(referenceId);
+    }
+
+    /**
      * Returns the reference ID that is used in order to identify the subscription that is supposed to be cancelled.
      *
      * @return The reference ID

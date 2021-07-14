@@ -1,9 +1,11 @@
 package de.ipvs.as.mbp.service.discovery.gateway;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionCollection;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
+import de.ipvs.as.mbp.domain.discovery.messages.cancel.CancelSubscriptionMessage;
 import de.ipvs.as.mbp.domain.discovery.messages.query.CandidateDevicesReply;
 import de.ipvs.as.mbp.domain.discovery.messages.query.CandidateDevicesRequest;
 import de.ipvs.as.mbp.domain.discovery.messages.query.RepositorySubscriptionDetails;
@@ -14,6 +16,7 @@ import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.DomainMessageListener;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
+import de.ipvs.as.mbp.service.messaging.message.types.CommandMessage;
 import de.ipvs.as.mbp.service.messaging.message.types.ReplyMessage;
 import de.ipvs.as.mbp.service.messaging.message.types.RequestMessage;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequest;
@@ -66,14 +69,14 @@ public class DiscoveryGateway {
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
      * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as list of {@link DeviceDescriptionCollection}s, containing one collection
+     * in response are returned as {@link CandidateDevicesResultContainer}, holding one {@link CandidateDevicesCollection}
      * per repository. No subscription is created at the repositories as part of this request.
      *
      * @param deviceTemplate The device template to find suitable candidate devices for
      * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @return The resulting list of {@link DeviceDescriptionCollection}s
+     * @return The resulting list of {@link CandidateDevicesCollection}s
      */
-    public List<DeviceDescriptionCollection> getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesResultContainer getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Delegate call to overloaded method
         return getDeviceCandidatesWithSubscription(deviceTemplate, requestTopics, null);
     }
@@ -82,7 +85,7 @@ public class DiscoveryGateway {
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
      * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as list of {@link DeviceDescriptionCollection}s, containing one collection
+     * in response are returned as {@link CandidateDevicesResultContainer}, holding one {@link CandidateDevicesCollection}
      * per repository. In addition, an asynchronous subscription can be created at the repositories such that the
      * MBP can become notified when the collection of suitable candidate devices changed over time at a certain
      * repository for the given {@link DeviceTemplate}.
@@ -91,12 +94,12 @@ public class DiscoveryGateway {
      * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
      * @param subscriber     The subscriber to notify about changes in the collection of suitable candidate devices.
      *                       Set to null, if no subscription is supposed to be created
-     * @return The resulting list of {@link DeviceDescriptionCollection}s
+     * @return The resulting list of {@link CandidateDevicesCollection}s
      */
-    public List<DeviceDescriptionCollection> getDeviceCandidatesWithSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
+    public CandidateDevicesResultContainer getDeviceCandidatesWithSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
         //Sanity check
         if (deviceTemplate == null) {
-            throw new IllegalArgumentException("Device template must not be null.");
+            throw new IllegalArgumentException("The device template must not be null.");
         }
 
         //Create the request message body
@@ -106,8 +109,8 @@ public class DiscoveryGateway {
 
         //Check if a subscriber was provided
         if (subscriber != null) {
-            //Configure subscription and add it to the request bod
-            RepositorySubscriptionDetails subscription = createSubscription(deviceTemplate, subscriber);
+            //Configure subscription and add it to the request body
+            RepositorySubscriptionDetails subscription = createSubscription(deviceTemplate, requestTopics, subscriber);
             requestBody.setSubscription(subscription);
         }
 
@@ -115,10 +118,14 @@ public class DiscoveryGateway {
         List<ReplyMessage<CandidateDevicesReply>> replies = sendRepositoryRequest(requestTopics, requestBody, new TypeReference<ReplyMessage<CandidateDevicesReply>>() {
         });
 
-        //Stream the replies and create device description sets from them
-        return replies.stream().map(r -> new DeviceDescriptionCollection(r.getSenderName(), deviceTemplate.getId())
-                .addDeviceDescriptions(r.getMessageBody().getDeviceDescriptions())) //Add device descriptions
+        //Stream the replies and create candidate device collections from them
+        List<CandidateDevicesCollection> candidateDevices = replies.stream()
+                .map(r -> new CandidateDevicesCollection(r.getSenderName())
+                        .addCandidateDevices(r.getMessageBody().getDeviceDescriptions())) //Add device descriptions
                 .collect(Collectors.toList());
+
+        //Wrap result into a candidate devices container and return it
+        return new CandidateDevicesResultContainer(deviceTemplate.getId(), candidateDevices);
     }
 
     /**
@@ -151,16 +158,18 @@ public class DiscoveryGateway {
 
     /**
      * Appropriately configures and returns a {@link RepositorySubscriptionDetails} object from a given
-     * {@link DeviceTemplate} and a {@link CandidateDevicesSubscriber} that can be used in
-     * {@link CandidateDevicesRequest}s in order to create subscriptions for asynchronous notifications at discovery
-     * repositories. This way, the given subscriber can become notified when the collection of suitable candidate
-     * devices changed over time at a certain repository for the given {@link DeviceTemplate}.
+     * {@link DeviceTemplate}, a {@link Collection} of {@link RequestTopic}s and a {@link CandidateDevicesSubscriber}
+     * that can be used in {@link CandidateDevicesRequest}s in order to create subscriptions for asynchronous
+     * notifications at discovery repositories. This way, the given subscriber can become notified when the
+     * collection of suitable candidate devices changed over time at a certain repository for the
+     * given {@link DeviceTemplate}.
      *
      * @param deviceTemplate The device template to use
+     * @param requestTopics  The collection of request topic under which the subscription request is published
      * @param subscriber     The subscriber to use
      * @return The resulting {@link RepositorySubscriptionDetails}
      */
-    private RepositorySubscriptionDetails createSubscription(DeviceTemplate deviceTemplate, CandidateDevicesSubscriber subscriber) {
+    private RepositorySubscriptionDetails createSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
         //Sanity check
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
@@ -172,7 +181,7 @@ public class DiscoveryGateway {
         User deviceTemplateOwner = deviceTemplate.getOwner();
 
         //Create subscription object
-        CandidateDevicesSubscription subscriptionObject = new CandidateDevicesSubscription(deviceTemplate, subscriber);
+        CandidateDevicesSubscription subscriptionObject = new CandidateDevicesSubscription(deviceTemplate, requestTopics, subscriber);
 
         //Check if there are already subscriptions for this owner
         if (subscriptionReturnTopics.containsKey(deviceTemplateOwner.getId())) {
@@ -213,8 +222,8 @@ public class DiscoveryGateway {
             throw new IllegalArgumentException("The device template must not be null.");
         }
 
-        //Remove subscription from map
-        this.candidateDeviceSubscriptions.remove(deviceTemplate.getId());
+        //Remove subscription from map, but remember the old subscription object
+        CandidateDevicesSubscription subscriptionObject = this.candidateDeviceSubscriptions.remove(deviceTemplate.getId());
 
         //Get owner ID of the device template
         String ownerId = deviceTemplate.getOwner().getId();
@@ -225,7 +234,16 @@ public class DiscoveryGateway {
             return;
         }
 
-        //TODO Unsubscribe from repository as well!
+        //Create message for cancelling the subscription
+        CancelSubscriptionMessage messageBody = new CancelSubscriptionMessage(deviceTemplate.getId());
+        CommandMessage<CancelSubscriptionMessage> cancelSubscriptionMessage = new CommandMessage<>(messageBody);
+
+        //Put topics together for publishing the cancel message
+        List<String> cancelTopics = subscriptionObject.getRequestTopics()
+                .stream().map(t -> t.getFullTopic() + "/" + messageBody.getTopicSuffix()).collect(Collectors.toList());
+
+        //Create cancel subscription topics and publish the cancel message
+        this.pubSubService.publish(cancelTopics, cancelSubscriptionMessage);
 
         //No subscriptions remain for this owner, so entirely unsubscribe from the topic
         this.pubSubService.unsubscribe(this.subscriptionReturnTopics.get(ownerId), this.subscriptionNotificationListener);
@@ -257,8 +275,8 @@ public class DiscoveryGateway {
         CandidateDevicesSubscription subscription = this.candidateDeviceSubscriptions.get(deviceTemplateId);
 
         //Create device description collection object from the received results
-        DeviceDescriptionCollection collection = new DeviceDescriptionCollection(senderName, deviceTemplateId)
-                .addDeviceDescriptions(replyBody.getDeviceDescriptions());
+        CandidateDevicesCollection collection = new CandidateDevicesCollection(senderName)
+                .addCandidateDevices(replyBody.getDeviceDescriptions());
 
         //Call callback method of subscriber
         subscription.getSubscriber().onDeviceTemplateResultChanged(subscription.getDeviceTemplate(), senderName, collection);

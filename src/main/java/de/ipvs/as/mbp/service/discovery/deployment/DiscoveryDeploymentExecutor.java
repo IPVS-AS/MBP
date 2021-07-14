@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.discovery.deployment;
 
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
@@ -42,7 +42,7 @@ public class DiscoveryDeploymentExecutor {
         this.deployer = deployerDispatcher.getDeployer();
     }
 
-    public CompletableFuture<DeploymentResult> redeployByRanking(DynamicPeripheral dynamicPeripheral, DeviceDescriptionRanking ranking) {
+    public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking) {
         //Check and remember whether the dynamic peripheral is currently deployed (based on the device details)
         //Go through the ranking and check every device for deployability
         //Thereby skip the device on which the peripheral is currently deployed

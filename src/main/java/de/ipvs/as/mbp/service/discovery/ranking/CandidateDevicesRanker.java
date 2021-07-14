@@ -1,16 +1,15 @@
-package de.ipvs.as.mbp.service.discovery.processing.steps;
+package de.ipvs.as.mbp.service.discovery.ranking;
 
-import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
+import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
 
 import java.time.Instant;
 import java.util.Comparator;
 
 /**
- * By using this comparator, a collection or stream of {@link DeviceDescription}s can be sorted such that the
- * ones with the more recent last update timestamps appear earlier than the ones with later timestamps.
+ * Objects of this class behave as {@link Comparator}s for {@link ScoredCandidateDevice}s and thus enable
+ * to create a ranking from a given collection of {@link ScoredCandidateDevice}s.
  */
-public class DeviceDescriptionTimestampComparator implements Comparator<DeviceDescription> {
-
+public class CandidateDevicesRanker implements Comparator<ScoredCandidateDevice> {
     /**
      * Compares its two arguments for order.  Returns a negative integer,
      * zero, or a positive integer as the first argument is less than, equal
@@ -52,7 +51,7 @@ public class DeviceDescriptionTimestampComparator implements Comparator<DeviceDe
      *                              being compared by this comparator.
      */
     @Override
-    public int compare(DeviceDescription d1, DeviceDescription d2) {
+    public int compare(ScoredCandidateDevice d1, ScoredCandidateDevice d2) {
         //Null check
         if ((d1 == null) && (d2 == null)) {
             return 0;
@@ -62,7 +61,15 @@ public class DeviceDescriptionTimestampComparator implements Comparator<DeviceDe
             return 1;
         }
 
-        //Retrieve the last update timestamps of both
+        //Compare the scores
+        int compared = Double.compare(d2.getScore(), d1.getScore());
+
+        //Check if score is different
+        if (compared != 0) {
+            return compared;
+        }
+
+        //Score is equal, so compare the timestamps
         Instant t1 = d1.getLastUpdateTimestamp();
         Instant t2 = d2.getLastUpdateTimestamp();
 

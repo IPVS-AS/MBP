@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.discovery.gateway;
 
-import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionCollection;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 
 /**
@@ -16,8 +16,8 @@ public interface CandidateDevicesSubscriber {
      *
      * @param deviceTemplate          The device template for which the candidate devices are retrieved
      * @param repositoryName          The name of the repository that issued the notification
-     * @param updatedCandidateDevices The updated collection of candidate devices as {@link DeviceDescriptionCollection}
+     * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
      */
     void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName,
-                                       DeviceDescriptionCollection updatedCandidateDevices);
+                                       CandidateDevicesCollection updatedCandidateDevices);
 }
