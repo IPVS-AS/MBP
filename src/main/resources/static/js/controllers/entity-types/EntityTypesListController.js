@@ -20,38 +20,54 @@ app.controller('EntityTypesListController',
                 createImageThumbnails: true,
                 maxFilesize: 1,
                 maxFiles: 1,
+                uploadMultiple: false,
+                parallelUploads: 1,
                 acceptedFiles: "image/*"
             };
 
-            vm.dzIconMethods = {};
+            vm.dzDeviceIconMethods = {};
+            vm.dzActuatorIconMethods = {};
+            vm.dzSensorIconMethods = {};
 
             vm.dzDeviceTypeIconCallbacks = {
                 'addedfile': function (file) {
-                    vm.addDeviceTypeCtrl.item.icon = vm.addDeviceTypeCtrl.item.icon || [];
-                    vm.addDeviceTypeCtrl.item.icon.push(file);
+                    if (vm.addDeviceTypeCtrl.item.icon && vm.addDeviceTypeCtrl.item.icon.length > 0) {
+                        vm.dzDeviceIconMethods.removeFile(vm.addDeviceTypeCtrl.item.icon[0]);
+                    } else {
+                        vm.addDeviceTypeCtrl.item.icon = [];
+                    }
+                    vm.addDeviceTypeCtrl.item.icon[0] = file;
                 },
                 'removedfile': function (file) {
-                    vm.addDeviceTypeCtrl.item.icon.splice(vm.addDeviceTypeCtrl.item.icon.indexOf(file), 1);
+                    vm.addDeviceTypeCtrl.item.icon = [];
                 }
             };
 
             vm.dzActuatorTypeIconCallbacks = {
                 'addedfile': function (file) {
-                    vm.addActuatorTypeCtrl.item.icon = vm.addActuatorTypeCtrl.item.icon || [];
-                    vm.addActuatorTypeCtrl.item.icon.push(file);
+                    if (vm.addActuatorTypeCtrl.item.icon && vm.addActuatorTypeCtrl.item.icon.length > 0) {
+                        vm.dzActuatorIconMethods.removeFile(vm.addActuatorTypeCtrl.item.icon[0]);
+                    } else {
+                        vm.addActuatorTypeCtrl.item.icon = [];
+                    }
+                    vm.addActuatorTypeCtrl.item.icon[0] = file;
                 },
                 'removedfile': function (file) {
-                    vm.addActuatorTypeCtrl.item.icon.splice(vm.addActuatorTypeCtrl.item.icon.indexOf(file), 1);
+                    vm.addActuatorTypeCtrl.item.icon = [];
                 }
             };
 
             vm.dzSensorTypeIconCallbacks = {
                 'addedfile': function (file) {
-                    vm.addSensorTypeCtrl.item.icon = vm.addSensorTypeCtrl.item.icon || [];
-                    vm.addSensorTypeCtrl.item.icon.push(file);
+                    if (vm.addSensorTypeCtrl.item.icon && vm.addSensorTypeCtrl.item.icon.length > 0) {
+                        vm.dzSensorIconMethods.removeFile(vm.addSensorTypeCtrl.item.icon[0]);
+                    } else {
+                        vm.addSensorTypeCtrl.item.icon = [];
+                    }
+                    vm.addSensorTypeCtrl.item.icon[0] = file;
                 },
                 'removedfile': function (file) {
-                    vm.addSensorTypeCtrl.item.icon.splice(vm.addSensorTypeCtrl.item.icon.indexOf(file), 1);
+                    vm.addSensorTypeCtrl.item.icon = [];
                 }
             };
 
@@ -59,7 +75,10 @@ app.controller('EntityTypesListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-
+                // Refresh policy select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
+                });
             })();
 
             /**
@@ -205,10 +224,27 @@ app.controller('EntityTypesListController',
 
                         //Reset dropzone
                         vm.addDeviceTypeCtrl.item.icon = [];
-                        vm.dzIconMethods.removeAllFiles();
+                        vm.dzDeviceIconMethods.removeAllFiles();
 
                         //Add new item to list
                         vm.deviceTypeListCtrl.pushItem(data);
+                    }
+                }
+            );
+
+            //Watch errors during addition of device types
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.addDeviceTypeCtrl.item.errors;
+                },
+                //Callback
+                function () {
+                    let error = vm.addDeviceTypeCtrl.item.errors;
+                    if (error) {
+                        //Reset dropzone
+                        vm.addDeviceTypeCtrl.item.icon = [];
+                        vm.dzDeviceIconMethods.removeAllFiles();
                     }
                 }
             );
@@ -228,10 +264,27 @@ app.controller('EntityTypesListController',
 
                         //Reset dropzone
                         vm.addActuatorTypeCtrl.item.icon = [];
-                        vm.dzIconMethods.removeAllFiles();
+                        vm.dzActuatorIconMethods.removeAllFiles();
 
                         //Add new item to list
                         vm.actuatorTypeListCtrl.pushItem(data);
+                    }
+                }
+            );
+
+            //Watch errors during addition of actuator types
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.addActuatorTypeCtrl.item.errors;
+                },
+                //Callback
+                function () {
+                    let error = vm.addActuatorTypeCtrl.item.errors;
+                    if (error) {
+                        //Reset dropzone
+                        vm.addActuatorTypeCtrl.item.icon = [];
+                        vm.dzActuatorIconMethods.removeAllFiles();
                     }
                 }
             );
@@ -251,10 +304,27 @@ app.controller('EntityTypesListController',
 
                         //Reset dropzone
                         vm.addSensorTypeCtrl.item.icon = [];
-                        vm.dzIconMethods.removeAllFiles();
+                        vm.dzSensorIconMethods.removeAllFiles();
 
                         //Add new item to list
                         vm.sensorTypeListCtrl.pushItem(data);
+                    }
+                }
+            );
+
+            //Watch errors during addition of sensor types
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.addSensorTypeCtrl.item.errors;
+                },
+                //Callback
+                function () {
+                    let error = vm.addSensorTypeCtrl.item.errors;
+                    if (error) {
+                        //Reset dropzone
+                        vm.addSensorTypeCtrl.item.icon = [];
+                        vm.dzSensorIconMethods.removeAllFiles();
                     }
                 }
             );
