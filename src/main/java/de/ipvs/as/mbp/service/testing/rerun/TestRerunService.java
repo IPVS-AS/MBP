@@ -57,7 +57,7 @@ public class TestRerunService {
     private CEPTriggerService triggerService;
 
     @Autowired
-    private PropertiesService propertiesService;
+    private final PropertiesService propertiesService;
 
     @Autowired
     private List<String> defaultRerunOperatorWhitelist;

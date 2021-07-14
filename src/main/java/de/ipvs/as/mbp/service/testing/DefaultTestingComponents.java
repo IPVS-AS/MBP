@@ -123,8 +123,6 @@ public class DefaultTestingComponents {
     }
 
 
-
-
     /**
      * Registers the wished sensor simulator if the corresponding adapter is already registered
      *
@@ -156,14 +154,13 @@ public class DefaultTestingComponents {
     }
 
     /**
-     *  Registers all sensor simulators if the corresponding adapter is already registered.
+     * Registers all sensor simulators if the corresponding adapter is already registered.
      */
-    private void registerAllSensorSimulators(){
+    private void registerAllSensorSimulators() {
         for (String sensorName : SENSOR_SIMULATORS) {
             registerSensorSimulator(sensorName);
         }
     }
-
 
 
     /**
@@ -342,18 +339,8 @@ public class DefaultTestingComponents {
      */
     public void replaceSimulatorInReport(List<TestReport> affectedReports) {
         for (TestReport report : affectedReports) {
-            List<Sensor> sensorList = report.getSensor();
-            for (Sensor sensor : sensorList) {
-                if (sensorRepository.findByName(sensor.getName()).isPresent()) {
-                    // Get the index of the reinstalled sensor and replace it with the new one
-                    int index = sensorList.indexOf(sensor);
-                    Sensor replacedSensor = sensorRepository.findByName(sensor.getName()).get();
-                    sensorList.set(index, replacedSensor);
-                }
-
-            }
             // Save the modified test
-            report.setSensor(sensorList);
+            report.setSensor(placedInList(report.getSensor()));
             testReportRepository.save(report);
         }
     }
@@ -366,20 +353,28 @@ public class DefaultTestingComponents {
      */
     public void replaceSimulatorInTest(List<TestDetails> affectedTests) {
         for (TestDetails test : affectedTests) {
-            List<Sensor> sensorList = test.getSensor();
-            for (Sensor sensor : sensorList) {
-                if (sensorRepository.findByName(sensor.getName()).isPresent()) {
-                    // Get the index of the reinstalled sensor and replace it with the new one
-                    int index = sensorList.indexOf(sensor);
-                    Sensor replacedSensor = sensorRepository.findByName(sensor.getName()).get();
-                    sensorList.set(index, replacedSensor);
-                }
-
-            }
             // Save the modified test
-            test.setSensor(sensorList);
+            test.setSensor(placedInList(test.getSensor()));
             testDetailsRepository.save(test);
         }
+    }
+
+    /**
+     * Replace the reinstalled sensor simulator in the sensor list.
+     *
+     * @param sensorList which should be updated
+     * @return updated sensor list with the reinstalled sensors
+     */
+    private List<Sensor> placedInList(List<Sensor> sensorList) {
+        for (Sensor sensor : sensorList) {
+            if (sensorRepository.findByName(sensor.getName()).isPresent()) {
+                // Get the index of the reinstalled sensor and replace it with the new one
+                int index = sensorList.indexOf(sensor);
+                Sensor replacedSensor = sensorRepository.findByName(sensor.getName()).get();
+                sensorList.set(index, replacedSensor);
+            }
+        }
+        return sensorList;
     }
 
     /**
