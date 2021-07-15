@@ -35,8 +35,6 @@ public class TestDetailsCreateValidator implements ICreateValidator<TestDetails>
         //Check name
         if (Validation.isNullOrEmpty(entity.getName())) {
             exception.addInvalidField("name", "The name must not be empty.");
-        } else if(testDetailsRepository.existsByName(entity.getName())){
-            exception.addInvalidField("name", "The name must be unique.");
         }
 
         // Check if rule choice is empty

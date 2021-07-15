@@ -37,8 +37,6 @@ public class DeviceCreateValidator implements ICreateValidator<Device> {
         //Check name
         if (Validation.isNullOrEmpty(entity.getName())) {
             exception.addInvalidField("name", "The name must not be empty.");
-        } else if (deviceRepository.existsByName(entity.getName())){
-            exception.addInvalidField("name", "The name must be unique.");
         }
 
         //Check component type

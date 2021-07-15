@@ -44,15 +44,6 @@ public class ComponentCreateValidator implements ICreateValidator<Component> {
             exception.addInvalidField("name", "The name must not be empty.");
         }
 
-        if(entity.getComponentTypeName().equals("actuator")){
-            if(actuatorRepository.existsByName(entity.getName())){
-                exception.addInvalidField("name", "The name must be unique.");
-            }
-        } else if(entity.getComponentTypeName().equals("sensor")){
-            if(sensorRepository.existsByName(entity.getName())){
-                exception.addInvalidField("name", "The name must be unique.");
-            }
-        }
 
         //Check component type
         if (Validation.isNullOrEmpty(entity.getComponentType())) {

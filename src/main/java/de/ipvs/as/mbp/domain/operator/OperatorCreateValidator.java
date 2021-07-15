@@ -41,8 +41,6 @@ public class OperatorCreateValidator implements ICreateValidator<Operator> {
         //Check name
         if (Validation.isNullOrEmpty(entity.getName())) {
             exception.addInvalidField("name", "The name must not be empty.");
-        } else if(operatorRepository.existsByName(entity.getName())){
-            exception.addInvalidField("name", "The name must be unique.");
         }
 
 

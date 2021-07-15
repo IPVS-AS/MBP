@@ -226,12 +226,12 @@ public class TestRerunService {
         Sensor newSensor = new Sensor();
         newSensor.setOwner(null);
 
-        Optional<Operator> rerunOperatorOptional = operatorRepository.findByName(RERUN_OPERATOR);
-        Optional<Device> testingDeviceOptional = deviceRepository.findByName(TESTING_DEVICE);
+        Optional<Operator> rerunOperatorOptional = operatorRepository.findFirstByName(RERUN_OPERATOR);
+        Optional<Device> testingDeviceOptional = deviceRepository.findFirstByName(TESTING_DEVICE);
         String newSensorName = RERUN_IDENTIFIER + realSensorName;
 
         try {
-            if (!sensorRepository.findByName(newSensorName).isPresent() && rerunOperatorOptional.isPresent() && testingDeviceOptional.isPresent()) {
+            if (!sensorRepository.existsByName(newSensorName) && rerunOperatorOptional.isPresent() && testingDeviceOptional.isPresent()) {
 
                 // Set all relevant information
                 newSensor.setName(newSensorName);
@@ -264,8 +264,8 @@ public class TestRerunService {
      */
     public void addSensor(String sensorName, TestDetails testDetails) {
         List<Sensor> sensors = testDetails.getSensor();
-        if (sensorRepository.findByName(sensorName).isPresent()) {
-            Sensor rerunSensor = sensorRepository.findByName(sensorName).get();
+        if (sensorRepository.existsByName(sensorName)) {
+            Sensor rerunSensor = sensorRepository.findFirstByName(sensorName).get();
             if (!sensors.contains(rerunSensor)) {
                 sensors.add(rerunSensor);
                 testDetails.setSensor(sensors);
@@ -314,7 +314,7 @@ public class TestRerunService {
                             for (Sensor realSensor : realSensors) {
                                 if (realSensor.getId().equals(sensorID)) {
                                     if (sensorRepository.findByName(RERUN_IDENTIFIER + realSensor.getName()).isPresent()) {
-                                        Sensor rerunSensor = sensorRepository.findByName(RERUN_IDENTIFIER + realSensor.getName()).get();
+                                        Sensor rerunSensor = sensorRepository.findFirstByName(RERUN_IDENTIFIER + realSensor.getName()).get();
                                         // replace the sensor id in the trigger query with the rerun sensor id
                                         triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
                                         newTrigger.setQuery(triggerQuery);
