@@ -7,6 +7,7 @@ import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import org.bson.Document;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
@@ -51,11 +52,11 @@ public class TestReport extends UserEntity {
 
     private String successful;
 
-    private Map<String, List<Double>> triggerValues;
+    private Map<String, List<Document>> triggerValues;
 
     private List<String> rulesExecuted;
 
-    private Map<String, LinkedHashMap<Long, Double>> simulationList;
+    private Map<String, LinkedHashMap<Long, Document>> simulationList;
 
     private boolean triggerRules;
 
@@ -92,7 +93,7 @@ public class TestReport extends UserEntity {
      *
      * @return simulationList
      */
-    public Map<String, LinkedHashMap<Long, Double>> getSimulationList() {
+    public Map<String, LinkedHashMap<Long, Document>> getSimulationList() {
         return simulationList;
     }
 
@@ -101,7 +102,7 @@ public class TestReport extends UserEntity {
      *
      * @param simulationList list of simulated values of the sensors
      */
-    public void setSimulationList(Map<String, LinkedHashMap<Long, Double>> simulationList) {
+    public void setSimulationList(Map<String, LinkedHashMap<Long, Document>> simulationList) {
         this.simulationList = simulationList;
     }
 
@@ -128,7 +129,7 @@ public class TestReport extends UserEntity {
      *
      * @return triggerValues
      */
-    public Map<String, List<Double>> getTriggerValues() {
+    public Map<String, List<Document>> getTriggerValues() {
         return triggerValues;
     }
 
@@ -137,7 +138,7 @@ public class TestReport extends UserEntity {
      *
      * @param triggerValues values which triggered rules through the test
      */
-    public void setTriggerValues(Map<String, List<Double>> triggerValues) {
+    public void setTriggerValues(Map<String, List<Document>> triggerValues) {
         this.triggerValues = triggerValues;
     }
 

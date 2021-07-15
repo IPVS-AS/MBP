@@ -667,7 +667,6 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                 }
             }
         } catch (JSONException e) {
-            // TODO handle this properly
             e.printStackTrace();
         }
     }
