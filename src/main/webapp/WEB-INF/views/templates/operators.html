@@ -44,7 +44,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Description</th>
-                        <th>Unit</th>
+                        <th>Data Model</th>
                         <th>Parameters</th>
                         <th>Owner</th>
                     </tr>
@@ -57,7 +57,7 @@
                                class="material-icons" style="vertical-align: bottom;">lock</i>
                         </td>
                         <td ng-if="item.name.indexOf('TESTING_') === -1 && item.name.indexOf('RERUN_') === -1">{{item.description}}</td>
-                        <td ng-if="item.name.indexOf('TESTING_') === -1 && item.name.indexOf('RERUN_') === -1">{{item.unit ? item.unit : 'None'}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1 && item.name.indexOf('RERUN_') === -1">{{item.dataModel.name ? item.dataModel.name : 'None'}}</td>
                         <td ng-if="item.name.indexOf('TESTING_') === -1 && item.name.indexOf('RERUN_') === -1">
                             <button ng-repeat-start="parameter in item.parameters"
                                     class="btn btn-default" role="button"
@@ -138,15 +138,19 @@
                                 <span class="help-block"
                                       ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description}}</span>
                             </div>
-                            <!-- item.unit group -->
-                            <div class="form-group"
-                                 ng-class="{'has-error' : addOperatorCtrl.item.errors.unit }">
+                            <!-- item.dataModel group -->
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.dataModel}">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.unit }">
-                                    <unit-input ng-model="addOperatorCtrl.item.unit"></unit-input>
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.dataModel}">
+                                    <select class="form-control show-tick" id="operator-form-select-data-model"
+                                            ng-model="addOperatorCtrl.item.dataModelId"
+                                            ng-options="t.id as (t.name) for t in ctrl.dataModelList">
+                                        <option value="">Select data model *
+                                        <option/>
+                                    </select>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit}}</span>
+                                      ng-show="addOperatorCtrl.item.errors.dataModel">{{addOperatorCtrl.item.errors.dataModel}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Operator scripts: *</label>

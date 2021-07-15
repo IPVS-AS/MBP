@@ -2,8 +2,10 @@ package de.ipvs.as.mbp.service.log_writer;
 
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.ValueLogRepository;
+import de.ipvs.as.mbp.service.cep.trigger.CEPValueLogCache;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,9 @@ public class ValueLogWriter implements ValueLogReceiverObserver {
 
     //Repository component to use for storing value logs (autowired)
     private ValueLogRepository valueLogRepository;
+
+    @Autowired
+    private CEPValueLogCache cepValueLogCache;
 
     /**
      * Creates and starts the service by passing references to a value log receiver service
@@ -47,5 +52,8 @@ public class ValueLogWriter implements ValueLogReceiverObserver {
 
         //Write value log into repository
         valueLogRepository.write(valueLog);
+        // Remove the value log from the CEPValueLogCache as it should be now written to the database
+        cepValueLogCache.removeValueLog(valueLog);
+
     }
 }

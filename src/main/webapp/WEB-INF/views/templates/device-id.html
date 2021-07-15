@@ -229,7 +229,9 @@
                                         loading-start="operator.loadingLive.start()"
                                         loading-finish="operator.loadingLive.finish()"
                                         get-data="operator.getData(numberLogs, descending, unit)"
-                                        unit="{{operator.displayUnit}}">
+                                        unit="{{operator.displayUnit}}"
+                                        json-path={{"{\"value\":{\"path\":\"$['value']\"}"+"}"}}
+                                        field-collection-id="default">
                             </live-chart>
                         </div>
                         <div role="tabpanel" class="tab-pane fade in active" id="historical-chart-{{operator.id}}">
@@ -238,7 +240,9 @@
                                               loading-start="operator.loadingHistorical.start()"
                                               loading-finish="operator.loadingHistorical.finish()"
                                               get-data="operator.getData(numberLogs, descending, unit)"
-                                              unit="{{operator.displayUnit}}">
+                                              unit="{{operator.displayUnit}}"
+                                              json-path={{"{\"value\":{\"path\":\"$['value']\"}"+"}"}}
+                                              field-collection-id="default">
                             </historical-chart>
                         </div>
                         <div role="tabpanel" class="tab-pane fade" id="value-stats-{{operator.id}}">

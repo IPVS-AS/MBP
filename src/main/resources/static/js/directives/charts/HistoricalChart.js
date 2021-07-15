@@ -60,7 +60,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 series: [{
                     name: 'Value',
                     data: [],
-                    showInLegend: false
+                    showInLegend: true
                 }],
                 tooltip: {
                     valueDecimals: 2,
@@ -169,11 +169,61 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                     values = values.reverse();
                 }
 
-                //Update chart
-                chart.series[0].update({
-                    data: values
-                }, true); //Redraw chart
+                // As the directive takes the jsonPath parameter as string a conversion to an object is necessary
+                var jsonPathAsObj = JSON.parse(scope.jsonPath);
 
+                // Apply jsonPath on the values
+                values.forEach(applyJsonPath);
+
+                function applyJsonPath(value, index, array) {
+                    if (scope.fieldCollectionId === 'default') {
+                        array[index][1] = parseFloat(JSONPath.JSONPath({
+                            path: jsonPathAsObj.value.path,
+                            json: array[index][1]
+                        }).toString());
+                    } else {
+                        array[index][1] = JSONPath.JSONPath({
+                            path: jsonPathAsObj.arrVal.path,
+                            json: array[index][1]
+                        });
+                    }
+                }
+
+                if (scope.fieldCollectionId === 'default') {
+                    //Update chart
+                    chart.series[0].update({
+                        name: jsonPathAsObj.value.name,
+                        tooltip: {valueSuffix: ' ' + (jsonPathAsObj.value.unit ? jsonPathAsObj.value.unit : '')},
+                        data: values
+                    }, true); //Redraw chart
+                } else {
+                    // Check if enough series are existing - if not add the missing ones
+
+                    var dataSeriesNumber = chart.series.length;
+                    var valueLengthNumber = values[0][1].length;
+
+                    // Add series if not enough are currently existing
+                    for (var i = dataSeriesNumber; i < valueLengthNumber; i++) {
+                        chart.addSeries({
+                            name: jsonPathAsObj.arrVal.name  + "[" + i + "]",
+                            data: [],
+                            showInLegend: true,
+                        });
+                    }
+
+                    for (var i = 0; i < chart.series.length; i++) {
+                        chart.series[i].update({
+                            name: jsonPathAsObj.arrVal.name  + "[" + i + "]",
+                            tooltip: {valueSuffix: ' ' + (jsonPathAsObj.arrVal.unit ? jsonPathAsObj.arrVal.unit : '')},
+                            data: values.map(function (currentVal, index) {
+                                var newVal = [];
+                                newVal.push(currentVal[0]);
+                                newVal.push(currentVal[1][i]);
+                                return newVal;
+                            })
+                        }, true);
+                    }
+                }
                 //Loading finished
                 scope.loadingFinish();
             });
@@ -185,6 +235,26 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         }, function (newValue, oldValue) {
             //Update chart if unit was changed
             updateChart();
+        });
+
+        //Watch the jsonPath parameter
+        scope.$watch(function () {
+            return scope.jsonPath;
+        }, function (newValue, oldValue) {
+            //Update chart if jsonPath was changed
+            console.log("JSONPATh updated");
+            initChart();
+        });
+
+        //Watch the fieldCollectionId parameter
+        scope.$watch(function () {
+            return scope.fieldCollectionId;
+        }, function (newValue, oldValue) {
+            console.log("Field collection ID: ");
+            console.log(newValue);
+            console.log(oldValue);
+            console.log(scope.fieldCollectionId);
+            initChart();
         });
 
         //Initialize chart
@@ -245,11 +315,15 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             api: "=api",
             //The unit in which the values are supposed to be displayed
             unit: '@unit',
+            // The json path which should be used to interpret the json value data
+            jsonPath: '@jsonPath',
+            // The name of the field collection which the visualization uses
+            fieldCollectionId: '@fieldCollectionId',
             //Functions that are called when the chart loads/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',
             //Function for updating the displayed data
-            getData: '&getData',
+            getData: '&getData'
         }
     };
 }]);

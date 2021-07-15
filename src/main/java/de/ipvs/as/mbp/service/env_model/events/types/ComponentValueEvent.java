@@ -1,5 +1,7 @@
 package de.ipvs.as.mbp.service.env_model.events.types;
 
+import org.bson.Document;
+
 public class ComponentValueEvent extends EnvironmentModelEvent {
 
     //Name of the event
@@ -7,9 +9,9 @@ public class ComponentValueEvent extends EnvironmentModelEvent {
 
     private String nodeId;
     private String unit;
-    private double value;
+    private Document value;
 
-    public ComponentValueEvent(String nodeId, String unit, double value) {
+    public ComponentValueEvent(String nodeId, String unit, Document value) {
         this.nodeId = nodeId;
         this.unit = unit;
         this.value = value;
@@ -41,11 +43,11 @@ public class ComponentValueEvent extends EnvironmentModelEvent {
         this.unit = unit;
     }
 
-    public double getValue() {
+    public Document getValue() {
         return value;
     }
 
-    public void setValue(double value) {
+    public void setValue(Document value) {
         this.value = value;
     }
 }

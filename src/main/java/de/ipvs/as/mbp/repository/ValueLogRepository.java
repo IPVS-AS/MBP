@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +39,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
  */
 @Component
 public class ValueLogRepository {
+
     // Name of the collection to use for the value logs
     private static final String COLLECTION_NAME = "mongoValueLogs";
 
@@ -226,6 +228,28 @@ public class ValueLogRepository {
 
         // Return value logs as page
         return new PageImpl<>(resultList, pageable, resultList.size());
+    }
+
+    /**
+     * Finds a value log by component id and timestamp when the ValueLog was initially created.
+     *
+     * @param idRef The component id which belongs to the value log.
+     * @param timestamp The timestamp when the value log was initally created by the MBP
+     * @return The requested ValueLog, null if no ValueLog fits the requirements.
+     */
+    public ValueLog findByIdRefAndTimeStamp(String idRef, Instant timestamp) {
+        // Get all value logs of with the idRef
+        List<ValueLog> allValueLogsOfRequestedComponent = this.findAllByIdRef(idRef);
+
+        // Find the valueLog with the specified timestamp
+        for (ValueLog v : allValueLogsOfRequestedComponent) {
+            if (v.getTime().equals(timestamp)) {
+                return v;
+            }
+        }
+
+        // No ValueLog found which matches the requirements
+        return null;
     }
 
     /**

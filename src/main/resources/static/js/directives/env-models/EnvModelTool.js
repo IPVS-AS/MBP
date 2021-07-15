@@ -6,8 +6,8 @@
  * Directive for a modeling tool that can be used for creating and editing IoT environment models.
  */
 app.directive('envModelTool',
-    ['ENDPOINT_URI', '$timeout', '$q', '$controller',
-        function (ENDPOINT_URI, $timeout, $q, $controller) {
+    ['ENDPOINT_URI', '$timeout', '$q', '$controller', '$compile',
+        function (ENDPOINT_URI, $timeout, $q, $controller, $compile) {
 
             //Class for elements of the palette
             const PaletteElement = function (name, freeResize) {
@@ -1414,7 +1414,7 @@ app.directive('envModelTool',
                     }
 
                     //Put display text together
-                    let displayText = value + " " + unit;
+                    let displayText = JSON.stringify(value, null, 2) + " " + unit;
 
                     //Get element position
                     let elementPos = element.position();
@@ -1424,16 +1424,41 @@ app.directive('envModelTool',
                     let y = elementPos.top + (element.outerHeight() / 2) - 10;
 
                     //Create value container
-                    let valueContainer = $('<div>').addClass('component-value').css({
+                    let valueContainer = $('<div class="component-value">').css({
                         'left': x + 'px',
-                        'top': y + 'px'
-                    }).hide().text(displayText);
+                        'top': y + 'px',
+                        'font-size': '12px',
+                        'opacity': '0'
+                    }).on('mouseover', function () {
+                        // If the user hovers over the value display, the values should be still visible
+                        // which is realized by setting the fade out timer back.
+                        $(this).stop(true, false)
+                            .animate({opacity: 1}, 200, 'easeOutExpo')
+                            .animate({opacity: 1}, 3000)
+                            .animate({opacity: 0}, 1000, 'easeInQuint', function() {
+                                // Callback after fade out, remove the element
+                                $(this).remove();
+                        });
+                    });
+
+                    scope.value = value;
+
+                    let jsonFormatter = '<json-formatter json="value" open="1"></json-formatter>';
+                    let compiledJsonFormatter = $compile(jsonFormatter)(scope);
+
+                    valueContainer.append(compiledJsonFormatter);
 
                     //Append container to canvas
                     CANVAS.append(valueContainer);
 
                     //Animate the value container (appearance and disappearance)
-                    valueContainer.fadeIn().delay(2000).fadeOut();
+                    valueContainer.stop(true, false)
+                        .animate({opacity: 1}, 200, 'easeOutExpo')
+                        .animate({opacity: 1}, 3000)
+                        .animate({opacity: 0}, 1000, 'easeInQuint', function() {
+                            // Callback after fade out, remove the element
+                            $(this).remove();
+                        });
                 }
 
                 /**

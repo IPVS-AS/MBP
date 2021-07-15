@@ -12,6 +12,7 @@ import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -112,7 +113,7 @@ public class TestExecutor {
         if (testDetailsOptional.isPresent()) {
             TestDetails test = testDetailsOptional.get();
             Map<String, TestDetails> activeTests = getActiveTests();
-            Map<String, LinkedHashMap<Long, Double>> list =
+            Map<String, LinkedHashMap<Long, Document>> list =
                     testAnalyzer.getTestValues();
 
             if (useNewData) {
@@ -146,7 +147,7 @@ public class TestExecutor {
      */
     public void deactivateTest(List<Sensor> testSensors, Boolean useNewData) {
         Map<String, TestDetails> activeTests = getActiveTests();
-        Map<String, LinkedHashMap<Long, Double>> list = testAnalyzer.getTestValues();
+        Map<String, LinkedHashMap<Long, Document>> list = testAnalyzer.getTestValues();
 
         if (useNewData) {
             for (Sensor sensor : testSensors) {
@@ -196,7 +197,7 @@ public class TestExecutor {
                     sensorRerunService(updatedReport, oldReport.getSimulationList());
 
                     // Get List of all simulated Values
-                    Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(reportId, test.getId(), false);
+                    Map<String, LinkedHashMap<Long, Document>> valueList = testAnalyzer.isFinished(reportId, test.getId(), false);
 
                     List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(updatedReport.getRules(), updatedReport.getSensor());
                     saveAmountRulesTriggered(reportId, rulesBefore);
@@ -334,7 +335,7 @@ public class TestExecutor {
      * @param testReport     information about the test to be repeated
      * @param simulationList List of values generated during the test which should be repeated
      */
-    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Double>> simulationList) {
+    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Document>> simulationList) {
 
         IDeployer deployer = deployerDispatcher.getDeployer();
 
@@ -345,7 +346,7 @@ public class TestExecutor {
                 if (deployer.isComponentRunning(sensor)) {
                     deployer.stopComponent(sensor);
                 }
-                for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : simulationList.entrySet()) {
+                for (Map.Entry<String, LinkedHashMap<Long, Document>> sensorValues : simulationList.entrySet()) {
                     if (sensor.getName().contains(sensorValues.getKey())) {
                         // Get parameter values for starting the sensors
                         Map<String, ParameterInstance> parameterValues =
@@ -379,7 +380,7 @@ public class TestExecutor {
             startTest(test);
 
             // Get List of all simulated Values
-            Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(reportId, test.getId(), true);
+            Map<String, LinkedHashMap<Long, Document>> valueList = testAnalyzer.isFinished(reportId, test.getId(), true);
 
             List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
             saveAmountRulesTriggered(reportId, rulesBefore);
@@ -564,8 +565,8 @@ public class TestExecutor {
      * @param testDetails executed test
      * @param valueList   generated value list
      */
-    private void saveValues(TestDetails testDetails, String reportId, Map<String, LinkedHashMap<Long, Double>> valueList) {
-        Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
+    private void saveValues(TestDetails testDetails, String reportId, Map<String, LinkedHashMap<Long, Document>> valueList) {
+        Map<String, LinkedHashMap<Long, Document>> valueListTest = new HashMap<>();
         Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
 
         if (testReportOptional.isPresent()) {
@@ -573,7 +574,7 @@ public class TestExecutor {
 
             for (Sensor sensor : testReport.getSensor()) {
                 if (valueList.get(sensor.getId()) != null) {
-                    LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
+                    LinkedHashMap<Long, Document> temp = valueList.get(sensor.getId());
                     valueListTest.put(sensor.getName(), temp);
                     testReport.setSimulationList(valueListTest);
                     testDetails.setSimulationList(valueListTest);
@@ -659,13 +660,14 @@ public class TestExecutor {
 
 
     /**
+     *  TODO adapt rerun operator
      * Creates the List of Parameter Instances for start of the rerun sensors.
      *
      * @param sensorValues map of all sensor values for the rerun test
      * @return Map of parameter Instances to start the rerun sensor
      */
     public Map<String, ParameterInstance> createRerunParameters(
-            Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues) {
+            Map.Entry<String, LinkedHashMap<Long, Document>> sensorValues) {
         Map<String, ParameterInstance> parameterValues = new HashMap<>();
         ParameterInstance interval = new ParameterInstance();
         ParameterInstance value = new ParameterInstance();
@@ -675,15 +677,15 @@ public class TestExecutor {
         String comma = "-";
 
 
-        for (Iterator<Map.Entry<Long, Double>> iterator =
+        for (Iterator<Map.Entry<Long, Document>> iterator =
              sensorValues.getValue().entrySet().iterator();
              iterator.hasNext(); ) {
-            Map.Entry<Long, Double> intervalValues = iterator.next();
+            Map.Entry<Long, Document> intervalValues = iterator.next();
             if (!iterator.hasNext()) {
                 comma = "";
             }
             intervalString.append(intervalValues.getKey().toString()).append(comma);
-            valueString.append(intervalValues.getValue().toString()).append(comma);
+            valueString.append(intervalValues.getValue().toJson()).append(comma);
         }
 
         // complete Strings with bracket

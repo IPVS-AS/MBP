@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.domain.valueLog;
 import java.time.Instant;
 
 import de.ipvs.as.mbp.domain.access_control.IACValueLog;
+import org.bson.Document;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
  * are recorded by this application.
  */
 @ApiModel(description = "Model for value logs of components")
-public class ValueLog implements IACValueLog<Double> {
+public class ValueLog implements IACValueLog<Document> {
 
     @ApiModelProperty(notes = "Receive time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Instant time;
@@ -20,22 +21,23 @@ public class ValueLog implements IACValueLog<Double> {
     // Default MQTT fields
     @ApiModelProperty(notes = "MQTT Quality of Service", example = "0", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Integer qos;
-    
+
     @ApiModelProperty(notes = "MQTT topic", example = "sensor/5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String topic;
-    
+
     @ApiModelProperty(notes = "Full received MQTT message", example = "{ \"component\": \"SENSOR\", \"id\": \"5d9dfeafb1c4d32a86e5b73d\", \"value\": \"434880.000000\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String message;
 
     // Fields parsed from the MQTT message
     @ApiModelProperty(notes = "ID of the pertaining component", example = "5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String idref;
-    
+
     @ApiModelProperty(notes = "Type of the pertaining component", example = "SENSOR", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String component; //Component type
-    
-    @ApiModelProperty(notes = "Received value", example = "27.5", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-    private double value;
+
+    // Value document with all the sensor data
+    @ApiModelProperty(notes = "Received value", example = "{\"val1\": 27.5}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    private Document value;
 
     /**
      * Returns the time at which the value log was received.
@@ -151,7 +153,7 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @return The value
      */
-    public Double getValue() {
+    public Document getValue() {
         return value;
     }
 
@@ -160,7 +162,7 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param value The value to set
      */
-    public ValueLog setValue(double value) {
+    public ValueLog setValue(Document value) {
         this.value = value;
         return this;
     }

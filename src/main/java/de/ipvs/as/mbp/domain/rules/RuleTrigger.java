@@ -1,13 +1,15 @@
 package de.ipvs.as.mbp.domain.rules;
 
+import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Objects of this class represent triggers of rules that induce the execution of the containing rules. They consist out of a
@@ -25,7 +27,29 @@ public class RuleTrigger extends UserEntity {
 
     private String description;
 
+    /**
+     * This map stores all event type aliases and their corresponding component. This map
+     * is only set automatically right if event name delcarations are provided in a pattern format like:
+     * every(event_0=sensor_60e6d6f32361155cc5b7f21c and event_1=sensor_60e6d6fe2361155cc5b7f21d)
+     */
+    private Map<String, String> eventNameToComponentMapping;
+
     private String query;
+
+    /**
+     * This map stores all event type aliases and their corresponding component. This map
+     * is only set automatically right if event name delcarations are provided in a pattern format like:
+     * every(event_0=sensor_60e6d6f32361155cc5b7f21c and event_1=sensor_60e6d6fe2361155cc5b7f21d)
+     *
+     * @return
+     */
+    public Map<String, String> getEventNameToComponentMapping() {
+        return eventNameToComponentMapping;
+    }
+
+    public void setEventNameToComponentMapping(Map<String, String> eventNameToComponentMapping) {
+        this.eventNameToComponentMapping = eventNameToComponentMapping;
+    }
 
     /**
      * Returns the id of the rule trigger.
@@ -96,6 +120,7 @@ public class RuleTrigger extends UserEntity {
      * @param query The CEP query string to set
      */
     public void setQuery(String query) {
+        setEventNameToComponentMapping(query);
         this.query = query;
     }
 
@@ -121,5 +146,24 @@ public class RuleTrigger extends UserEntity {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    /**
+     * Uses the EPL Select query to retrieve a mapping of event name alias to componentID of the atomic
+     * event.
+     * @param query The EPL SELECT query.
+     */
+    private void setEventNameToComponentMapping(String query) {
+        eventNameToComponentMapping = new HashMap<>();
+
+        String declarationPart = StringUtils.substringBetween(query, "every(", ")]");
+        String[] singleEventParts = declarationPart.split("\\sor\\s|\\sand\\s|\\s->\\s");
+
+        for (int i = 0; i < singleEventParts.length; i++) {
+            singleEventParts[i] = singleEventParts[i].trim();
+            singleEventParts[i] = singleEventParts[i].replaceAll("\\(.*\\)", "");
+            String[] parts = singleEventParts[i].split("=");
+            eventNameToComponentMapping.put(parts[0], parts[1].split("_")[1]);
+        }
     }
 }

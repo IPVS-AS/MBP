@@ -1,18 +1,21 @@
 package de.ipvs.as.mbp.web.rest;
 
+import java.util.List;
+
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingPermissionException;
+import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.repository.projection.OperatorExcerpt;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.MissingPermissionException;
-import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
@@ -20,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * REST Controller that exposes methods that allow the filtering for certain
@@ -49,6 +50,9 @@ public class RestComponentFilterController {
 
     @Autowired
     private UserEntityService userEntityService;
+
+	@Autowired
+	private OperatorRepository operatorRepository;
 
     @Autowired
     private TestDetailsRepository testDetailsRepository;
@@ -158,6 +162,28 @@ public class RestComponentFilterController {
         componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByOperatorId(deviceId), ACAccessType.READ, accessRequest));
         return ResponseEntity.ok(componentExcerpts);
     }
+
+	/**
+	 * Retrieves all operators that use a given data model.
+	 *
+	 * @param dataModelId the id of the {@link de.ipvs.as.mbp.domain.data_model.DataModel}.
+	 * @return the list of {@link Operator}s.
+	 */
+	@GetMapping("/components/by-data-model/{id}")
+	@ApiOperation(value = "Retrieves the operators which use a certain data model and for which the user is authorized.", produces = "application/hal+json")
+	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
+			@ApiResponse(code = 401, message = "Not authorized to access the data model!"),
+			@ApiResponse(code = 404, message = "Data model or requesting user not found!") })
+	public ResponseEntity<List<OperatorExcerpt>> getOperatorsByDataModelId(
+			@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the data model", example = "5c97dc2583aeb6078c5ab672", required = true) String dataModelId) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+		// Retrieve operator excerpts from the database
+		List<OperatorExcerpt> operatorExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> operatorRepository.findAllByDataModelId(dataModelId), ACAccessType.READ, accessRequest);
+		return ResponseEntity.ok(operatorExcerpts);
+	}
 
 
     /**

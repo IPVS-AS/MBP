@@ -93,6 +93,12 @@
     <!-- GitHub Fork Ribbon -->
     <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
 
+    <!-- Leaflet (OSM javascript library) -->
+    <link th:href="@{/plugins/leaflet/css/leaflet.css}" rel="stylesheet"/>
+
+    <!-- jsonFormatter css -->
+    <link th:href="@{/plugins/json-formatter/json-formatter.min.css}" rel="stylesheet"/>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
@@ -205,6 +211,9 @@
                     </li>
                     <li>
                         <a href="view/monitoring-operators" menu-item="menu-item">Monitoring Operators</a>
+                    </li>
+                    <li>
+                        <a href="view/data-models" menu-item="menu-item">Data Models</a>
                     </li>
                 </ul>
             </li>
@@ -383,6 +392,15 @@
 <!-- CryptoJS -->
 <script th:src="@{/plugins/cryptojs/cryptojs.min.js}"></script>
 
+<!-- JsonPath -->
+<script th:src="@{/plugins/jsonpath/index-browser-umd.js}"></script>
+
+<!-- Leaflet (Open-Street-Map javascript library) -->
+<script th:src="@{/plugins/leaflet/leaflet.js}"></script>
+
+<!-- Angular jsonFormatter plugin -->
+<script th:src="@{/plugins/json-formatter/json-formatter.min.js}"></script>
+
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>
 <script th:src="@{/js/services/FileReader.js}"></script>
@@ -390,6 +408,7 @@
 <script th:src="@{/js/services/DeviceService.js}"></script>
 <script th:src="@{/js/services/ComponentService.js}"></script>
 <script th:src="@{/js/services/OperatorService.js}"></script>
+<script th:src="@{/js/services/DataModelService.js}"></script>
 <script th:src="@{/js/services/MonitoringService.js}"></script>
 <script th:src="@{/js/services/UserService.js}"></script>
 <script th:src="@{/js/services/EnvModelService.js}"></script>
@@ -417,9 +436,13 @@
 <script th:src="@{/js/directives/units/UnitInput.js}"></script>
 <script th:src="@{/js/directives/charts/LiveChart.js}"></script>
 <script th:src="@{/js/directives/charts/HistoricalChart.js}"></script>
+<script th:src="@{/js/directives/charts/geo-map/LiveGeoMapChart.js}"></script>
+<script th:src="@{/js/directives/charts/geo-map/HistoricalGeoMapChart.js}"></script>
 <script th:src="@{/js/directives/env-models/EnvModelTool.js}"></script>
 <script th:src="@{/js/directives/stats/ValueLogStats.js}"></script>
 <script th:src="@{/js/directives/triggers/CEPQueryEditor.js}"></script>
+<script th:src="@{/js/directives/json-path-ui/jsonPathInput.js}"></script>
+<script th:src="@{/js/directives/model-data/dmInput.js}"></script>
 
 <script th:src="@{/js/controllers/index/IndexController.js}"></script>
 <script th:src="@{/js/controllers/ItemListController.js}"></script>
@@ -441,6 +464,7 @@
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
 <script th:src="@{/js/controllers/operators/OperatorListController.js}"></script>
+<script th:src="@{/js/controllers/datamodels/DataModelListController.js}"></script>
 <script th:src="@{/js/controllers/monitoring-operators/MonitoringOperatorListController.js}"></script>
 <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>

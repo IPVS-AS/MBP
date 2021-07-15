@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,16 +71,16 @@ public class TestEngine {
         if (testReportRepository.findById(reportId).isPresent()) {
             TestReport testReport = testReportRepository.findById(reportId).get();
 
-            Map<String, LinkedHashMap<Long, Double>> simulationList = testReport.getSimulationList();
+            Map<String, LinkedHashMap<Long, Document>> simulationList = testReport.getSimulationList();
 
             if (simulationList != null && simulationList.size() > 0) {
-                for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : simulationList.entrySet()) {
+                for (Map.Entry<String, LinkedHashMap<Long, Document>> entry : simulationList.entrySet()) {
                     ArrayList tupelList = new ArrayList();
 
 
                     String key = entry.getKey();
-                    LinkedHashMap<Long, Double> valueList = entry.getValue();
-                    for (Map.Entry<Long, Double> list : valueList.entrySet()) {
+                    LinkedHashMap<Long, Document> valueList = entry.getValue();
+                    for (Map.Entry<Long, Document> list : valueList.entrySet()) {
                         List timeValueTupel = new ArrayList<>();
                         timeValueTupel.add(list.getKey() * 1000);
                         timeValueTupel.add(list.getValue());

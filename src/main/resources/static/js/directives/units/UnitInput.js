@@ -48,6 +48,13 @@ app.directive('unitInput', ['UnitService', function (UnitService) {
 
         //Make callback function available
         scope.suggestionCallback = suggestionCallback;
+
+        // Logic for the ng-change functionality, if the model changes
+        scope.$watch('bindedModel', function() {
+            if (scope.changeCallback) {
+                scope.changeCallback();
+            }
+        });
     };
 
     //Configure and expose the directive
@@ -80,7 +87,12 @@ app.directive('unitInput', ['UnitService', function (UnitService) {
             unit-filter variable that holds a unit string. If set, only units are displayed
             as suggestions which are probably compatible with the given unit
              */
-            unitFilter: "@unitFilter"
+            unitFilter: "@unitFilter",
+            /*
+            (Optional)
+            Function callback for actions when the ng-model changes.
+             */
+            changeCallback: "&ngChange"
         }
     };
 }]);

@@ -960,7 +960,10 @@
                                             </a>
                                             <div id="triggerValues-{{rule.id}}" class="collapse">
                                                 <div ng-repeat=" values in triggerValues | filter:{ruleName:rule.name}:true">
-                                                    <code>{{values.triggerValues.join(", ")}}</code>
+                                                    <div ng-repeat="value in values.triggerValues">
+                                                        <json-formatter json="value" open="1"></json-formatter>
+                                                    </div>
+                                                    <!--<code>{{values.triggerValues.join(", ")}}</code>-->
                                                 </div>
                                             </div>
                                         </td>
