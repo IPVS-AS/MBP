@@ -9,7 +9,7 @@ import java.util.stream.Stream;
  * Objects of this class represent collections of candidate devices, represented by their {@link DeviceDescription}s,
  * that that were received from a certain repository with an unique name.
  */
-public class CandidateDevicesCollection implements Set<DeviceDescription> {
+public class CandidateDevicesCollection  {
     //Name of the repository from which the collection origins
     private String repositoryName;
 
@@ -103,7 +103,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      *
      * @return the number of elements in this set (its cardinality)
      */
-    @Override
     public int size() {
         return this.candidateDevices.size();
     }
@@ -113,7 +112,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      *
      * @return {@code true} if this set contains no elements
      */
-    @Override
     public boolean isEmpty() {
         return this.candidateDevices.isEmpty();
     }
@@ -133,7 +131,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      *                              set does not permit null elements
      *                              (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    @Override
     public boolean contains(Object o) {
         return this.candidateDevices.contains(o);
     }
@@ -145,77 +142,8 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      *
      * @return an iterator over the elements in this set
      */
-    @Override
     public Iterator<DeviceDescription> iterator() {
         return this.candidateDevices.iterator();
-    }
-
-    /**
-     * Returns an array containing all of the elements in this set.
-     * If this set makes any guarantees as to what order its elements
-     * are returned by its iterator, this method must return the
-     * elements in the same order.
-     *
-     * <p>The returned array will be "safe" in that no references to it
-     * are maintained by this set.  (In other words, this method must
-     * allocate a new array even if this set is backed by an array).
-     * The caller is thus free to modify the returned array.
-     *
-     * <p>This method acts as bridge between array-based and collection-based
-     * APIs.
-     *
-     * @return an array containing all the elements in this set
-     */
-    @Override
-    public Object[] toArray() {
-        return this.candidateDevices.toArray();
-    }
-
-    /**
-     * Returns an array containing all of the elements in this set; the
-     * runtime type of the returned array is that of the specified array.
-     * If the set fits in the specified array, it is returned therein.
-     * Otherwise, a new array is allocated with the runtime type of the
-     * specified array and the size of this set.
-     *
-     * <p>If this set fits in the specified array with room to spare
-     * (i.e., the array has more elements than this set), the element in
-     * the array immediately following the end of the set is set to
-     * {@code null}.  (This is useful in determining the length of this
-     * set <i>only</i> if the caller knows that this set does not contain
-     * any null elements.)
-     *
-     * <p>If this set makes any guarantees as to what order its elements
-     * are returned by its iterator, this method must return the elements
-     * in the same order.
-     *
-     * <p>Like the {@link #toArray()} method, this method acts as bridge between
-     * array-based and collection-based APIs.  Further, this method allows
-     * precise control over the runtime type of the output array, and may,
-     * under certain circumstances, be used to save allocation costs.
-     *
-     * <p>Suppose {@code x} is a set known to contain only strings.
-     * The following code can be used to dump the set into a newly allocated
-     * array of {@code String}:
-     *
-     * <pre>
-     *     String[] y = x.toArray(new String[0]);</pre>
-     * <p>
-     * Note that {@code toArray(new Object[0])} is identical in function to
-     * {@code toArray()}.
-     *
-     * @param a the array into which the elements of this set are to be
-     *          stored, if it is big enough; otherwise, a new array of the same
-     *          runtime type is allocated for this purpose.
-     * @return an array containing all the elements in this set
-     * @throws ArrayStoreException  if the runtime type of the specified array
-     *                              is not a supertype of the runtime type of every element in this
-     *                              set
-     * @throws NullPointerException if the specified array is null
-     */
-    @Override
-    public <T> T[] toArray(T[] a) {
-        return this.candidateDevices.toArray(a);
     }
 
     /**
@@ -248,7 +176,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      * @throws IllegalArgumentException      if some property of the specified element
      *                                       prevents it from being added to this set
      */
-    @Override
     public boolean add(DeviceDescription deviceDescription) {
         //Null check
         if (deviceDescription == null) {
@@ -279,7 +206,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      * @throws UnsupportedOperationException if the {@code remove} operation
      *                                       is not supported by this set
      */
-    @Override
     public boolean remove(Object o) {
         return this.candidateDevices.remove(o);
     }
@@ -303,7 +229,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      *                              or if the specified collection is null
      * @see #contains(Object)
      */
-    @Override
     public boolean containsAll(Collection<?> c) {
         return this.candidateDevices.containsAll(c);
     }
@@ -328,7 +253,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      * @throws IllegalArgumentException      if some property of an element of the
      *                                       specified collection prevents it from being added to this set
      */
-    @Override
     public boolean addAll(Collection<? extends DeviceDescription> c) {
         //Null check
         if ((c == null) || (c.stream().anyMatch(Objects::isNull))) {
@@ -359,7 +283,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      *                                       or if the specified collection is null
      * @see #remove(Object)
      */
-    @Override
     public boolean retainAll(Collection<?> c) {
         return this.candidateDevices.retainAll(c);
     }
@@ -385,7 +308,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      * @see #remove(Object)
      * @see #contains(Object)
      */
-    @Override
     public boolean removeAll(Collection<?> c) {
         return this.candidateDevices.removeAll(c);
     }
@@ -397,7 +319,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      * @throws UnsupportedOperationException if the {@code clear} method
      *                                       is not supported by this set
      */
-    @Override
     public void clear() {
         this.candidateDevices.clear();
     }
@@ -415,7 +336,6 @@ public class CandidateDevicesCollection implements Set<DeviceDescription> {
      * collection's {@code Spliterator}.
      * @since 1.8
      */
-    @Override
     public Stream<DeviceDescription> stream() {
         return this.candidateDevices.stream();
     }

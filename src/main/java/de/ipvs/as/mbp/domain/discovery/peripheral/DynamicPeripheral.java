@@ -47,11 +47,11 @@ public class DynamicPeripheral extends UserEntity {
     //Whether the dynamic peripheral is currently enabled by the user or not
     private boolean enabled = false;
 
-    //Details about the currently used device
-    private DynamicPeripheralDeviceDetails lastDeviceDetails;
-
     //The current status of the dynamic peripheral
     private DynamicPeripheralStatus status = DynamicPeripheralStatus.DISABLED;
+
+    //Details about the currently used device
+    private DynamicPeripheralDeviceDetails lastDeviceDetails;
 
     //Set of devices to ignore as potential candidates
     private DeviceBlockSet blockSet;
@@ -206,6 +206,15 @@ public class DynamicPeripheral extends UserEntity {
      */
     public DynamicPeripheral setStatus(DynamicPeripheralStatus status) {
         this.status = status;
+        return this;
+    }
+
+    public DynamicPeripheralDeviceDetails getLastDeviceDetails() {
+        return lastDeviceDetails;
+    }
+
+    public DynamicPeripheral setLastDeviceDetails(DynamicPeripheralDeviceDetails lastDeviceDetails) {
+        this.lastDeviceDetails = lastDeviceDetails;
         return this;
     }
 

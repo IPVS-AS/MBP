@@ -1,13 +1,17 @@
 package de.ipvs.as.mbp.service.discovery.deployment;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
+import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralDeviceDetails;
 import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,14 +21,6 @@ public class DiscoveryDeploymentExecutor {
 
     //Number of threads to use in the thread pool that executes deployment tasks
     private static final int THREAD_POOL_SIZE = 5;
-
-    /**
-     * Enumeration of possible results of deployment tasks.
-     */
-    public enum DeploymentResult {
-        DEPLOYED, EMPTY_RANKING, ALL_FAILED;
-    }
-
 
     @Autowired
     private DeployerDispatcher deployerDispatcher;
@@ -52,23 +48,118 @@ public class DiscoveryDeploymentExecutor {
         this.deployer = deployerDispatcher.getDeployer();
     }
 
-    public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking) {
-        return deployByRanking(dynamicPeripheral, ranking, -1);
+    public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking, DeploymentCompletionListener listener) {
+        return deployByRanking(dynamicPeripheral, ranking, -1, listener);
     }
 
-    public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking, double minScoreExclusive) {
-        //Check and remember whether the dynamic peripheral is currently deployed (based on the device details)
-        //Go through the ranking and check every device for deployability
-        //Thereby skip the device on which the peripheral is currently deployed
-        //After one is found where the deployment succeed, kill the deployment on the previous device (if necessary)
+    public CompletableFuture<DeploymentResult> deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking, double minScoreExclusive, DeploymentCompletionListener listener) {
+        CompletableFuture<DeploymentResult> completableFuture = CompletableFuture.supplyAsync(() -> {
+            return this.deployByRanking(dynamicPeripheral, ranking, minScoreExclusive);
+        }, this.executorService);
 
-        //This function should be universal usable, i.e. does as many checks as possible to make life easier for the engine
+        //Add callback to the future in order to notify the listener about the result
+        completableFuture.thenAccept(deploymentResult -> listener.onDeploymentCompleted(dynamicPeripheral, deploymentResult));
 
-        //Do not do the stuff synchronously, but use a thread pool of certain size instead to execute the deployment tasks
-        //Take a callback as function parameter and append it to the completable future --> Inform via callback whether
-        //the deployment succeeded, resulting in the next status of the dynamic peripheral
+        return completableFuture;
+    }
 
+    private DeploymentResult deployByRanking(DynamicPeripheral dynamicPeripheral, CandidateDevicesRanking ranking, double minScoreExclusive) {
+        //Determine whether the dynamic peripheral is currently deployed
+        boolean wasDeployed = (dynamicPeripheral.getLastDeviceDetails() != null) && isDynamicPeripheralDeployed(dynamicPeripheral);
 
-        return null;
+        //Check for empty ranking
+        if (ranking.isEmpty()) {
+            return (wasDeployed ? DeploymentResult.DEPLOYED : DeploymentResult.EMPTY_RANKING);
+        }
+
+        //Remember candidate device for which the deployment was successful
+        ScoredCandidateDevice successDevice = null;
+
+        //Get MAC address of current deployment (if existing)
+        String oldMacAddress = dynamicPeripheral.getLastDeviceDetails() == null ? null : dynamicPeripheral.getLastDeviceDetails().getMacAddress();
+
+        //Iterate through the ranking
+        for (ScoredCandidateDevice candidateDevice : ranking) {
+            //Check if score is in range
+            if (candidateDevice.getScore() <= minScoreExclusive)
+                return (wasDeployed ? DeploymentResult.DEPLOYED : DeploymentResult.ALL_FAILED);
+
+            //Check if current candidate is the same as the existing deployment
+            if (wasDeployed && (candidateDevice.getIdentifiers().getMacAddress().equals(oldMacAddress)))
+                continue; //Skip candidate device because it is the same again
+
+            //Try to deploy to candidate device and check for success
+            if (deployDynamicPeripheral(dynamicPeripheral, candidateDevice)) {
+                //Success, remember device
+                successDevice = candidateDevice;
+                break;
+            }
+        }
+
+        //Ranking is done, check if deployment was possible
+        if (successDevice == null) {
+            //No success
+            return (wasDeployed ? DeploymentResult.DEPLOYED : DeploymentResult.ALL_FAILED);
+        }
+
+        //Undeploy from old device if deployed
+        if (wasDeployed) {
+            undeployDynamicPeripheral(dynamicPeripheral);
+        }
+
+        //Update last device details of the dynamic peripheral
+        dynamicPeripheral.setLastDeviceDetails(new DynamicPeripheralDeviceDetails(successDevice));
+
+        return DeploymentResult.DEPLOYED;
+    }
+
+    private boolean deployDynamicPeripheral(DynamicPeripheral dynamicPeripheral, DeviceDescription candidateDevice) {
+        //Create deployable component
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicPeripheral, candidateDevice);
+
+        try {
+            //Deploy component
+            deployer.deployComponent(component);
+
+            //Check for success
+            //if (!deployer.isComponentDeployed(component)) return false;
+
+            //Start component
+            deployer.startComponent(component, Collections.emptyList());
+
+            //Check for success
+            return deployer.isComponentRunning(component);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void undeployDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
+        //Create deployable component
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicPeripheral);
+
+        //Check whether the component is deployed
+        try {
+            deployer.undeployComponent(component);
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Checks and returns whether a given {@link DynamicPeripheral} is currently deployed on a device.
+     *
+     * @param dynamicPeripheral The dynamic peripheral to check
+     * @return True, if the dynamic peripheral is deployed; false otherwise
+     */
+    private boolean isDynamicPeripheralDeployed(DynamicPeripheral dynamicPeripheral) {
+        //Create deployable component
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicPeripheral);
+
+        //Check whether the component is deployed
+        try {
+            return deployer.isComponentDeployed(component);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

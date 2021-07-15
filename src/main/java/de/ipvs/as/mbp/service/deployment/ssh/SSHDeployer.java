@@ -247,7 +247,7 @@ public class SSHDeployer implements IDeployer {
 
         // Sanity check
         if (operator == null) {
-            throw new IllegalArgumentException("Adapter must not be null.");
+            throw new IllegalArgumentException("Operator must not be null.");
         }
 
         // Get dedicated device of the component

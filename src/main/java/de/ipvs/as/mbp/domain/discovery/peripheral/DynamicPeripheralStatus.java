@@ -9,8 +9,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum DynamicPeripheralStatus {
     DISABLED("disabled"), //Dynamic peripheral has not been enabled yet by the user
     DEPLOYING("deploying"), //Deployment for candidate devices in progress
-    NO_CANDIDATE("no_candidate"),  //No candidate device found or deployment failed for all candidates
-    RUNNING("running"); //Candidate found and deployed
+    NO_CANDIDATE("no_candidate"),  //No candidate device found
+    ALL_FAILED("all_failed"), // Candidate devices found, but deployment failed for all candidates
+    DEPLOYED("running"); //Candidate found and deployed
 
     //Externally visible name of the state
     private String name;

@@ -10,6 +10,8 @@ import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralStatus;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.service.discovery.deployment.DeploymentCompletionListener;
+import de.ipvs.as.mbp.service.discovery.deployment.DeploymentResult;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentExecutor;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,8 +31,7 @@ import java.util.concurrent.CompletableFuture;
  * care about the execution of discovery-related tasks.
  */
 @Component
-public class DiscoveryEngine implements CandidateDevicesSubscriber {
-
+public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCompletionListener {
 
     /*
     Auto-wired components
@@ -48,12 +51,16 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     @Autowired
     private CandidateDevicesRepository candidateDevicesRepository;
 
+    //Map (dynamic peripheral ID --> completable future) of currently ongoing deployment tasks
+    private Map<String, CompletableFuture<DeploymentResult>> deploymentTasks;
+
 
     /**
      * Creates the discovery engine.
      */
     public DiscoveryEngine() {
-
+        //Initialize data structures
+        this.deploymentTasks = new HashMap<>();
     }
 
     /**
@@ -69,7 +76,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //Step 5: Iterate over all peripherals that use the device template and check their state
         //Step 5.1: If DISABLED: Do nothing
         //Step 5.2: If DEPLOYING: Let the deployer deploy the peripheral with the current ranking
-        //Step 5.3: If NO_CANDIDATE: Same
+        //Step 5.3: If NO_CANDIDATE/ALL_FAILED: Same
         //Step 5.4: If RUNNING: Read last MAC, get SSH details from it and check if operator is running.
         //Step 5.4.1: If yes: Do the usual check whether the current ranking shows a better device then the former one
         //Step 5.4.2: If not: Let the deployer deploy the peripheral with the current ranking
@@ -104,15 +111,15 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //Calculate ranking from the candidate devices
         CandidateDevicesRanking ranking = candidateDevicesProcessor.process(candidateDevices, dynamicPeripheral.getDeviceTemplate());
 
-        //Deploy from the ranking
-        CompletableFuture<DiscoveryDeploymentExecutor.DeploymentResult> deploymentTask =
-                this.discoveryDeploymentExecutor.deployByRanking(dynamicPeripheral, ranking);
+        //Deploy, using the ranking as reference
+        CompletableFuture<DeploymentResult> deploymentTask =
+                this.discoveryDeploymentExecutor.deployByRanking(dynamicPeripheral, ranking, this);
+
+        //Place the deployment task in the map
+        this.deploymentTasks.put(dynamicPeripheral.getId(), deploymentTask);
 
         //Update status of dynamic peripheral
         dynamicPeripheral.setStatus(DynamicPeripheralStatus.DEPLOYING);
-
-        System.out.println("hier");
-
     }
 
     public void disableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
@@ -142,12 +149,38 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //Step 4: Iterate through all these peripherals and check their states
         //Step 4.1: If DISABLED: skip
         //Step 4.3: If DEPLOYING: Abort task of deployer and restart with new ranking ("search" means the deployment process here), even for empty ranking
-        //Step 4.4: If NO_CANDIDATE: Start deployer task with new ranking, even for empty ranking (deployer will handle and return immediately)
+        //Step 4.4: If NO_CANDIDATE/ALL_FAILED: Start deployer task with new ranking, even for empty ranking (deployer will handle and return immediately)
         //Step 4.5: If RUNNING:
         //Step 4.5.1 If ranking is empty: Undeploy, on callback of deployer task set the state to NO_CANDIDATE
         //Step 4.5.2 Locate old device in the new ranking
         //Step 4.5.3 If old device is in the ranking and has still the highest score (or equal to highest): Do nothing and continue with next peripheral
         //Step 4.5.4 Pass new ranking to the deployer and instruct it to deploy to the device with the highest possible score. If success, the deployer should undeploy the old device using the SSH data from the old candidate device data
+    }
+
+    /**
+     * Called in case a certain deployment task, which was scheduled at the {@link DiscoveryDeploymentExecutor},
+     * completed.
+     *
+     * @param dynamicPeripheral The dynamic peripheral that was supposed to be deployed
+     * @param result            The result of the deployment
+     */
+    @Override
+    public void onDeploymentCompleted(DynamicPeripheral dynamicPeripheral, DeploymentResult result) {
+        //Delete deployment task from map
+        this.deploymentTasks.remove(dynamicPeripheral.getId());
+
+        //Check the deployment result
+        switch (result) {
+            case DEPLOYED:
+                setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.DEPLOYED);
+                break;
+            case ALL_FAILED:
+                setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.ALL_FAILED);
+                break;
+            case EMPTY_RANKING:
+                setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.NO_CANDIDATE);
+                break;
+        }
     }
 
     /**
