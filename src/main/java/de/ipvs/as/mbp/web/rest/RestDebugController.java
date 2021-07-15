@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.web.rest;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
-import de.ipvs.as.mbp.service.discovery.DiscoveryEngine;
+import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,13 +39,15 @@ public class RestDebugController {
     public ResponseEntity<String> debug() throws ExecutionException, InterruptedException {
         List<DynamicPeripheral> dynamicPeripheralList = dynamicPeripheralRepository.findAll();
 
-        if(dynamicPeripheralList.isEmpty()){
-            return new ResponseEntity<>("debug", HttpStatus.OK);
-        }
+        if (dynamicPeripheralList.isEmpty()) return new ResponseEntity<>("debug", HttpStatus.OK);
+
 
         DynamicPeripheral peripheral = dynamicPeripheralList.get(0);
 
-        discoveryEngine.enableDynamicPeripheral(peripheral);
+        peripheral.setEnabled(false);
+        dynamicPeripheralRepository.save(peripheral);
+
+        discoveryEngine.enableDynamicPeripheral(peripheral.getId());
 
         return new ResponseEntity<>("debug", HttpStatus.OK);
     }

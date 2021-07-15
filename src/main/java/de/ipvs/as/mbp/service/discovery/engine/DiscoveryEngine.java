@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service.discovery;
+package de.ipvs.as.mbp.service.discovery.engine;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
@@ -6,13 +6,17 @@ import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContain
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralStatus;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DeploymentCompletionListener;
 import de.ipvs.as.mbp.service.discovery.deployment.DeploymentResult;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentExecutor;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryEngineTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicPeripheralTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeviceTemplateTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
@@ -20,11 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 /**
  * This components manages the overall discovery process by orchestrating the various involved components and takes
@@ -32,6 +36,9 @@ import java.util.concurrent.CompletableFuture;
  */
 @Component
 public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCompletionListener {
+
+    //Number of threads to use in the thread pool that executes the tasks
+    private static final int THREAD_POOL_SIZE = 5;
 
     /*
     Auto-wired components
@@ -46,21 +53,37 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
     private DiscoveryDeploymentExecutor discoveryDeploymentExecutor;
 
     @Autowired
+    private RequestTopicRepository requestTopicRepository;
+
+    @Autowired
     private DynamicPeripheralRepository dynamicPeripheralRepository;
 
     @Autowired
     private CandidateDevicesRepository candidateDevicesRepository;
 
-    //Map (dynamic peripheral ID --> completable future) of currently ongoing deployment tasks
-    private Map<String, CompletableFuture<DeploymentResult>> deploymentTasks;
+    //Map (dynamic peripheral ID --> Queue) of task queues for dynamic peripherals
+    private final Map<String, Queue<FutureTask<DynamicPeripheralTask>>> dynamicPeripheralTasks;
 
+    //Map (device template ID --> Queue) of task queues for device templates
+    private final Map<String, Queue<FutureTask<DeviceTemplateTask>>> deviceTemplateTasks;
+
+    //Set of tasks that have already been started
+    private final Set<FutureTask<? extends DiscoveryEngineTask<?>>> runningTasks;
+
+    //Executor service for executing tasks
+    private final ExecutorService executorService;
 
     /**
      * Creates the discovery engine.
      */
     public DiscoveryEngine() {
         //Initialize data structures
-        this.deploymentTasks = new HashMap<>();
+        this.dynamicPeripheralTasks = new HashMap<>();
+        this.deviceTemplateTasks = new HashMap<>();
+        this.runningTasks = new HashSet<>();
+
+        //Initialize executor service
+        this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     }
 
     /**
@@ -83,7 +106,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
 
     }
 
-    public synchronized void enableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
+    public void enableDynamicPeripheral(String dynamicPeripheralId) {
         /* Steps to perform:
         Step 1: Check if already enabled and if yes, ignore
         Step 2: Check if there is already data for the device template
@@ -92,34 +115,19 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         Step 4: Calculate ranking from the data and pass everything to the deployer to take care (async task!)
         Step 5: Return */
 
+        //Get dynamic peripheral exclusively for enabling
+        DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, true);
+
         //Null check
-        if (dynamicPeripheral == null) {
-            throw new IllegalArgumentException("The dynamic peripheral must not be null.");
-        }
+        if (dynamicPeripheral == null) return;
 
-        //Check if dynamic peripheral is already enabled by the user
-        if (dynamicPeripheral.isEnabled()) {
-            //return; TODO
-        }
+        //Get all request topics of the user
+        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicPeripheral.getOwner().getId(), null);
 
-        //Set dynamic peripheral to enabled in order to avoid duplicated executions
-        setDynamicPeripheralEnabledState(dynamicPeripheral, true);
+        //TODO check if request topics are needed
 
-        //Get candidate devices and update them in the database if necessary
-        CandidateDevicesResultContainer candidateDevices = retrieveAndUpdateCandidateDevices(dynamicPeripheral, false);
-
-        //Calculate ranking from the candidate devices
-        CandidateDevicesRanking ranking = candidateDevicesProcessor.process(candidateDevices, dynamicPeripheral.getDeviceTemplate());
-
-        //Deploy, using the ranking as reference
-        CompletableFuture<DeploymentResult> deploymentTask =
-                this.discoveryDeploymentExecutor.deployByRanking(dynamicPeripheral, ranking, this);
-
-        //Place the deployment task in the map
-        this.deploymentTasks.put(dynamicPeripheral.getId(), deploymentTask);
-
-        //Update status of dynamic peripheral
-        dynamicPeripheral.setStatus(DynamicPeripheralStatus.DEPLOYING);
+        //Submit task for retrieving request topics
+        submitTask(new UpdateCandidateDevicesTask(dynamicPeripheral.getDeviceTemplate(), requestTopics, true));
     }
 
     public void disableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
@@ -166,6 +174,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
      */
     @Override
     public void onDeploymentCompleted(DynamicPeripheral dynamicPeripheral, DeploymentResult result) {
+        /*
         //Delete deployment task from map
         this.deploymentTasks.remove(dynamicPeripheral.getId());
 
@@ -180,8 +189,70 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
             case EMPTY_RANKING:
                 setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.NO_CANDIDATE);
                 break;
+        }*/
+    }
+
+    private synchronized void submitTask(DeviceTemplateTask task) {
+        //Get device template ID
+        String deviceTemplateId = task.getDeviceTemplateId();
+
+        //Ignore task if ID is invalid
+        if ((deviceTemplateId == null) || (deviceTemplateId.isEmpty())) return;
+
+        //Check if there is a task queue for this device template
+        if (this.deviceTemplateTasks.containsKey(deviceTemplateId)) {
+            //Add task to dedicated queue
+            this.deviceTemplateTasks.get(deviceTemplateId).add(new FutureTask<>(task));
+        }
+
+        //Create new queue and add the task
+        Queue<FutureTask<DeviceTemplateTask>> deviceTemplateQueue = new LinkedList<>(Collections.singleton(new FutureTask<>(task)));
+
+        //Add queue to tasks map
+        this.deviceTemplateTasks.put(deviceTemplateId, deviceTemplateQueue);
+
+        //Trigger the execution of tasks
+        executeTasks();
+    }
+
+    //@Scheduled(fixedDelay = 1000)
+    private synchronized void executeTasks() {
+        /*
+        Device template tasks
+         */
+        //Iterate through all available device template queues
+        for (Queue<FutureTask<DeviceTemplateTask>> queue : this.deviceTemplateTasks.values()) {
+            //Peek first task
+            FutureTask<DeviceTemplateTask> firstTask = queue.peek();
+
+            //Null check
+            if (firstTask == null) continue;
+
+            //Check if task has already been started
+            if (runningTasks.contains(firstTask)) continue;
+
+            //Remember task ask started
+            runningTasks.add(firstTask);
+
+            //Run the task using a completable future and add a completion handler
+            CompletableFuture.runAsync(firstTask, executorService)
+                    .thenAccept(unused -> handleCompletedTask(firstTask));
         }
     }
+
+    private synchronized void handleCompletedTask(FutureTask<? extends DiscoveryEngineTask> completedTask) {
+        //Check if task really completed
+        if (!completedTask.isDone()) return;
+
+        System.out.println("hier");
+
+
+        //TODO remove task from queues
+
+        //Remove task from set of running tasks
+        this.runningTasks.remove(completedTask);
+    }
+
 
     /**
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
@@ -209,37 +280,38 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
     }
 
-    private CandidateDevicesResultContainer retrieveAndUpdateCandidateDevices(DynamicPeripheral dynamicPeripheral, boolean force) {
-        DeviceTemplate deviceTemplate = dynamicPeripheral.getDeviceTemplate();
+    /**
+     * Retrieves and returns a {@link DynamicPeripheral} of a given ID from its repository and updates it enabled
+     * status to a given target value. Thereby, it is checked whether the status of the {@link DynamicPeripheral}
+     * has already been updated previously to the target value. If this is the case, null will be returned instead of
+     * the object. This way, it is ensured that the thread that wants to update the status of the
+     * {@link DynamicPeripheral} and succeeds in doing so receives exclusive access to the {@link DynamicPeripheral}
+     * for the scope of its enabling/disabling operation, thus avoiding the duplicated execution of operations
+     * with the same intention.
+     *
+     * @param dynamicPeripheralId The ID of the dynamic peripheral to retrieve
+     * @param targetEnabledStatus The target status (true for enabled, false for disabled) to set
+     * @return The {@link DynamicPeripheral} or null if access could not be granted
+     */
+    private synchronized DynamicPeripheral requestDynamicPeripheralExclusively(String dynamicPeripheralId, boolean targetEnabledStatus) {
+        //Read dynamic peripheral from repository
+        Optional<DynamicPeripheral> dynamicPeripheral = this.dynamicPeripheralRepository.findById(dynamicPeripheralId);
 
-        if ((!force) && candidateDevicesRepository.existsById(deviceTemplate.getId())) {
-            return candidateDevicesRepository.findById(deviceTemplate.getId()).orElse(null);
+        //Check if dynamic peripheral was found
+        if (!dynamicPeripheral.isPresent()) {
+            throw new IllegalArgumentException("The dynamic peripheral with the given ID does not exist.");
         }
 
-        CandidateDevicesResultContainer candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(deviceTemplate, dynamicPeripheral.getRequestTopics(), this);
-        candidateDevicesRepository.save(candidateDevices);
-
-        return candidateDevices;
-    }
-
-    private void setDynamicPeripheralStatus(DynamicPeripheral dynamicPeripheral, DynamicPeripheralStatus status) {
-        //Update status
-        dynamicPeripheral.setStatus(status);
-
-        //Update enable state as well if necessary
-        if (status.equals(DynamicPeripheralStatus.DISABLED)) {
-            dynamicPeripheral.setEnabled(false);
+        //Check if target status is already present
+        if (dynamicPeripheral.get().isEnabled() == targetEnabledStatus) {
+            //Target status is already present, so do not continue
+            return null;
         }
 
-        //Update in repository
-        this.dynamicPeripheralRepository.save(dynamicPeripheral);
-    }
+        //Set the target status
+        dynamicPeripheral.get().setEnabled(targetEnabledStatus);
 
-    private void setDynamicPeripheralEnabledState(DynamicPeripheral dynamicPeripheral, boolean enabled) {
-        //Update enable state
-        dynamicPeripheral.setEnabled(enabled);
-
-        //Update in repository
-        dynamicPeripheralRepository.save(dynamicPeripheral);
+        //Write updated peripheral to repository and return it
+        return this.dynamicPeripheralRepository.save(dynamicPeripheral.get());
     }
 }
