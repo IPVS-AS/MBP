@@ -1,7 +1,9 @@
 package de.ipvs.as.mbp.service.settings;
 
+import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.operator.OperatorCreateValidator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterType;
 import de.ipvs.as.mbp.error.MBPException;
@@ -34,6 +36,10 @@ public class DefaultOperatorService {
 
     @Autowired
     private OperatorRepository operatorRepository;
+
+
+    @Autowired
+    private OperatorCreateValidator operatorCreateValidator;
 
     private static final String DESCRIPTOR_FILE = "operator.json";
 
@@ -160,8 +166,9 @@ public class DefaultOperatorService {
                 newOperator.replaceLineBreaks();
 
                 //Insert new operator into repository
+                operatorCreateValidator.validateCreatable(newOperator);
                 operatorRepository.insert(newOperator);
-                inserted = true;
+
 
             } catch (Exception e) {
                 e.printStackTrace();

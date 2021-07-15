@@ -1,13 +1,20 @@
 package de.ipvs.as.mbp.domain.testing;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class TestDetailsCreateValidator implements ICreateValidator<TestDetails> {
+
+    @Autowired
+    private  TestDetailsRepository testDetailsRepository;
+
+
 
     /**
      * Validates a given entity that is supposed to be created and throws an exception with explanations

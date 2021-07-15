@@ -1,7 +1,7 @@
 {
   "name": "TESTING_Actuator",
   "description": "Operator for an actuator that does not trigger any functions.",
-  "unit": "No Unit",
+  "unit": "°C",
   "files": [
     "actuator_testingTool.py",
     "install.sh",

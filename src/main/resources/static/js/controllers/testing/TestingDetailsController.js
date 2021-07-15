@@ -8,20 +8,21 @@ app.controller('TestingDetailsController',
         function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
-            vm.ruleList = [];
+            vm.ruleList = ruleList;
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
+
 
 
             // ID of the Test
             const COMPONENT_ID = $routeParams.id;
             const RERUN_PREFIX = "RERUN_";
             // Constant list of the sensor simulators, that can be included in the test
-            const SIMULATOR_LIST = ['TestingTemperatureSensor',
-                'TestingTemperatureSensorPl',
-                'TestingHumiditySensor',
-                'TestingHumiditySensorPl'];
+            const SIMULATOR_LIST = ['TESTING_TemperatureSensor',
+                'TESTING_TemperatureSensorPl',
+                'TESTING_HumiditySensor',
+                'TESTING_HumiditySensorPl'];
 
 
             // Storing variables
@@ -544,8 +545,9 @@ app.controller('TestingDetailsController',
                 } else {
                     vm.executeRules = "false";
                 }
-
             }
+
+
 
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, $controller('TestingChartController as testingChartCtrl',

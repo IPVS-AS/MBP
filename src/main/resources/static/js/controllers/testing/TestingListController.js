@@ -61,11 +61,9 @@ app.controller('TestingController',
 
 
             function ruleListSelection() {
-                console.log(ruleList)
-                angular.forEach(ruleList, function (rule, index) {
+                angular.forEach(ruleList, function (rule) {
                     if (!rule.name.includes(RERUN_IDENTIFIER)) {
                         vm.ruleList.push(rule);
-                        console.log(vm.ruleList)
 
                     }
                 });
@@ -235,6 +233,7 @@ app.controller('TestingController',
                             let selectedSimulators = vm.selectedSensors;
 
                             let parameterValuesReal = vm.parameterVal;
+
 
 
                             const newTestObject = TestService.getTestData(selectedSimulators, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
