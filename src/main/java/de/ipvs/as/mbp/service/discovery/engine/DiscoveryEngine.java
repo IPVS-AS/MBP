@@ -13,7 +13,9 @@ import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DeploymentCompletionListener;
 import de.ipvs.as.mbp.service.discovery.deployment.DeploymentResult;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentExecutor;
-import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryEngineTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.ReplacingTaskQueue;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicPeripheralTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeviceTemplateTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDevicesTask;
@@ -28,7 +30,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 
 /**
  * This components manages the overall discovery process by orchestrating the various involved components and takes
@@ -61,14 +62,11 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
     @Autowired
     private CandidateDevicesRepository candidateDevicesRepository;
 
-    //Map (dynamic peripheral ID --> Queue) of task queues for dynamic peripherals
-    private final Map<String, Queue<FutureTask<DynamicPeripheralTask>>> dynamicPeripheralTasks;
-
     //Map (device template ID --> Queue) of task queues for device templates
-    private final Map<String, Queue<FutureTask<DeviceTemplateTask>>> deviceTemplateTasks;
+    private final Map<String, LinkedList<TaskWrapper<DeviceTemplateTask>>> deviceTemplateTasks;
 
-    //Set of tasks that have already been started
-    private final Set<FutureTask<? extends DiscoveryEngineTask<?>>> runningTasks;
+    //Map (dynamic peripheral ID --> Queue) of task queues for dynamic peripherals
+    private final Map<String, ReplacingTaskQueue<TaskWrapper<DynamicPeripheralTask>>> dynamicPeripheralTasks;
 
     //Executor service for executing tasks
     private final ExecutorService executorService;
@@ -80,7 +78,6 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         //Initialize data structures
         this.dynamicPeripheralTasks = new HashMap<>();
         this.deviceTemplateTasks = new HashMap<>();
-        this.runningTasks = new HashSet<>();
 
         //Initialize executor service
         this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -124,10 +121,10 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         //Get all request topics of the user
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicPeripheral.getOwner().getId(), null);
 
-        //TODO check if request topics are needed
+        //Submit task for retrieving candidate devices (will abort if not needed due to force=false)
+        submitTask(new UpdateCandidateDevicesTask(dynamicPeripheral.getDeviceTemplate(), requestTopics, false));
 
-        //Submit task for retrieving request topics
-        submitTask(new UpdateCandidateDevicesTask(dynamicPeripheral.getDeviceTemplate(), requestTopics, true));
+        //TODO submit task for deployment
     }
 
     public void disableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
@@ -166,7 +163,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
     }
 
     /**
-     * Called in case a certain deployment task, which was scheduled at the {@link DiscoveryDeploymentExecutor},
+     * Called as soon as a certain deployment task, which was scheduled at the {@link DiscoveryDeploymentExecutor},
      * completed.
      *
      * @param dynamicPeripheral The dynamic peripheral that was supposed to be deployed
@@ -194,7 +191,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
 
     private synchronized void submitTask(DeviceTemplateTask task) {
         //Get device template ID
-        String deviceTemplateId = task.getDeviceTemplateId();
+        String deviceTemplateId = task.getDeviceTemplate().getId();
 
         //Ignore task if ID is invalid
         if ((deviceTemplateId == null) || (deviceTemplateId.isEmpty())) return;
@@ -202,11 +199,12 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         //Check if there is a task queue for this device template
         if (this.deviceTemplateTasks.containsKey(deviceTemplateId)) {
             //Add task to dedicated queue
-            this.deviceTemplateTasks.get(deviceTemplateId).add(new FutureTask<>(task));
+            this.deviceTemplateTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
         }
 
         //Create new queue and add the task
-        Queue<FutureTask<DeviceTemplateTask>> deviceTemplateQueue = new LinkedList<>(Collections.singleton(new FutureTask<>(task)));
+        LinkedList<TaskWrapper<DeviceTemplateTask>> deviceTemplateQueue = new LinkedList<>();
+        deviceTemplateQueue.add(new TaskWrapper<>(task));
 
         //Add queue to tasks map
         this.deviceTemplateTasks.put(deviceTemplateId, deviceTemplateQueue);
@@ -217,22 +215,58 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
 
     //@Scheduled(fixedDelay = 1000)
     private synchronized void executeTasks() {
+        /* Rules:
+        - Only first task in each queue is executed
+        - After the execution of a task concluded, the task is removed from the queue
+        - No DP task is started as long as there is a task in the queue for the corresponding device template
+        - No DT task is started as long as there is a currently running DP task for a DP that uses the template TODO
+        - DT tasks are checked before DP tasks
+         */
+
         /*
         Device template tasks
          */
         //Iterate through all available device template queues
-        for (Queue<FutureTask<DeviceTemplateTask>> queue : this.deviceTemplateTasks.values()) {
+        for (Queue<TaskWrapper<DeviceTemplateTask>> queue : this.deviceTemplateTasks.values()) {
             //Peek first task
-            FutureTask<DeviceTemplateTask> firstTask = queue.peek();
+            TaskWrapper<? extends DiscoveryTask> firstTask = queue.peek();
 
             //Null check
             if (firstTask == null) continue;
 
             //Check if task has already been started
-            if (runningTasks.contains(firstTask)) continue;
+            if (firstTask.isStarted()) continue;
 
-            //Remember task ask started
-            runningTasks.add(firstTask);
+            //Mark task as started
+            firstTask.setStarted();
+
+            //Run the task using a completable future and add a completion handler
+            CompletableFuture.runAsync(firstTask, executorService)
+                    .thenAccept(unused -> handleCompletedTask(firstTask));
+        }
+
+        /*
+        Dynamic peripheral tasks
+         */
+        //Iterate through all available dynamic peripheral queues
+        for (Queue<TaskWrapper<DynamicPeripheralTask>> queue : this.dynamicPeripheralTasks.values()) {
+            //Peek first task
+            TaskWrapper<DynamicPeripheralTask> firstTask = queue.peek();
+
+            //Null check
+            if (firstTask == null) continue;
+
+            //Check if task has already been started
+            if (firstTask.isStarted()) continue;
+
+            //Check if task is blocked due to a device template task with same device template ID
+            String deviceTemplateId = firstTask.getTask().getDynamicPeripheral().getDeviceTemplate().getId();
+            if ((this.deviceTemplateTasks.containsKey(deviceTemplateId)) && (!this.deviceTemplateTasks.get(deviceTemplateId).isEmpty())) {
+                continue;
+            }
+
+            //Mark task as started
+            firstTask.setStarted();
 
             //Run the task using a completable future and add a completion handler
             CompletableFuture.runAsync(firstTask, executorService)
@@ -240,17 +274,40 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         }
     }
 
-    private synchronized void handleCompletedTask(FutureTask<? extends DiscoveryEngineTask> completedTask) {
+    private synchronized void handleCompletedTask(TaskWrapper<? extends DiscoveryTask> completedTask) {
         //Check if task really completed
         if (!completedTask.isDone()) return;
 
-        System.out.println("hier");
+        //Retrieve actual task from wrapper
+        DiscoveryTask task = completedTask.getTask();
 
+        //Check type of the task
+        if (task instanceof DeviceTemplateTask) {
+            //Get ID of device template
+            String deviceTemplateId = ((DeviceTemplateTask) task).getDeviceTemplate().getId();
+            //Get corresponding device template queue
+            Queue<TaskWrapper<DeviceTemplateTask>> queue = this.deviceTemplateTasks.get(deviceTemplateId);
+            //Remove task from the queue
+            queue.remove(completedTask);
+            //If empty, remove queue from map
+            if (queue.isEmpty()) {
+                this.deviceTemplateTasks.remove(deviceTemplateId);
+            }
+        } else if (task instanceof DynamicPeripheralTask) {
+            //Get ID of dynamic peripheral
+            String dynamicPeripheralId = ((DynamicPeripheralTask) task).getDynamicPeripheral().getId();
+            //Get corresponding device template queue
+            Queue<TaskWrapper<DynamicPeripheralTask>> queue = this.dynamicPeripheralTasks.get(dynamicPeripheralId);
+            //Remove task from the queue
+            queue.remove(completedTask);
+            //If empty, remove queue from map
+            if (queue.isEmpty()) {
+                this.dynamicPeripheralTasks.remove(dynamicPeripheralId);
+            }
+        }
 
-        //TODO remove task from queues
-
-        //Remove task from set of running tasks
-        this.runningTasks.remove(completedTask);
+        //Execute next tasks (if available)
+        executeTasks();
     }
 
 

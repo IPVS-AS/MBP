@@ -97,14 +97,12 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
     /**
      * Implements the actual operations of the task. It is recommended to check for Thread interruptions in order to
      * gracefully deal with cancellations of the task.
-     *
-     * @return This task
      */
     @Override
-    public UpdateCandidateDevicesTask call() {
+    public void run() {
         //Check if candidate devices are already available and not forced
         if ((!this.force) && this.candidateDevicesRepository.existsById(deviceTemplate.getId())) {
-            return this;
+            return;
         }
 
         //Not available or forced, thus retrieve the candidate devices
@@ -112,18 +110,16 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
 
         //Save the candidate devices to repository
         candidateDevicesRepository.save(candidateDevices);
-
-        //Done
-        return this;
     }
 
     /**
-     * Returns the device template of this task.
+     * Returns the ID of the device template on which this tasks operates.
      *
-     * @return The device template
+     * @return The ID of the device template
      */
+    @Override
     public DeviceTemplate getDeviceTemplate() {
-        return deviceTemplate;
+        return this.deviceTemplate;
     }
 
     /**
@@ -205,15 +201,5 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
     public UpdateCandidateDevicesTask setSubscriber(CandidateDevicesSubscriber subscriber) {
         this.subscriber = subscriber;
         return this;
-    }
-
-    /**
-     * Returns the ID of the device template on which this tasks operates.
-     *
-     * @return The ID of the device template
-     */
-    @Override
-    public String getDeviceTemplateId() {
-        return this.deviceTemplate.getId();
     }
 }
