@@ -13,9 +13,9 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
  */
 public interface DeviceTemplateTask extends DiscoveryTask {
     /**
-     * Returns the {@link DeviceTemplate} on which this tasks operates.
+     * Returns the ID of the {@link DeviceTemplate} on which this task operates.
      *
-     * @return The device template
+     * @return The ID of the device template
      */
-    DeviceTemplate getDeviceTemplate();
+    String getDeviceTemplateId();
 }

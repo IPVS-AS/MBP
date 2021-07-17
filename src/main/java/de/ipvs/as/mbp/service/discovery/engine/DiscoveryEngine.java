@@ -10,8 +10,6 @@ import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
-import de.ipvs.as.mbp.service.discovery.deployment.DeploymentCompletionListener;
-import de.ipvs.as.mbp.service.discovery.deployment.DeploymentResult;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentExecutor;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.ReplacingTaskQueue;
@@ -36,7 +34,7 @@ import java.util.concurrent.Executors;
  * care about the execution of discovery-related tasks.
  */
 @Component
-public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCompletionListener {
+public class DiscoveryEngine implements CandidateDevicesSubscriber {
 
     //Number of threads to use in the thread pool that executes the tasks
     private static final int THREAD_POOL_SIZE = 5;
@@ -160,38 +158,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         //Step 4.5.2 Locate old device in the new ranking
         //Step 4.5.3 If old device is in the ranking and has still the highest score (or equal to highest): Do nothing and continue with next peripheral
         //Step 4.5.4 Pass new ranking to the deployer and instruct it to deploy to the device with the highest possible score. If success, the deployer should undeploy the old device using the SSH data from the old candidate device data
-    }
+        //TODO with the new task-based system, this can be simplified: Just create and submit two tasks: One DT task that
+        //TODO Updates the candidate devices in the repo and then the DeployByRanking task that deals with the (re-)deployment by using the new data
 
-    /**
-     * Called as soon as a certain deployment task, which was scheduled at the {@link DiscoveryDeploymentExecutor},
-     * completed.
-     *
-     * @param dynamicPeripheral The dynamic peripheral that was supposed to be deployed
-     * @param result            The result of the deployment
-     */
-    @Override
-    public void onDeploymentCompleted(DynamicPeripheral dynamicPeripheral, DeploymentResult result) {
-        /*
-        //Delete deployment task from map
-        this.deploymentTasks.remove(dynamicPeripheral.getId());
-
-        //Check the deployment result
-        switch (result) {
-            case DEPLOYED:
-                setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.DEPLOYED);
-                break;
-            case ALL_FAILED:
-                setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.ALL_FAILED);
-                break;
-            case EMPTY_RANKING:
-                setDynamicPeripheralStatus(dynamicPeripheral, DynamicPeripheralStatus.NO_CANDIDATE);
-                break;
-        }*/
     }
 
     private synchronized void submitTask(DeviceTemplateTask task) {
         //Get device template ID
-        String deviceTemplateId = task.getDeviceTemplate().getId();
+        String deviceTemplateId = task.getDeviceTemplateId();
 
         //Ignore task if ID is invalid
         if ((deviceTemplateId == null) || (deviceTemplateId.isEmpty())) return;
@@ -219,8 +193,11 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         - Only first task in each queue is executed
         - After the execution of a task concluded, the task is removed from the queue
         - No DP task is started as long as there is a task in the queue for the corresponding device template
-        - No DT task is started as long as there is a currently running DP task for a DP that uses the template TODO
+        - No DT task is started as long as there is a currently running DP task for a DP that uses the template
         - DT tasks are checked before DP tasks
+
+        Result: When a new DT task and a DP task are added, old DP tasks are first executed, then the new DT
+        task, then the new DP task
          */
 
         /*
@@ -229,7 +206,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         //Iterate through all available device template queues
         for (Queue<TaskWrapper<DeviceTemplateTask>> queue : this.deviceTemplateTasks.values()) {
             //Peek first task
-            TaskWrapper<? extends DiscoveryTask> firstTask = queue.peek();
+            TaskWrapper<DeviceTemplateTask> firstTask = queue.peek();
 
             //Null check
             if (firstTask == null) continue;
@@ -237,12 +214,18 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
             //Check if task has already been started
             if (firstTask.isStarted()) continue;
 
-            //Mark task as started
-            firstTask.setStarted();
+            //Get device template ID of the first task
+            String deviceTemplateId = firstTask.getTask().getDeviceTemplateId();
 
-            //Run the task using a completable future and add a completion handler
-            CompletableFuture.runAsync(firstTask, executorService)
-                    .thenAccept(unused -> handleCompletedTask(firstTask));
+            //Check if there is a currently running task for a dynamic peripheral that uses the same device template
+            if ((deviceTemplateId == null) || this.dynamicPeripheralTasks.values().stream()
+                    .flatMap(Collection::stream).filter(TaskWrapper::isStarted)
+                    .anyMatch(x -> deviceTemplateId.equals(x.getTask().getDeviceTemplateId()))) {
+                continue;
+            }
+
+            //Task passed all checks, so execute it asynchronously
+            executeTaskAsynchronously(firstTask);
         }
 
         /*
@@ -260,18 +243,28 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
             if (firstTask.isStarted()) continue;
 
             //Check if task is blocked due to a device template task with same device template ID
-            String deviceTemplateId = firstTask.getTask().getDynamicPeripheral().getDeviceTemplate().getId();
+            String deviceTemplateId = firstTask.getTask().getDeviceTemplateId();
             if ((this.deviceTemplateTasks.containsKey(deviceTemplateId)) && (!this.deviceTemplateTasks.get(deviceTemplateId).isEmpty())) {
                 continue;
             }
 
-            //Mark task as started
-            firstTask.setStarted();
-
-            //Run the task using a completable future and add a completion handler
-            CompletableFuture.runAsync(firstTask, executorService)
-                    .thenAccept(unused -> handleCompletedTask(firstTask));
+            //Task passed all checks, so execute it asynchronously
+            executeTaskAsynchronously(firstTask);
         }
+    }
+
+    private void executeTaskAsynchronously(TaskWrapper<? extends DiscoveryTask> task) {
+        //Sanity check
+        if (task == null) {
+            return;
+        }
+
+        //Mark task as started
+        task.setStarted();
+
+        //Run the task using a completable future and add a completion handler
+        CompletableFuture.runAsync(task, executorService)
+                .thenAccept(unused -> handleCompletedTask(task));
     }
 
     private synchronized void handleCompletedTask(TaskWrapper<? extends DiscoveryTask> completedTask) {
@@ -284,7 +277,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
         //Check type of the task
         if (task instanceof DeviceTemplateTask) {
             //Get ID of device template
-            String deviceTemplateId = ((DeviceTemplateTask) task).getDeviceTemplate().getId();
+            String deviceTemplateId = ((DeviceTemplateTask) task).getDeviceTemplateId();
             //Get corresponding device template queue
             Queue<TaskWrapper<DeviceTemplateTask>> queue = this.deviceTemplateTasks.get(deviceTemplateId);
             //Remove task from the queue
@@ -295,7 +288,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber, DeploymentCo
             }
         } else if (task instanceof DynamicPeripheralTask) {
             //Get ID of dynamic peripheral
-            String dynamicPeripheralId = ((DynamicPeripheralTask) task).getDynamicPeripheral().getId();
+            String dynamicPeripheralId = ((DynamicPeripheralTask) task).getDynamicPeripheralId();
             //Get corresponding device template queue
             Queue<TaskWrapper<DynamicPeripheralTask>> queue = this.dynamicPeripheralTasks.get(dynamicPeripheralId);
             //Remove task from the queue

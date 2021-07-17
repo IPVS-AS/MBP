@@ -113,11 +113,10 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
     }
 
     /**
-     * Returns the ID of the device template on which this tasks operates.
+     * Returns the device template of this task.
      *
-     * @return The ID of the device template
+     * @return The device template
      */
-    @Override
     public DeviceTemplate getDeviceTemplate() {
         return this.deviceTemplate;
     }
@@ -201,5 +200,15 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
     public UpdateCandidateDevicesTask setSubscriber(CandidateDevicesSubscriber subscriber) {
         this.subscriber = subscriber;
         return this;
+    }
+
+    /**
+     * Returns the ID of the {@link DeviceTemplate} on which this task operates.
+     *
+     * @return The ID of the device template
+     */
+    @Override
+    public String getDeviceTemplateId() {
+        return this.deviceTemplate.getId();
     }
 }

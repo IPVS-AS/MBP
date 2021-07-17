@@ -21,9 +21,16 @@ public interface DynamicPeripheralTask extends DiscoveryTask {
     DynamicPeripheralStatus getResultState();
 
     /**
-     * Returns the {@link DynamicPeripheral} on which this tasks operates.
+     * Returns the ID of the {@link DynamicPeripheral} on which this task operates.
      *
-     * @return The dynamic peripheral
+     * @return The dynamic peripheral ID
      */
-    DynamicPeripheral getDynamicPeripheral();
+    String getDynamicPeripheralId();
+
+    /**
+     * Returns the ID of the device template that is used by the {@link DynamicPeripheral} on which this task operates.
+     *
+     * @return The device template ID
+     */
+    String getDeviceTemplateId();
 }
