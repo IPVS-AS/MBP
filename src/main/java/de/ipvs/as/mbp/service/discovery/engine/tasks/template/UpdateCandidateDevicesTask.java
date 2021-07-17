@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Updates the candidate devices that are stored as {@link CandidateDevicesResultContainer} in the
+ * Task that updates the candidate devices that are stored as {@link CandidateDevicesResult} in the
  * {@link CandidateDevicesRepository} for a certain {@link DeviceTemplate} by requesting the most recent
  * candidate devices from the discovery repositories. Optionally, a subscription can be created at the repositories.
  */
@@ -106,7 +106,7 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
         }
 
         //Not available or forced, thus retrieve the candidate devices
-        CandidateDevicesResultContainer candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);
+        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);
 
         //Save the candidate devices to repository
         candidateDevicesRepository.save(candidateDevices);

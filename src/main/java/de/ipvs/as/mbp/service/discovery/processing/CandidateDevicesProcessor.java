@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.service.discovery.processing;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.service.discovery.processing.steps.CandidateDevicesCollectionValidityFilter;
@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * This component is able to process a given {@link CandidateDevicesResultContainer}, consisting out of multiple
+ * This component is able to process a given {@link CandidateDevicesResult}, consisting out of multiple
  * {@link CandidateDevicesCollection}s with the descriptions of candidate devices that were retrieved for several
  * discovery repositories. The processing happens by filtering out invalid device candidates and duplicates,
  * aggregating the remaining ones to a common data structure, scoring them with respect to a
@@ -33,15 +33,15 @@ public class CandidateDevicesProcessor {
     }
 
     /**
-     * Processes a given {@link CandidateDevicesResultContainer} by filtering out invalid candidate devices
+     * Processes a given {@link CandidateDevicesResult} by filtering out invalid candidate devices
      * and duplicates, aggregating the remaining ones, scoring them with respect to a given {@link DeviceTemplate}
      * and calculating a corresponding ranking, which is returned as result of this method.
      *
-     * @param candidateDevices The {@link CandidateDevicesResultContainer} containing the candidate devices to process
+     * @param candidateDevices The {@link CandidateDevicesResult} containing the candidate devices to process
      * @param deviceTemplate   The device template to use for scoring the device descriptions
      * @return The resulting ranking of the device descriptions
      */
-    public CandidateDevicesRanking process(CandidateDevicesResultContainer candidateDevices, DeviceTemplate deviceTemplate) {
+    public CandidateDevicesRanking process(CandidateDevicesResult candidateDevices, DeviceTemplate deviceTemplate) {
         //Sanity checks
         if ((candidateDevices == null) || (candidateDevices.stream().anyMatch(Objects::isNull))) {
             throw new IllegalArgumentException("The candidate devices must not be null.");

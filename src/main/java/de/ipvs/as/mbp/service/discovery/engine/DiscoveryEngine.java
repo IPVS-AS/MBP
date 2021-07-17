@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.service.discovery.engine;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
@@ -10,9 +10,8 @@ import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
-import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentExecutor;
+import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
-import de.ipvs.as.mbp.service.discovery.engine.tasks.ReplacingTaskQueue;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicPeripheralTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeviceTemplateTask;
@@ -49,7 +48,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     private CandidateDevicesProcessor candidateDevicesProcessor;
 
     @Autowired
-    private DiscoveryDeploymentExecutor discoveryDeploymentExecutor;
+    private DiscoveryDeploymentService discoveryDeploymentService;
 
     @Autowired
     private RequestTopicRepository requestTopicRepository;
@@ -61,10 +60,10 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     private CandidateDevicesRepository candidateDevicesRepository;
 
     //Map (device template ID --> Queue) of task queues for device templates
-    private final Map<String, LinkedList<TaskWrapper<DeviceTemplateTask>>> deviceTemplateTasks;
+    private final Map<String, Queue<TaskWrapper<DeviceTemplateTask>>> deviceTemplateTasks;
 
     //Map (dynamic peripheral ID --> Queue) of task queues for dynamic peripherals
-    private final Map<String, ReplacingTaskQueue<TaskWrapper<DynamicPeripheralTask>>> dynamicPeripheralTasks;
+    private final Map<String, Queue<TaskWrapper<DynamicPeripheralTask>>> dynamicPeripheralTasks;
 
     //Executor service for executing tasks
     private final ExecutorService executorService;
@@ -102,14 +101,6 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     }
 
     public void enableDynamicPeripheral(String dynamicPeripheralId) {
-        /* Steps to perform:
-        Step 1: Check if already enabled and if yes, ignore
-        Step 2: Check if there is already data for the device template
-                --> If not: Retrieve the data (blocking), store it and create subscription
-        Step 3: Set status of peripheral to deploying
-        Step 4: Calculate ranking from the data and pass everything to the deployer to take care (async task!)
-        Step 5: Return */
-
         //Get dynamic peripheral exclusively for enabling
         DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, true);
 
@@ -160,7 +151,6 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //Step 4.5.4 Pass new ranking to the deployer and instruct it to deploy to the device with the highest possible score. If success, the deployer should undeploy the old device using the SSH data from the old candidate device data
         //TODO with the new task-based system, this can be simplified: Just create and submit two tasks: One DT task that
         //TODO Updates the candidate devices in the repo and then the DeployByRanking task that deals with the (re-)deployment by using the new data
-
     }
 
     private synchronized void submitTask(DeviceTemplateTask task) {
@@ -174,14 +164,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         if (this.deviceTemplateTasks.containsKey(deviceTemplateId)) {
             //Add task to dedicated queue
             this.deviceTemplateTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
+        } else {
+            //Create new queue and add the task
+            LinkedList<TaskWrapper<DeviceTemplateTask>> deviceTemplateQueue = new LinkedList<>();
+            deviceTemplateQueue.add(new TaskWrapper<>(task));
+
+            //Add queue to tasks map
+            this.deviceTemplateTasks.put(deviceTemplateId, deviceTemplateQueue);
         }
-
-        //Create new queue and add the task
-        LinkedList<TaskWrapper<DeviceTemplateTask>> deviceTemplateQueue = new LinkedList<>();
-        deviceTemplateQueue.add(new TaskWrapper<>(task));
-
-        //Add queue to tasks map
-        this.deviceTemplateTasks.put(deviceTemplateId, deviceTemplateQueue);
 
         //Trigger the execution of tasks
         executeTasks();
@@ -324,26 +314,25 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         }
 
         //Use the gateway to find all candidate devices that match the device template
-        CandidateDevicesResultContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
+        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
 
         //Use the processor to filter, aggregate, score and rank the candidate devices
         return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
     }
 
     /**
-     * Retrieves and returns a {@link DynamicPeripheral} of a given ID from its repository and updates it enabled
-     * status to a given target value. Thereby, it is checked whether the status of the {@link DynamicPeripheral}
+     * Retrieves and returns a {@link DynamicPeripheral} of a given ID from its repository and updates its user
+     * intention to a given target value. Thereby, it is checked whether the intention of the {@link DynamicPeripheral}
      * has already been updated previously to the target value. If this is the case, null will be returned instead of
-     * the object. This way, it is ensured that the thread that wants to update the status of the
+     * the object. This way, it is ensured that the thread that wants to update the user intention of the
      * {@link DynamicPeripheral} and succeeds in doing so receives exclusive access to the {@link DynamicPeripheral}
-     * for the scope of its enabling/disabling operation, thus avoiding the duplicated execution of operations
-     * with the same intention.
+     * for the scope of its operation, thus avoiding the duplicated execution of operations with the same intention.
      *
      * @param dynamicPeripheralId The ID of the dynamic peripheral to retrieve
-     * @param targetEnabledStatus The target status (true for enabled, false for disabled) to set
+     * @param enablingIntention   The target intention to set where true means active and false inactive
      * @return The {@link DynamicPeripheral} or null if access could not be granted
      */
-    private synchronized DynamicPeripheral requestDynamicPeripheralExclusively(String dynamicPeripheralId, boolean targetEnabledStatus) {
+    private synchronized DynamicPeripheral requestDynamicPeripheralExclusively(String dynamicPeripheralId, boolean enablingIntention) {
         //Read dynamic peripheral from repository
         Optional<DynamicPeripheral> dynamicPeripheral = this.dynamicPeripheralRepository.findById(dynamicPeripheralId);
 
@@ -353,13 +342,13 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         }
 
         //Check if target status is already present
-        if (dynamicPeripheral.get().isEnabled() == targetEnabledStatus) {
+        if (dynamicPeripheral.get().isActiveIntended() == enablingIntention) {
             //Target status is already present, so do not continue
             return null;
         }
 
         //Set the target status
-        dynamicPeripheral.get().setEnabled(targetEnabledStatus);
+        dynamicPeripheral.get().setEnablingIntended(enablingIntention);
 
         //Write updated peripheral to repository and return it
         return this.dynamicPeripheralRepository.save(dynamicPeripheral.get());

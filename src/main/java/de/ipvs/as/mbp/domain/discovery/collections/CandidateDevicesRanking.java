@@ -90,6 +90,25 @@ public class CandidateDevicesRanking implements Iterable<ScoredCandidateDevice> 
     }
 
     /**
+     * Returns the score of the first candidate device within the ranking that matches a given MAC address. If
+     * no device is found that matches the MAC address, <code>-1</code> is returned.
+     *
+     * @param macAddress The MAC address to match
+     * @return The score of the candidate device with the MAC address or -1 if not found
+     */
+    public double getScoreByMacAddress(String macAddress) {
+        //Sanity check
+        if ((macAddress == null) || (macAddress.isEmpty())) return -1;
+
+        //Stream through the ranking in order
+        return this.stream()
+                //Filter for matching MAC addresses
+                .filter(d -> (d.getIdentifiers() != null) && macAddress.equals(d.getIdentifiers().getMacAddress()))
+                .map(ScoredCandidateDevice::getScore) //Map device to score
+                .findFirst().orElse(-1.0); //Return the score or -1 if no matching device found
+    }
+
+    /**
      * Re-calculates the scores of the candidate devices and adjusts the ranking accordingly.
      */
     private void updateRanking() {

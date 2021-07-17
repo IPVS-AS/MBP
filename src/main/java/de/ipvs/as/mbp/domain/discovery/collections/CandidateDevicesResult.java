@@ -18,13 +18,13 @@ import java.util.stream.Stream;
  * certain {@link DeviceTemplate}. While the pertaining {@link DeviceTemplate} is the same for all the
  * {@link CandidateDevicesCollection}s of the container, they represent the candidate devices of different discovery
  * repositories. As a result, overlaps between the {@link DeviceDescription}s of different
- * {@link CandidateDevicesCollection}s within the same {@link CandidateDevicesResultContainer} are possible, when
+ * {@link CandidateDevicesCollection}s within the same {@link CandidateDevicesResult} are possible, when
  * multiple discovery repositories contain device descriptions of the same devices.
  * Objects of this class provide methods that allow to retrieve, add, remove or replace
  * {@link CandidateDevicesCollection}s for certain discovery repositories, identified by their name.
  */
 @Document
-public class CandidateDevicesResultContainer {
+public class CandidateDevicesResult {
 
     //The ID of the device template for which the candidate devices were retrieve
     @Id
@@ -36,7 +36,7 @@ public class CandidateDevicesResultContainer {
     /**
      * Creates a new, empty candidate devices result container.
      */
-    public CandidateDevicesResultContainer() {
+    public CandidateDevicesResult() {
         //Initialize data structures
         this.candidateDevices = new HashMap<>();
     }
@@ -48,7 +48,7 @@ public class CandidateDevicesResultContainer {
      * @param deviceTemplateId The ID of the {@link DeviceTemplate} for which the candidate devices were retrieved
      * @param candidateDevices The {@link CandidateDevicesCollection}s of the candidate devices to add
      */
-    public CandidateDevicesResultContainer(String deviceTemplateId, Collection<CandidateDevicesCollection> candidateDevices) {
+    public CandidateDevicesResult(String deviceTemplateId, Collection<CandidateDevicesCollection> candidateDevices) {
         //Set fields
         setDeviceTemplateId(deviceTemplateId);
         setCandidateDevices(candidateDevices);
@@ -163,7 +163,7 @@ public class CandidateDevicesResultContainer {
      * @param deviceTemplateId The device template ID to set
      * @return The result container
      */
-    public CandidateDevicesResultContainer setDeviceTemplateId(String deviceTemplateId) {
+    public CandidateDevicesResult setDeviceTemplateId(String deviceTemplateId) {
         this.deviceTemplateId = deviceTemplateId;
         return this;
     }

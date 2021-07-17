@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
@@ -44,11 +45,12 @@ public class DynamicPeripheral extends UserEntity {
     @DBRef
     private List<RequestTopic> requestTopics;
 
-    //Whether the dynamic peripheral is currently enabled by the user or not
-    private boolean enabled = false;
+    //The user's last intention regarding enabling/disabling the dynamic peripheral
+    @Field("enabled")
+    private boolean enablingIntended = false;
 
-    //The current status of the dynamic peripheral
-    private DynamicPeripheralStatus status = DynamicPeripheralStatus.DISABLED;
+    //The current state of the dynamic peripheral
+    private DynamicPeripheralState state = DynamicPeripheralState.DISABLED;
 
     //Details about the currently used device
     private DynamicPeripheralDeviceDetails lastDeviceDetails;
@@ -169,50 +171,63 @@ public class DynamicPeripheral extends UserEntity {
 
 
     /**
-     * Returns whether the dynamic peripheral is currently enabled by the user.
+     * Returns whether the dynamic peripheral is currently intended to be active by the user.
      *
-     * @return True, if enabled; false otherwise
+     * @return True, if active; false otherwise
      */
-    public boolean isEnabled() {
-        return enabled;
+    public boolean isActiveIntended() {
+        return enablingIntended;
     }
 
     /**
-     * Sets whether the dynamic peripheral is currently enabled by the user.
+     * Sets whether the dynamic peripheral is currently intended to be active by the user.
      *
-     * @param enabled True, if enabled; false otherwise
+     * @param enablingIntended True, if active; false otherwise
      * @return The dynamic peripheral
      */
-    public DynamicPeripheral setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public DynamicPeripheral setEnablingIntended(boolean enablingIntended) {
+        this.enablingIntended = enablingIntended;
         return this;
     }
 
 
     /**
-     * Returns the status of the dynamic peripheral.
+     * Returns the state of the dynamic peripheral.
      *
-     * @return The status
+     * @return The state
      */
-    public DynamicPeripheralStatus getStatus() {
-        return status;
+    public DynamicPeripheralState getState() {
+        return state;
     }
 
     /**
-     * Sets the status of the dynamic peripheral.
+     * Sets the state of the dynamic peripheral.
      *
-     * @param status The status to set
+     * @param state The state to set
      * @return The dynamic peripheral
      */
-    public DynamicPeripheral setStatus(DynamicPeripheralStatus status) {
-        this.status = status;
+    public DynamicPeripheral setState(DynamicPeripheralState state) {
+        this.state = state;
         return this;
     }
 
+    /**
+     * Returns {@link DynamicPeripheralDeviceDetails} about the device that was most recently used for deploying
+     * the operator of the dynamic peripheral.
+     *
+     * @return The device details
+     */
     public DynamicPeripheralDeviceDetails getLastDeviceDetails() {
         return lastDeviceDetails;
     }
 
+    /**
+     * Sets the {@link DynamicPeripheralDeviceDetails} about the device that was most recently used for deploying
+     * the operator of the dynamic peripheral.
+     *
+     * @param lastDeviceDetails The device details to set
+     * @return The dynamic peripheral
+     */
     public DynamicPeripheral setLastDeviceDetails(DynamicPeripheralDeviceDetails lastDeviceDetails) {
         this.lastDeviceDetails = lastDeviceDetails;
         return this;

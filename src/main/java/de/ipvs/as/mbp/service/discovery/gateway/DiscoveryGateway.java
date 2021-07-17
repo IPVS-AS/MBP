@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.service.discovery.gateway;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResultContainer;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.messages.cancel.CancelSubscriptionMessage;
@@ -69,14 +69,14 @@ public class DiscoveryGateway {
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
      * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as {@link CandidateDevicesResultContainer}, holding one {@link CandidateDevicesCollection}
+     * in response are returned as {@link CandidateDevicesResult}, holding one {@link CandidateDevicesCollection}
      * per repository. No subscription is created at the repositories as part of this request.
      *
      * @param deviceTemplate The device template to find suitable candidate devices for
      * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
      * @return The resulting list of {@link CandidateDevicesCollection}s
      */
-    public CandidateDevicesResultContainer getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesResult getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Delegate call to overloaded method
         return getDeviceCandidatesWithSubscription(deviceTemplate, requestTopics, null);
     }
@@ -85,7 +85,7 @@ public class DiscoveryGateway {
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
      * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as {@link CandidateDevicesResultContainer}, holding one {@link CandidateDevicesCollection}
+     * in response are returned as {@link CandidateDevicesResult}, holding one {@link CandidateDevicesCollection}
      * per repository. In addition, an asynchronous subscription can be created at the repositories such that the
      * MBP can become notified when the collection of suitable candidate devices changed over time at a certain
      * repository for the given {@link DeviceTemplate}.
@@ -96,7 +96,7 @@ public class DiscoveryGateway {
      *                       Set to null, if no subscription is supposed to be created
      * @return The resulting list of {@link CandidateDevicesCollection}s
      */
-    public CandidateDevicesResultContainer getDeviceCandidatesWithSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
+    public CandidateDevicesResult getDeviceCandidatesWithSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
         //Sanity check
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
@@ -125,7 +125,7 @@ public class DiscoveryGateway {
                 .collect(Collectors.toList());
 
         //Wrap result into a candidate devices container and return it
-        return new CandidateDevicesResultContainer(deviceTemplate.getId(), candidateDevices);
+        return new CandidateDevicesResult(deviceTemplate.getId(), candidateDevices);
     }
 
     /**
