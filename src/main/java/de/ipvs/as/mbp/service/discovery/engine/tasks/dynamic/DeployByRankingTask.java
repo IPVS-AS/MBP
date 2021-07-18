@@ -78,7 +78,7 @@ public class DeployByRankingTask implements DynamicPeripheralTask {
 
         //Sanity checks
         if ((!dynamicPeripheralOptional.isPresent()) || (!candidateDevicesOptional.isPresent())) {
-            //Task failed because data is not available
+            //Task ends because data is not available
             return;
         }
 
@@ -197,17 +197,6 @@ public class DeployByRankingTask implements DynamicPeripheralTask {
         }
 
         this.originalDynamicPeripheral = dynamicPeripheral;
-    }
-
-    /**
-     * Returns the final {@link DynamicPeripheralState} in which the pertaining {@link DynamicPeripheral}
-     * is after the completion of this task.
-     *
-     * @return The result state
-     */
-    @Override
-    public DynamicPeripheralState getResultState() {
-        return null;
     }
 
     /**

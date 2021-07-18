@@ -13,7 +13,10 @@ import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DeployByRankingTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicPeripheralTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.UndeployTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeleteCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeviceTemplateTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
@@ -100,8 +103,8 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
 
     }
 
-    public void enableDynamicPeripheral(String dynamicPeripheralId) {
-        //Get dynamic peripheral exclusively for enabling
+    public void activateDynamicPeripheral(String dynamicPeripheralId) {
+        //Get dynamic peripheral exclusively for activating
         DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, true);
 
         //Null check
@@ -113,15 +116,22 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //Submit task for retrieving candidate devices (will abort if not needed due to force=false)
         submitTask(new UpdateCandidateDevicesTask(dynamicPeripheral.getDeviceTemplate(), requestTopics, false));
 
-        //TODO submit task for deployment
+        //Submit task for deploying the dynamic peripheral
+        submitTask(new DeployByRankingTask(dynamicPeripheral));
     }
 
-    public void disableDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
-        //Step 1: Check if already disabled and if yes, ignore
-        //Step 2: Use the deployer to undeploy asynchronously, if needed
-        //Step 3: Set status to disabled
-        //Step 4: Check if dynamic peripherals remain for the corresponding device template
-        //Step 5: If no peripherals remain, unsubscribe from the device template by sending the unsubscription message
+    public void deactivateDynamicPeripheral(String dynamicPeripheralId) {
+        //Get dynamic peripheral exclusively for deactivating
+        DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, false);
+
+        //Null check
+        if (dynamicPeripheral == null) return;
+
+        //Submit task for potentially deleting candidate devices data and cancel subscriptions
+        submitTask(new DeleteCandidateDevicesTask(dynamicPeripheral.getDeviceTemplate()));
+
+        //Submit task for undeploying the dynamic peripheral
+        submitTask(new UndeployTask(dynamicPeripheral));
     }
 
     /**
@@ -153,24 +163,58 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //TODO Updates the candidate devices in the repo and then the DeployByRanking task that deals with the (re-)deployment by using the new data
     }
 
-    private synchronized void submitTask(DeviceTemplateTask task) {
-        //Get device template ID
-        String deviceTemplateId = task.getDeviceTemplateId();
+    /**
+     * Submits a given {@link DeviceTemplateTask} so that it can be added to the corresponding task queue
+     * and be scheduled for asynchronous execution.
+     *
+     * @param task The task to submit
+     */
+    private void submitTask(DeviceTemplateTask task) {
+        //Delegate call
+        this.addTaskToQueueMap(task, this.deviceTemplateTasks, task.getDeviceTemplateId());
+    }
+
+    /**
+     * Submits a given {@link DynamicPeripheralTask} so that it can be added to the corresponding task queue
+     * and be scheduled for asynchronous execution.
+     *
+     * @param task The task to submit
+     */
+    private void submitTask(DynamicPeripheralTask task) {
+        //Delegate call
+        this.addTaskToQueueMap(task, this.dynamicPeripheralTasks, task.getDynamicPeripheralId());
+    }
+
+    /**
+     * Adds a given {@link DiscoveryTask} to a given {@link Map} (queue ID --> queue) of {@link Queue}s. In order to
+     * identify the queue that matches the given task, a queue ID is provided. If the queue does not already exist
+     * in the queue map, it will be created and added.
+     *
+     * @param task     The task to add
+     * @param queueMap The queue map (queue ID --> queue) to which the task is supposed to be added
+     * @param queueId  The ID of the queue that matches the task
+     * @param <T>      The type of the task
+     */
+    private synchronized <T extends DiscoveryTask> void addTaskToQueueMap(T task, Map<String, Queue<TaskWrapper<T>>> queueMap, String queueId) {
+        //Null check
+        if (task == null) {
+            throw new IllegalArgumentException("The task must not be null.");
+        }
 
         //Ignore task if ID is invalid
-        if ((deviceTemplateId == null) || (deviceTemplateId.isEmpty())) return;
+        if ((queueId == null) || (queueId.isEmpty())) return;
 
-        //Check if there is a task queue for this device template
-        if (this.deviceTemplateTasks.containsKey(deviceTemplateId)) {
+        //Check if there is already a queue with this ID
+        if (queueMap.containsKey(queueId)) {
             //Add task to dedicated queue
-            this.deviceTemplateTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
+            queueMap.get(queueId).add(new TaskWrapper<>(task));
         } else {
             //Create new queue and add the task
-            LinkedList<TaskWrapper<DeviceTemplateTask>> deviceTemplateQueue = new LinkedList<>();
-            deviceTemplateQueue.add(new TaskWrapper<>(task));
+            LinkedList<TaskWrapper<T>> newQueue = new LinkedList<>();
+            newQueue.add(new TaskWrapper<>(task));
 
-            //Add queue to tasks map
-            this.deviceTemplateTasks.put(deviceTemplateId, deviceTemplateQueue);
+            //Add queue to queue map
+            queueMap.put(queueId, newQueue);
         }
 
         //Trigger the execution of tasks
@@ -180,14 +224,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     //@Scheduled(fixedDelay = 1000)
     private synchronized void executeTasks() {
         /* Rules:
-        - Only first task in each queue is executed
+        - Only first task in each queue is executed and remains in queue during its execution
         - After the execution of a task concluded, the task is removed from the queue
         - No DP task is started as long as there is a task in the queue for the corresponding device template
         - No DT task is started as long as there is a currently running DP task for a DP that uses the template
         - DT tasks are checked before DP tasks
 
         Result: When a new DT task and a DP task are added, old DP tasks are first executed, then the new DT
-        task, then the new DP task
+        task, then the new DP task.
          */
 
         /*

@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Task that updates the candidate devices that are stored as {@link CandidateDevicesResult} in the
+ * This task is responsible for updating the candidate devices that are stored as {@link CandidateDevicesResult} in the
  * {@link CandidateDevicesRepository} for a certain {@link DeviceTemplate} by requesting the most recent
  * candidate devices from the discovery repositories. Optionally, a subscription can be created at the repositories.
  */

@@ -47,7 +47,7 @@ public class RestDebugController {
         peripheral.setEnablingIntended(false);
         dynamicPeripheralRepository.save(peripheral);
 
-        discoveryEngine.enableDynamicPeripheral(peripheral.getId());
+        discoveryEngine.activateDynamicPeripheral(peripheral.getId());
 
         return new ResponseEntity<>("debug", HttpStatus.OK);
     }

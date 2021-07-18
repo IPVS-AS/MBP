@@ -1,7 +1,6 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic;
 
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralState;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
@@ -12,14 +11,6 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
  * for asynchronous execution.
  */
 public interface DynamicPeripheralTask extends DiscoveryTask {
-    /**
-     * Returns the final {@link DynamicPeripheralState} in which the pertaining {@link DynamicPeripheral}
-     * is after the completion of this task.
-     *
-     * @return The result state
-     */
-    DynamicPeripheralState getResultState();
-
     /**
      * Returns the ID of the {@link DynamicPeripheral} on which this task operates.
      *
