@@ -19,6 +19,9 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
     //The device template to update the candidate devices for
     private DeviceTemplate deviceTemplate;
 
+    //Whether to force the deletion of candidate devices and the unsubscription
+    private boolean force = false;
+
     /*
     Injected fields
      */
@@ -32,8 +35,20 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
      * @param deviceTemplate The device template to use
      */
     public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate) {
+        this(deviceTemplate, false);
+    }
+
+    /**
+     * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate} and a force flag.
+     *
+     * @param deviceTemplate The device template to use
+     * @param force          True, if the deletion of candidate devices and the unsubscription should be forced and thus
+     *                       done without checking whether the corresponding device template is currently in use
+     */
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
+        setForce(force);
 
         //Inject components
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
@@ -49,11 +64,11 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
     public void run() {
         //Stream through all dynamic peripherals that use the provided device template
         boolean isDeviceTemplateInUse = this.dynamicPeripheralRepository
-                .findByDeviceTemplateId(this.deviceTemplate.getId()).stream() //Find peripherals by device template ID
+                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find peripherals by device template ID
                 .anyMatch(DynamicPeripheral::isActiveIntended); //Check whether any of them is intended to be active
 
-        //Abort if candidate devices of the device template are in use
-        if (isDeviceTemplateInUse) return;
+        //Abort if not forced and candidate devices of the device template are in use
+        if ((!force) && isDeviceTemplateInUse) return;
 
         //Candidate devices are not in use, so delete them
         this.candidateDevicesRepository.deleteById(getDeviceTemplateId());
@@ -84,6 +99,27 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
         }
 
         this.deviceTemplate = deviceTemplate;
+        return this;
+    }
+
+
+    /**
+     * Returns whether the deletion of candidate devices and the unsubscription is forced.
+     *
+     * @return True, if forced; false otherwise
+     */
+    public boolean isForce() {
+        return force;
+    }
+
+    /**
+     * Sets whether the deletion of candidate devices and the unsubscription is forced.
+     *
+     * @param force True, if forced; false otherwise
+     * @return The task
+     */
+    public DeleteCandidateDevicesTask setForce(boolean force) {
+        this.force = force;
         return this;
     }
 

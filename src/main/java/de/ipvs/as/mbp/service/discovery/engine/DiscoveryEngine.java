@@ -7,10 +7,9 @@ import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
-import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
+import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
-import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DeployByRankingTask;
@@ -52,16 +51,13 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     private CandidateDevicesProcessor candidateDevicesProcessor;
 
     @Autowired
-    private DiscoveryDeploymentService discoveryDeploymentService;
-
-    @Autowired
     private RequestTopicRepository requestTopicRepository;
 
     @Autowired
     private DynamicPeripheralRepository dynamicPeripheralRepository;
 
     @Autowired
-    private CandidateDevicesRepository candidateDevicesRepository;
+    private DeviceTemplateRepository deviceTemplateRepository;
 
     //Map (device template ID --> Queue) of task queues for device templates
     private final Map<String, Queue<TaskWrapper<DeviceTemplateTask>>> deviceTemplateTasks;
@@ -88,22 +84,76 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      * Initializes the discovery engine.
      */
     @PostConstruct
-    public void initialize() {
-        //Step 0: Iterate through all device templates
-        //Step 1: Check if there active peripherals for the current device template
-        //Step 2: If not: Skip the device template and continue
-        //Step 3: Read and store raw device candidate data from the repository for this template and tell the repository in this message to remove all subscriptions
-        //Step 4: Request new candidate devices and update the data in the repository
-        //Step 5: Iterate over all peripherals that use the device template and check their state
-        //Step 5.1: If DISABLED: Do nothing
-        //Step 5.2: If DEPLOYING: Let the deployer deploy the peripheral with the current ranking
-        //Step 5.3: If NO_CANDIDATE/ALL_FAILED: Same
-        //Step 5.4: If RUNNING: Read last MAC, get SSH details from it and check if operator is running.
-        //Step 5.4.1: If yes: Do the usual check whether the current ranking shows a better device then the former one
-        //Step 5.4.2: If not: Let the deployer deploy the peripheral with the current ranking
+    public synchronized void initialize() {
+        //Iterate over all device templates
+        for (DeviceTemplate deviceTemplate : this.deviceTemplateRepository.findAll()) {
+            //Find all dynamic peripherals that use the current device template
+            List<DynamicPeripheral> dynamicPeripherals = this.dynamicPeripheralRepository.findByDeviceTemplate_Id(deviceTemplate.getId());
 
+            /*
+            Device template tasks
+             */
+            //Check if any of the found dynamic peripherals are intended to be activated
+            if (dynamicPeripherals.stream().anyMatch(DynamicPeripheral::isActiveIntended)) {
+                //Such dynamic peripherals exist, so get request topics, update the candidate devices and subscribe
+                List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
+                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true));
+            } else {
+                //No such dynamic peripherals exist, so deletion of candidate devices and unsubscription is safe
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true));
+            }
+
+            /*
+            Dynamic peripherals tasks
+             */
+            //Stream through all dynamic peripherals of this device template
+            dynamicPeripherals.forEach(dynamicPeripheral -> {
+                //Check whether activating or de-activating is intended
+                if (dynamicPeripheral.isActiveIntended()) {
+                    //Dynamic peripheral is intended to be activated, so submit corresponding deployment task
+                    submitTask(new DeployByRankingTask(dynamicPeripheral));
+                } else {
+                    //Dynamic peripheral is intended to be deactivated, so submit corresponding un-deployment task
+                    submitTask(new UndeployTask(dynamicPeripheral));
+                }
+            });
+        }
     }
 
+    /**
+     * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
+     * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
+     * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
+     * in response are processed, scored with respect to to the {@link DeviceTemplate} and transformed to a ranking,
+     * which is subsequently returned as {@link CandidateDevicesRanking}.
+     *
+     * @param deviceTemplate The device template to find suitable candidate devices for
+     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
+     * @return The resulting {@link CandidateDevicesRanking}
+     */
+    public CandidateDevicesRanking getRankedDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+        //Sanity checks
+        if (deviceTemplate == null) {
+            throw new IllegalArgumentException("The device template must not be null.");
+        } else if ((requestTopics == null) || requestTopics.isEmpty() || (requestTopics.stream().anyMatch(Objects::isNull))) {
+            throw new IllegalArgumentException("The request topics must not be null or empty.");
+        }
+
+        //Use the gateway to find all candidate devices that match the device template
+        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
+
+        //Use the processor to filter, aggregate, score and rank the candidate devices
+        return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
+    }
+
+    /**
+     * Activates the deployment of a {@link DynamicPeripheral}, given by its ID, by placing corresponding tasks
+     * in the task queues. For the deployment, the device that appears most appropriate with respect to the
+     * {@link DeviceTemplate} underlying the {@link DynamicPeripheral} is used. In case the deployment fails, it is
+     * tried again for the next most appropriate appearing devices.
+     *
+     * @param dynamicPeripheralId The ID of the dynamic peripheral to deploy
+     */
     public void activateDynamicPeripheral(String dynamicPeripheralId) {
         //Get dynamic peripheral exclusively for activating
         DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, true);
@@ -121,6 +171,12 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         submitTask(new DeployByRankingTask(dynamicPeripheral));
     }
 
+    /**
+     * Deactivates the deployment of a {@link DynamicPeripheral}, given by its ID, by placing corresponding tasks
+     * in the task queues. Furthermore, the activation of the {@link DynamicPeripheral} is directly updated to false.
+     *
+     * @param dynamicPeripheralId The ID of the dynamic peripheral to undeploy
+     */
     public void deactivateDynamicPeripheral(String dynamicPeripheralId) {
         //Get dynamic peripheral exclusively for deactivating
         DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, false);
@@ -146,12 +202,6 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      */
     @Override
     public void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
-        //Step 0: Fetch previous candidate device results for the given device template
-        //Step 1: Create copy of the previous raw results and integrate the updatedCandidateDevices by replacing by repoName
-        //       Remark: Create own class for List<DeviceDescriptionCollection> that holds the template ID and offers methods for replacing parts
-        //Step 2: Calculate ranking from the new device candidates
-        //Step 3: Fetch all peripherals that currently use the given device template
-
         //Sanity checks
         if ((deviceTemplate == null) || (repositoryName == null) || (repositoryName.isEmpty()) || (updatedCandidateDevices == null)) {
             return;
@@ -161,7 +211,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices));
 
         //Iterate over all dynamic peripherals that use the affected device template
-        this.dynamicPeripheralRepository.findByDeviceTemplateId(deviceTemplate.getId())
+        this.dynamicPeripheralRepository.findByDeviceTemplate_Id(deviceTemplate.getId())
                 .forEach(d -> submitTask(new DeployByRankingTask(d))); //Submit re-deployment task for each
     }
 
@@ -288,6 +338,13 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         }
     }
 
+    /**
+     * Prepares and starts the asynchronous execution of a given {@link DiscoveryTask}, wrapped in a
+     * {@link TaskWrapper} object, as {@link CompletableFuture}. After the task concluded, it is automatically
+     * removed from its corresponding task queue.
+     *
+     * @param task The task to execute
+     */
     private void executeTaskAsynchronously(TaskWrapper<? extends DiscoveryTask> task) {
         //Sanity check
         if (task == null) {
@@ -302,6 +359,12 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
                 .thenAccept(unused -> handleCompletedTask(task));
     }
 
+    /**
+     * Handles a given task, wrapped in a {@link TaskWrapper} object, whose execution completed by removing
+     * it from the corresponding task queue.
+     *
+     * @param completedTask The completed task to handle
+     */
     private synchronized void handleCompletedTask(TaskWrapper<? extends DiscoveryTask> completedTask) {
         //Check if task really completed
         if (!completedTask.isDone()) return;
@@ -339,36 +402,10 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
     }
 
     /**
-     * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
-     * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
-     * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are processed, scored with respect to to the {@link DeviceTemplate} and transformed to a ranking,
-     * which is subsequently returned as {@link CandidateDevicesRanking}.
-     *
-     * @param deviceTemplate The device template to find suitable candidate devices for
-     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @return The resulting {@link CandidateDevicesRanking}
-     */
-    public CandidateDevicesRanking getRankedDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
-        //Sanity checks
-        if (deviceTemplate == null) {
-            throw new IllegalArgumentException("The device template must not be null.");
-        } else if ((requestTopics == null) || requestTopics.isEmpty() || (requestTopics.stream().anyMatch(Objects::isNull))) {
-            throw new IllegalArgumentException("The request topics must not be null or empty.");
-        }
-
-        //Use the gateway to find all candidate devices that match the device template
-        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
-
-        //Use the processor to filter, aggregate, score and rank the candidate devices
-        return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
-    }
-
-    /**
-     * Retrieves and returns a {@link DynamicPeripheral} of a given ID from its repository and updates its user
+     * Retrieves and returns a {@link DynamicPeripheral} of a given ID from its repository and updates its activation
      * intention to a given target value. Thereby, it is checked whether the intention of the {@link DynamicPeripheral}
      * has already been updated previously to the target value. If this is the case, null will be returned instead of
-     * the object. This way, it is ensured that the thread that wants to update the user intention of the
+     * the object. This way, it is ensured that the thread that wants to update the activation intention of the
      * {@link DynamicPeripheral} and succeeds in doing so receives exclusive access to the {@link DynamicPeripheral}
      * for the scope of its operation, thus avoiding the duplicated execution of operations with the same intention.
      *
