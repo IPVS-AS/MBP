@@ -127,7 +127,8 @@ public class CandidateDevicesResult {
 
     /**
      * Replaces the descriptions of the candidate devices of a certain repository, given by its name, with the
-     * descriptions of new candidate devices.
+     * descriptions of new candidate devices. If no candidate device descriptions are currently present for the
+     * given repository name, the new new candidate devices will be added nonetheless.
      *
      * @param repositoryName   The name of the repository for which the descriptions of its candidate devices are
      *                         supposed to be replaced

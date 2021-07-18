@@ -11,10 +11,10 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 public interface CandidateDevicesSubscriber {
     /**
      * Called in case a notification was received from a repository as result of a subscription,
-     * indicating that the collection of suitable candidate devices, which could be determined on behalf of a
+     * indicating that the collection of suitable candidate devices, which can be determined on behalf of a
      * certain {@link DeviceTemplate}, changed over time.
      *
-     * @param deviceTemplate          The device template for which the candidate devices are retrieved
+     * @param deviceTemplate          The device template whose candidate devices are affected
      * @param repositoryName          The name of the repository that issued the notification
      * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
      */

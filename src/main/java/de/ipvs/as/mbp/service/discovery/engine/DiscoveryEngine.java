@@ -18,6 +18,7 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicPeripheralTa
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.UndeployTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeleteCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeviceTemplateTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.template.MergeCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
@@ -136,10 +137,10 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
 
     /**
      * Called in case a notification was received from a repository as result of a subscription,
-     * indicating that the collection of suitable candidate devices, which could be determined on behalf of a
+     * indicating that the collection of suitable candidate devices, which can be determined on behalf of a
      * certain {@link DeviceTemplate}, changed over time.
      *
-     * @param deviceTemplate          The device template for which the candidate devices are retrieved
+     * @param deviceTemplate          The device template whose candidate devices are affected
      * @param repositoryName          The name of the repository that issued the notification
      * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
      */
@@ -150,17 +151,18 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //       Remark: Create own class for List<DeviceDescriptionCollection> that holds the template ID and offers methods for replacing parts
         //Step 2: Calculate ranking from the new device candidates
         //Step 3: Fetch all peripherals that currently use the given device template
-        //Step 4: Iterate through all these peripherals and check their states
-        //Step 4.1: If DISABLED: skip
-        //Step 4.3: If DEPLOYING: Abort task of deployer and restart with new ranking ("search" means the deployment process here), even for empty ranking
-        //Step 4.4: If NO_CANDIDATE/ALL_FAILED: Start deployer task with new ranking, even for empty ranking (deployer will handle and return immediately)
-        //Step 4.5: If RUNNING:
-        //Step 4.5.1 If ranking is empty: Undeploy, on callback of deployer task set the state to NO_CANDIDATE
-        //Step 4.5.2 Locate old device in the new ranking
-        //Step 4.5.3 If old device is in the ranking and has still the highest score (or equal to highest): Do nothing and continue with next peripheral
-        //Step 4.5.4 Pass new ranking to the deployer and instruct it to deploy to the device with the highest possible score. If success, the deployer should undeploy the old device using the SSH data from the old candidate device data
-        //TODO with the new task-based system, this can be simplified: Just create and submit two tasks: One DT task that
-        //TODO Updates the candidate devices in the repo and then the DeployByRanking task that deals with the (re-)deployment by using the new data
+
+        //Sanity checks
+        if ((deviceTemplate == null) || (repositoryName == null) || (repositoryName.isEmpty()) || (updatedCandidateDevices == null)) {
+            return;
+        }
+
+        //Create task for merging the updated candidate devices with the existing ones
+        submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices));
+
+        //Iterate over all dynamic peripherals that use the affected device template
+        this.dynamicPeripheralRepository.findByDeviceTemplateId(deviceTemplate.getId())
+                .forEach(d -> submitTask(new DeployByRankingTask(d))); //Submit re-deployment task for each
     }
 
     /**
@@ -221,17 +223,16 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         executeTasks();
     }
 
-    //@Scheduled(fixedDelay = 1000)
     private synchronized void executeTasks() {
         /* Rules:
         - Only first task in each queue is executed and remains in queue during its execution
         - After the execution of a task concluded, the task is removed from the queue
-        - No DP task is started as long as there is a task in the queue for the corresponding device template
-        - No DT task is started as long as there is a currently running DP task for a DP that uses the template
-        - DT tasks are checked before DP tasks
+        - No dynamic peripheral task is started as long as there is a task in the queue for the corresponding device template
+        - No device template task is started as long as there is a currently running dynamic peripheral task for a dynamic peripheral that uses the template
+        - Device template tasks are checked before dynamic peripheral tasks
 
-        Result: When a new DT task and a DP task are added, old DP tasks are first executed, then the new DT
-        task, then the new DP task.
+        Result: When a new device template task and a dynamic peripheral task are added, old dynamic peripheral tasks
+        are executed first, then the new device template task, then the new dynamic peripheral task.
          */
 
         /*
@@ -336,7 +337,6 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         //Execute next tasks (if available)
         executeTasks();
     }
-
 
     /**
      * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
