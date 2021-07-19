@@ -87,7 +87,7 @@ public class DeployByRankingTask implements DynamicPeripheralTask {
         CandidateDevicesResult candidateDevices = candidateDevicesOptional.get();
 
         //Check intention for dynamic peripheral
-        if (!dynamicPeripheral.isActiveIntended()) {
+        if (!dynamicPeripheral.isActivatingIntended()) {
             //Active is not intended, so no need to deploy; potential undeployment will be done by another task
             return;
         }
@@ -218,5 +218,15 @@ public class DeployByRankingTask implements DynamicPeripheralTask {
     @Override
     public String getDeviceTemplateId() {
         return this.originalDynamicPeripheral.getDeviceTemplate().getId();
+    }
+
+    /**
+     * Returns a simple, short and human-readable description of the task.
+     *
+     * @return The human-readable description
+     */
+    @Override
+    public String toHumanReadableString() {
+        return "[Deploy by ranking]";
     }
 }

@@ -10,7 +10,6 @@ import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
@@ -45,9 +44,8 @@ public class DynamicPeripheral extends UserEntity {
     @DBRef
     private List<RequestTopic> requestTopics;
 
-    //The user's last intention regarding enabling/disabling the dynamic peripheral
-    @Field("enabled")
-    private boolean enablingIntended = false;
+    //The user's last intention regarding activating/deactivating the dynamic peripheral
+    private boolean activatingIntended = false;
 
     //The current state of the dynamic peripheral
     private DynamicPeripheralState state = DynamicPeripheralState.DISABLED;
@@ -175,18 +173,18 @@ public class DynamicPeripheral extends UserEntity {
      *
      * @return True, if active; false otherwise
      */
-    public boolean isActiveIntended() {
-        return enablingIntended;
+    public boolean isActivatingIntended() {
+        return activatingIntended;
     }
 
     /**
      * Sets whether the dynamic peripheral is currently intended to be active by the user.
      *
-     * @param enablingIntended True, if active; false otherwise
+     * @param activatingIntended True, if active; false otherwise
      * @return The dynamic peripheral
      */
-    public DynamicPeripheral setEnablingIntended(boolean enablingIntended) {
-        this.enablingIntended = enablingIntended;
+    public DynamicPeripheral setActivatingIntended(boolean activatingIntended) {
+        this.activatingIntended = activatingIntended;
         return this;
     }
 

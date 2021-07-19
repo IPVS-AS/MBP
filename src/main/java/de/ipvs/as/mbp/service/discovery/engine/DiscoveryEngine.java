@@ -7,6 +7,7 @@ import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
+import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
@@ -23,6 +24,7 @@ import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -30,6 +32,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * This components manages the overall discovery process by orchestrating the various involved components and takes
@@ -94,7 +97,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
             Device template tasks
              */
             //Check if any of the found dynamic peripherals are intended to be activated
-            if (dynamicPeripherals.stream().anyMatch(DynamicPeripheral::isActiveIntended)) {
+            if (dynamicPeripherals.stream().anyMatch(DynamicPeripheral::isActivatingIntended)) {
                 //Such dynamic peripherals exist, so get request topics, update the candidate devices and subscribe
                 List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
                 submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true));
@@ -109,7 +112,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
             //Stream through all dynamic peripherals of this device template
             dynamicPeripherals.forEach(dynamicPeripheral -> {
                 //Check whether activating or de-activating is intended
-                if (dynamicPeripheral.isActiveIntended()) {
+                if (dynamicPeripheral.isActivatingIntended()) {
                     //Dynamic peripheral is intended to be activated, so submit corresponding deployment task
                     submitTask(new DeployByRankingTask(dynamicPeripheral));
                 } else {
@@ -154,12 +157,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      *
      * @param dynamicPeripheralId The ID of the dynamic peripheral to deploy
      */
-    public void activateDynamicPeripheral(String dynamicPeripheralId) {
+    public synchronized void activateDynamicPeripheral(String dynamicPeripheralId) {
         //Get dynamic peripheral exclusively for activating
         DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, true);
 
         //Null check
-        if (dynamicPeripheral == null) return;
+        if (dynamicPeripheral == null) {
+            throw new MBPException(HttpStatus.BAD_REQUEST, "The dynamic peripheral is already activated.");
+        }
 
         //Get all request topics of the user
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicPeripheral.getOwner().getId(), null);
@@ -177,12 +182,14 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      *
      * @param dynamicPeripheralId The ID of the dynamic peripheral to undeploy
      */
-    public void deactivateDynamicPeripheral(String dynamicPeripheralId) {
+    public synchronized void deactivateDynamicPeripheral(String dynamicPeripheralId) {
         //Get dynamic peripheral exclusively for deactivating
         DynamicPeripheral dynamicPeripheral = requestDynamicPeripheralExclusively(dynamicPeripheralId, false);
 
         //Null check
-        if (dynamicPeripheral == null) return;
+        if (dynamicPeripheral == null) {
+            throw new MBPException(HttpStatus.BAD_REQUEST, "The dynamic peripheral is already deactivated.");
+        }
 
         //Submit task for potentially deleting candidate devices data and cancel subscriptions
         submitTask(new DeleteCandidateDevicesTask(dynamicPeripheral.getDeviceTemplate()));
@@ -201,7 +208,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
      */
     @Override
-    public void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
+    public synchronized void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
         //Sanity checks
         if ((deviceTemplate == null) || (repositoryName == null) || (repositoryName.isEmpty()) || (updatedCandidateDevices == null)) {
             return;
@@ -221,7 +228,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      *
      * @param task The task to submit
      */
-    private void submitTask(DeviceTemplateTask task) {
+    private synchronized void submitTask(DeviceTemplateTask task) {
         //Delegate call
         this.addTaskToQueueMap(task, this.deviceTemplateTasks, task.getDeviceTemplateId());
     }
@@ -232,7 +239,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      *
      * @param task The task to submit
      */
-    private void submitTask(DynamicPeripheralTask task) {
+    private synchronized void submitTask(DynamicPeripheralTask task) {
         //Delegate call
         this.addTaskToQueueMap(task, this.dynamicPeripheralTasks, task.getDynamicPeripheralId());
     }
@@ -268,6 +275,9 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
             //Add queue to queue map
             queueMap.put(queueId, newQueue);
         }
+
+        //TODO print current queues
+        printQueues();
 
         //Trigger the execution of tasks
         executeTasks();
@@ -345,7 +355,7 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
      *
      * @param task The task to execute
      */
-    private void executeTaskAsynchronously(TaskWrapper<? extends DiscoveryTask> task) {
+    private synchronized void executeTaskAsynchronously(TaskWrapper<? extends DiscoveryTask> task) {
         //Sanity check
         if (task == null) {
             return;
@@ -397,6 +407,9 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
             }
         }
 
+        //TODO
+        System.out.println("Some task execution finished");
+
         //Execute next tasks (if available)
         executeTasks();
     }
@@ -423,15 +436,52 @@ public class DiscoveryEngine implements CandidateDevicesSubscriber {
         }
 
         //Check if target status is already present
-        if (dynamicPeripheral.get().isActiveIntended() == enablingIntention) {
+        if (dynamicPeripheral.get().isActivatingIntended() == enablingIntention) {
             //Target status is already present, so do not continue
             return null;
         }
 
         //Set the target status
-        dynamicPeripheral.get().setEnablingIntended(enablingIntention);
+        dynamicPeripheral.get().setActivatingIntended(enablingIntention);
 
         //Write updated peripheral to repository and return it
         return this.dynamicPeripheralRepository.save(dynamicPeripheral.get());
+    }
+
+    /**
+     * Prints the contents of the {@link DeviceTemplate} task queues and the {@link DynamicPeripheral}s task queues
+     * to the standard output for debugging purposes.
+     */
+    private synchronized void printQueues() {
+        System.out.println("------------------------------------");
+        /*
+        Device template queues
+         */
+        System.out.println("Device templates: ");
+
+        //Stream through the device template queues
+        this.deviceTemplateTasks.forEach((s, queue) -> {
+            //Print device template ID
+            System.out.printf("%s: ", s);
+
+            //Stream through the queue elements, get their descriptions and join them
+            System.out.println(queue.stream().map(t -> t.getTask().toHumanReadableString()).collect(Collectors.joining(" --> ")));
+        });
+
+        /*
+        Dynamic peripheral queues
+         */
+        System.out.println("\nDynamic peripherals: ");
+
+        //Stream through the dynamic peripheral queues
+        this.dynamicPeripheralTasks.forEach((s, queue) -> {
+            //Print device template ID
+            System.out.printf("%s: ", s);
+
+            //Stream through the queue elements, get their descriptions and join them
+            System.out.println(queue.stream().map(t -> t.getTask().toHumanReadableString()).collect(Collectors.joining(" --> ")));
+        });
+
+        System.out.println("------------------------------------");
     }
 }

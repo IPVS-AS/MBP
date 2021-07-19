@@ -65,10 +65,12 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
         //Stream through all dynamic peripherals that use the provided device template
         boolean isDeviceTemplateInUse = this.dynamicPeripheralRepository
                 .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find peripherals by device template ID
-                .anyMatch(DynamicPeripheral::isActiveIntended); //Check whether any of them is intended to be active
+                .anyMatch(DynamicPeripheral::isActivatingIntended); //Check whether any of them is intended to be active
 
         //Abort if not forced and candidate devices of the device template are in use
-        if ((!force) && isDeviceTemplateInUse) return;
+        if ((!force) && isDeviceTemplateInUse) {
+            return;
+        }
 
         //Candidate devices are not in use, so delete them
         this.candidateDevicesRepository.deleteById(getDeviceTemplateId());
@@ -131,5 +133,15 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
     @Override
     public String getDeviceTemplateId() {
         return this.deviceTemplate.getId();
+    }
+
+    /**
+     * Returns a simple, short and human-readable description of the task.
+     *
+     * @return The human-readable description
+     */
+    @Override
+    public String toHumanReadableString() {
+        return "[Delete candidate devices]";
     }
 }

@@ -12,4 +12,11 @@ public interface DiscoveryTask extends Runnable {
      * gracefully deal with cancellations of the task.
      */
     void run();
+
+    /**
+     * Returns a simple, short and human-readable description of the task.
+     *
+     * @return The human-readable description
+     */
+    String toHumanReadableString();
 }

@@ -23,7 +23,7 @@ import java.util.stream.Stream;
  * Objects of this class provide methods that allow to retrieve, add, remove or replace
  * {@link CandidateDevicesCollection}s for certain discovery repositories, identified by their name.
  */
-@Document
+@Document(collection = "candidateDevices")
 public class CandidateDevicesResult {
 
     //The ID of the device template for which the candidate devices were retrieve

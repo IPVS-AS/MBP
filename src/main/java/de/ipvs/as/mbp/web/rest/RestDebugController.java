@@ -44,8 +44,8 @@ public class RestDebugController {
 
         DynamicPeripheral peripheral = dynamicPeripheralList.get(0);
 
-        peripheral.setEnablingIntended(false);
-        dynamicPeripheralRepository.save(peripheral);
+        //peripheral.setEnablingIntended(false);
+        //dynamicPeripheralRepository.save(peripheral);
 
         discoveryEngine.activateDynamicPeripheral(peripheral.getId());
 

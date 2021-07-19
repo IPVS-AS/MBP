@@ -1,18 +1,12 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
-import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
-import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralState;
 import de.ipvs.as.mbp.domain.operator.Operator;
-import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
-import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 
 import java.util.Optional;
 
@@ -65,7 +59,7 @@ public class UndeployTask implements DynamicPeripheralTask {
         DynamicPeripheral dynamicPeripheral = dynamicPeripheralOptional.get();
 
         //Check intention for dynamic peripheral
-        if (dynamicPeripheral.isActiveIntended()) {
+        if (dynamicPeripheral.isActivatingIntended()) {
             //De-activate is not intended, so no need to undeploy
             return;
         }
@@ -143,5 +137,15 @@ public class UndeployTask implements DynamicPeripheralTask {
     @Override
     public String getDeviceTemplateId() {
         return this.originalDynamicPeripheral.getDeviceTemplate().getId();
+    }
+
+    /**
+     * Returns a simple, short and human-readable description of the task.
+     *
+     * @return The human-readable description
+     */
+    @Override
+    public String toHumanReadableString() {
+        return "[Undeploy]";
     }
 }
