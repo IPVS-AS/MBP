@@ -1,13 +1,13 @@
-package de.ipvs.as.mbp.domain.discovery.peripheral;
+package de.ipvs.as.mbp.domain.discovery.deployment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Enumeration of states in which {@link DynamicPeripheral}s can be.
+ * Enumeration of states in which {@link DynamicDeployment}s can be.
  */
-public enum DynamicPeripheralState {
-    DISABLED("disabled"), //Dynamic peripheral is not set to active by the user
+public enum DynamicDeploymentState {
+    DISABLED("disabled"), //Dynamic deployment is not set to active by the user
     IN_PROGRESS("in_progress"), //Operation in progress
     NO_CANDIDATE("no_candidate"),  //No candidate device found
     ALL_FAILED("all_failed"), // Candidate devices found, but deployment failed for all candidates
@@ -17,16 +17,16 @@ public enum DynamicPeripheralState {
     private String name;
 
     /**
-     * Creates a new dynamic peripheral state with a given name.
+     * Creates a new dynamic deployment state with a given name.
      *
      * @param name The desired name of the state
      */
-    DynamicPeripheralState(String name) {
+    DynamicDeploymentState(String name) {
         setName(name);
     }
 
     /**
-     * Sets the name of the peripheral state.
+     * Sets the name of the deployment state.
      *
      * @param name The name to set
      */
@@ -40,7 +40,7 @@ public enum DynamicPeripheralState {
     }
 
     /**
-     * Serializes a dynamic peripheral state by returning its name.
+     * Serializes a dynamic deployment state by returning its name.
      *
      * @return The name of the state
      */
@@ -50,21 +50,21 @@ public enum DynamicPeripheralState {
     }
 
     /**
-     * Returns the dynamic peripheral state that corresponds to a given name. This method is called when
+     * Returns the dynamic deployment state that corresponds to a given name. This method is called when
      * a provided state name needs to be mapped to the actual state object.
      *
-     * @param name The name of the dynamic peripheral state
+     * @param name The name of the dynamic deployment state
      * @return The corresponding state or null if not found
      */
     @JsonCreator
-    public static DynamicPeripheralState create(String name) {
+    public static DynamicDeploymentState create(String name) {
         //Sanity check for provided name
         if ((name == null) || name.isEmpty()) {
             return null;
         }
 
         //Compare every available state against the provided name
-        for (DynamicPeripheralState state : values()) {
+        for (DynamicDeploymentState state : values()) {
             if (name.equalsIgnoreCase(state.value())) {
                 //Matching state found
                 return state;

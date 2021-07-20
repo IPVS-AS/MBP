@@ -3,14 +3,14 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
-import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
 /**
  * This task is responsible for checking whether the {@link CandidateDevicesResult} that is stored for a
- * certain {@link DeviceTemplate} is currently used by any {@link DynamicPeripheral}s because they are deployed to a
+ * certain {@link DeviceTemplate} is currently used by any {@link DynamicDeployment}s because they are deployed to a
  * device. If this is not the case, this task takes care of deleting the {@link CandidateDevicesResult} and
  * cancelling the subscriptions for asynchronous notifications at the individual discovery repositories.
  */
@@ -26,7 +26,7 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
     Injected fields
      */
     private final DiscoveryGateway discoveryGateway;
-    private final DynamicPeripheralRepository dynamicPeripheralRepository;
+    private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final CandidateDevicesRepository candidateDevicesRepository;
 
     /**
@@ -52,7 +52,7 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
 
         //Inject components
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
-        this.dynamicPeripheralRepository = DynamicBeanProvider.get(DynamicPeripheralRepository.class);
+        this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
     }
 
@@ -62,10 +62,10 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
      */
     @Override
     public void run() {
-        //Stream through all dynamic peripherals that use the provided device template
-        boolean isDeviceTemplateInUse = this.dynamicPeripheralRepository
-                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find peripherals by device template ID
-                .anyMatch(DynamicPeripheral::isActivatingIntended); //Check whether any of them is intended to be active
+        //Stream through all dynamic deployments that use the provided device template
+        boolean isDeviceTemplateInUse = this.dynamicDeploymentRepository
+                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find deployments by device template ID
+                .anyMatch(DynamicDeployment::isActivatingIntended); //Check whether any of them is intended to be active
 
         //Abort if not forced and candidate devices of the device template are in use
         if ((!force) && isDeviceTemplateInUse) {

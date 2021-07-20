@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.peripheral;
+package de.ipvs.as.mbp.domain.discovery.deployment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DTOs for {@link DynamicPeripheral}s.
+ * DTOs for {@link DynamicDeployment}s.
  */
-public class DynamicPeripheralDTO {
+public class DynamicDeploymentDTO {
 
-    //Name of the dynamic peripheral
+    //Name of the dynamic deployment
     private String name;
 
     //Id of the operator to use
@@ -26,14 +26,14 @@ public class DynamicPeripheralDTO {
     private List<String> requestTopicIds = new ArrayList<>();
 
     /**
-     * Creates a new, empty DTO for a {@link DynamicPeripheral}.
+     * Creates a new, empty DTO for a {@link DynamicDeployment}.
      */
-    public DynamicPeripheralDTO() {
+    public DynamicDeploymentDTO() {
 
     }
 
     /**
-     * Returns the name of the dynamic peripheral.
+     * Returns the name of the dynamic deployment.
      *
      * @return The name
      */
@@ -42,7 +42,7 @@ public class DynamicPeripheralDTO {
     }
 
     /**
-     * Returns the ID of the operator to use in the dynamic peripheral.
+     * Returns the ID of the operator to use in the dynamic deployment.
      *
      * @return The operator ID
      */
@@ -51,7 +51,7 @@ public class DynamicPeripheralDTO {
     }
 
     /**
-     * Returns the ID of the device template to use in the dynamic peripheral.
+     * Returns the ID of the device template to use in the dynamic deployment.
      *
      * @return The device template ID
      */
@@ -61,7 +61,7 @@ public class DynamicPeripheralDTO {
 
     /**
      * Returns the IDs of the request topics that are supposed to be used for retrieving suitable candidate devices
-     * for the dynamic peripheral.
+     * for the dynamic deployment.
      *
      * @return The list of request topic IDs
      */

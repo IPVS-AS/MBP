@@ -1,20 +1,20 @@
 /**
  * Controller for the dynamic peripherals details pages.
  */
-app.controller('DynamicPeripheralDetailsController',
-    ['$scope', '$routeParams', '$interval', 'dynamicPeripheralDetails', 'DiscoveryService', 'UnitService', 'NotificationService',
-        function ($scope, $routeParams, $interval, dynamicPeripheralDetails, DiscoveryService, UnitService, NotificationService) {
+app.controller('DynamicDeploymentDetailsController',
+    ['$scope', '$routeParams', '$interval', 'dynamicDeploymentDetails', 'DiscoveryService', 'UnitService', 'NotificationService',
+        function ($scope, $routeParams, $interval, dynamicDeploymentDetails, DiscoveryService, UnitService, NotificationService) {
             //Selectors that allow the selection of different ui cards
             const INFO_CARD_SELECTOR = ".info-card";
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
-            const COMPONENT_TYPE = "dynamic_peripheral"
+            const COMPONENT_TYPE = "dynamic_deployment"
 
-            //Properties of the current dynamic peripheral
-            const PERIPHERAL_ID = $routeParams.id;
-            const OPERATOR_UNIT = dynamicPeripheralDetails.operator.unit;
+            //Properties of the current dynamic deployment
+            const DEPLOYMENT_ID = $routeParams.id;
+            const OPERATOR_UNIT = dynamicDeploymentDetails.operator.unit;
 
             //Initialization of frontend variables
             let vm = this;
@@ -42,6 +42,26 @@ app.controller('DynamicPeripheralDetailsController',
                 });
             })();
 
+            /**
+             * [Public]
+             * Toggles the activation intention of a certain dynamic deployment, given by its ID.
+             *
+             * @param id The ID of the dynamic deployment
+             */
+            function toggleActivationIntention(id) {
+                alert(id);
+            }
+
+
+            /**
+             * [Public]
+             * Reloads and updates the deployment state of a certain dynamic deployment, given by its ID.
+             *
+             * @param id The ID of the dynamic deployment
+             */
+            function reloadDeploymentState(id) {
+                alert(id);
+            }
 
             /**
              * [Public]
@@ -101,7 +121,7 @@ app.controller('DynamicPeripheralDetailsController',
                 };
 
                 //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(PERIPHERAL_ID, COMPONENT_TYPE, pageDetails, unit);
+                return ComponentService.getValueLogs(DEPLOYMENT_ID, COMPONENT_TYPE, pageDetails, unit);
             }
 
             /**
@@ -114,7 +134,7 @@ app.controller('DynamicPeripheralDetailsController',
                  * Executes the deletion of the value logs by performing the server request.
                  */
                 function executeDeletion() {
-                    ComponentService.deleteValueLogs(PERIPHERAL_ID, COMPONENT_TYPE).then(function (response) {
+                    ComponentService.deleteValueLogs(DEPLOYMENT_ID, COMPONENT_TYPE).then(function (response) {
                         //Update historical chart and stats
                         $scope.historicalChartApi.updateChart();
                         $scope.valueLogStatsApi.updateStats();
@@ -130,7 +150,7 @@ app.controller('DynamicPeripheralDetailsController',
                     title: 'Delete value data',
                     type: 'warning',
                     html: "Are you sure you want to delete all value data that has been recorded so far for this " +
-                        "dynamic peripheral? This action cannot be undone.",
+                        "dynamic deployment? This action cannot be undone.",
                     showCancelButton: true,
                     confirmButtonText: 'Delete',
                     confirmButtonClass: 'bg-red',
@@ -175,7 +195,7 @@ app.controller('DynamicPeripheralDetailsController',
                  * from the server.
                  */
                 function getStats(unit) {
-                    return ComponentService.getValueLogStats(PERIPHERAL_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
+                    return ComponentService.getValueLogStats(DEPLOYMENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         return response;
                     }, function (response) {
                         //Failure
@@ -295,11 +315,13 @@ app.controller('DynamicPeripheralDetailsController',
 
             //Expose the public variables and functions
             angular.extend(vm, {
-                dynamicPeripheral: dynamicPeripheralDetails,
+                dynamicDeployment: dynamicDeploymentDetails,
                 displayUnit: OPERATOR_UNIT,
                 displayUnitInput: OPERATOR_UNIT,
+                toggleActivationIntention: toggleActivationIntention,
+                reloadDeploymentState: reloadDeploymentState,
                 onDisplayUnitChange: onDisplayUnitChange,
-                deleteValueLogs: deleteValueLogs,
+                deleteValueLogs: deleteValueLogs
             });
         }]
 );

@@ -1,13 +1,13 @@
-package de.ipvs.as.mbp.domain.discovery.peripheral;
+package de.ipvs.as.mbp.domain.discovery.deployment;
 
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionIdentifiers;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionSSHDetails;
 
 /**
- * Collection of details about a device on which a {@link DynamicPeripheral} is, was or may be deployed.
+ * Collection of details about a device on which a {@link DynamicDeployment} is, was or may be deployed.
  */
-public class DynamicPeripheralDeviceDetails {
+public class DynamicDeploymentDeviceDetails {
     //MAC address of the device
     private String macAddress;
 
@@ -26,7 +26,7 @@ public class DynamicPeripheralDeviceDetails {
     /**
      * Creates a new, empty device details object.
      */
-    public DynamicPeripheralDeviceDetails() {
+    public DynamicDeploymentDeviceDetails() {
 
     }
 
@@ -35,7 +35,7 @@ public class DynamicPeripheralDeviceDetails {
      *
      * @param deviceDescription The device description to use
      */
-    public DynamicPeripheralDeviceDetails(DeviceDescription deviceDescription) {
+    public DynamicDeploymentDeviceDetails(DeviceDescription deviceDescription) {
         //Null checks
         if (deviceDescription == null) {
             throw new IllegalArgumentException("The device description must not be null.");
@@ -72,7 +72,7 @@ public class DynamicPeripheralDeviceDetails {
      * @param macAddress The MAC address to set
      * @return The device details
      */
-    public DynamicPeripheralDeviceDetails setMacAddress(String macAddress) {
+    public DynamicDeploymentDeviceDetails setMacAddress(String macAddress) {
         this.macAddress = macAddress;
         return this;
     }
@@ -92,7 +92,7 @@ public class DynamicPeripheralDeviceDetails {
      * @param ipAddress The IP address to set
      * @return The device details
      */
-    public DynamicPeripheralDeviceDetails setIpAddress(String ipAddress) {
+    public DynamicDeploymentDeviceDetails setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
         return this;
     }
@@ -112,7 +112,7 @@ public class DynamicPeripheralDeviceDetails {
      * @param username The username to set
      * @return The device details
      */
-    public DynamicPeripheralDeviceDetails setUsername(String username) {
+    public DynamicDeploymentDeviceDetails setUsername(String username) {
         this.username = username;
         return this;
     }
@@ -132,7 +132,7 @@ public class DynamicPeripheralDeviceDetails {
      * @param password The password to set
      * @return The device details
      */
-    public DynamicPeripheralDeviceDetails setPassword(String password) {
+    public DynamicDeploymentDeviceDetails setPassword(String password) {
         this.password = password;
         return this;
     }
@@ -152,7 +152,7 @@ public class DynamicPeripheralDeviceDetails {
      * @param privateKey The private key to set
      * @return The device details
      */
-    public DynamicPeripheralDeviceDetails setPrivateKey(String privateKey) {
+    public DynamicDeploymentDeviceDetails setPrivateKey(String privateKey) {
         this.privateKey = privateKey;
         return this;
     }

@@ -1,0 +1,95 @@
+/**
+ * Controller for the dynamic deployments list page.
+ */
+app.controller('DynamicDeploymentListController',
+    ['$scope', '$controller', 'dynamicDeploymentList', 'addDynamicDeployment', 'deleteDynamicDeployment', 'operatorList', 'deviceTemplateList', 'requestTopicList', 'DiscoveryService', 'NotificationService',
+        function ($scope, $controller, dynamicDeploymentList, addDynamicDeployment, deleteDynamicDeployment, operatorList, deviceTemplateList, requestTopicList, DiscoveryService, NotificationService) {
+
+            let vm = this;
+
+            /**
+             * Initializing function, sets up basic things.
+             */
+            (function initController() {
+                //Refresh select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', () => {
+                    $('.selectpicker').selectpicker('refresh');
+                });
+            })();
+
+            /**
+             * [Public]
+             * Shows an alert that asks the user if he is sure that he wants to delete a certain dynamic deployment.
+             *
+             * @param data A data object that contains the id of the dynamic deployment that is supposed to be deleted
+             * @returns A promise of the user's decision
+             */
+            function confirmDelete(data) {
+                let dynamicDeploymentId = data.id;
+                let name = "";
+
+                //Determines the name of the dynamic deployment by checking the list
+                for (let i = 0; i < dynamicDeploymentList.length; i++) {
+                    if (dynamicDeploymentId === dynamicDeploymentList[i].id) {
+                        name = dynamicDeploymentList[i].name;
+                        break;
+                    }
+                }
+
+                //Show the alert to the user and return the resulting promise
+                return Swal.fire({
+                    title: 'Delete dynamic deployment',
+                    icon: 'warning',
+                    html: "Are you sure you want to delete the dynamic deployment with name \"<strong>" + name + "</strong>\"?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    confirmButtonClass: 'bg-red',
+                    focusConfirm: false,
+                    cancelButtonText: 'Cancel'
+                });
+            }
+
+            //Expose controllers
+            angular.extend(vm, {
+                dynamicDeploymentListCtrl: $controller('ItemListController as dynamicDeploymentListCtrl', {
+                    $scope: $scope,
+                    list: dynamicDeploymentList
+                }),
+                addDynamicDeploymentCtrl: $controller('AddItemController as addDynamicDeploymentCtrl', {
+                    $scope: $scope,
+                    entity: 'dynamic deployment',
+                    addItem: addDynamicDeployment
+                }),
+                deleteDynamicDeploymentCtrl: $controller('DeleteItemController as deleteDynamicDeploymentCtrl', {
+                    $scope: $scope,
+                    deleteItem: deleteDynamicDeployment,
+                    confirmDeletion: confirmDelete
+                }),
+                operatorList: operatorList,
+                deviceTemplateList: deviceTemplateList,
+                requestTopicList: requestTopicList
+            });
+
+            //Watch controller result of dynamic deployment additions
+            $scope.$watch(() => vm.addDynamicDeploymentCtrl.result, (data) => {
+                    //Sanity check
+                    if (!data) return;
+
+                    //Add dynamic deployment to list
+                    vm.dynamicDeploymentListCtrl.pushItem(data);
+
+                    //Close modal on success
+                    $("#addDynamicDeploymentModal").modal('toggle');
+                }
+            );
+
+            //Watch controller result of dynamic deployment deletions
+            $scope.$watch(() => vm.deleteDynamicDeploymentCtrl.result, (data) => {
+                //Sanity check
+                if (!data) return;
+
+                //Callback, remove dynamic deployment from list
+                vm.dynamicDeploymentListCtrl.removeItem(vm.deleteDynamicDeploymentCtrl.result);
+            });
+        }
+    ]);

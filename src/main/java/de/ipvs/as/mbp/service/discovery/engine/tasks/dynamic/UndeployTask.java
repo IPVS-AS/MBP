@@ -1,43 +1,41 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralDeviceDetails;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralState;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
 import de.ipvs.as.mbp.domain.operator.Operator;
-import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
 
-import java.util.Optional;
-
 /**
- * The purpose of this task is to undeploy the {@link Operator} of a given {@link DynamicPeripheral}
- * from the device that is referenced as {@link DynamicPeripheralDeviceDetails} in the {@link DynamicPeripheral},
- * in case the {@link DynamicPeripheral} is deployed on it.
+ * The purpose of this task is to undeploy the {@link Operator} of a given {@link DynamicDeployment}
+ * from the device that is referenced as {@link DynamicDeploymentDeviceDetails} in the {@link DynamicDeployment},
+ * in case the {@link DynamicDeployment} is deployed on it.
  */
-public class UndeployTask implements DynamicPeripheralTask {
+public class UndeployTask implements DynamicDeploymentTask {
 
-    //The original version of the dynamic peripheral that is supposed to be deployed
-    private DynamicPeripheral originalDynamicPeripheral;
+    //The original version of the dynamic deployment that is supposed to be deployed
+    private DynamicDeployment originalDynamicDeployment;
 
     /*
     Injected fields
      */
     private final DiscoveryDeploymentService discoveryDeploymentService;
-    private final DynamicPeripheralRepository dynamicPeripheralRepository;
+    private final DynamicDeploymentRepository dynamicDeploymentRepository;
 
     /**
-     * Creates a new {@link UndeployTask} from a given {@link DynamicPeripheral}.
+     * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment}.
      *
-     * @param dynamicPeripheral The dynamic peripheral to use
+     * @param dynamicDeployment The dynamic deployment to use
      */
-    public UndeployTask(DynamicPeripheral dynamicPeripheral) {
+    public UndeployTask(DynamicDeployment dynamicDeployment) {
         //Set fields
-        setDynamicPeripheral(dynamicPeripheral);
+        setDynamicDeployment(dynamicDeployment);
 
         //Inject components
         this.discoveryDeploymentService = DynamicBeanProvider.get(DiscoveryDeploymentService.class);
-        this.dynamicPeripheralRepository = DynamicBeanProvider.get(DynamicPeripheralRepository.class);
+        this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
     }
 
     /**
@@ -46,97 +44,94 @@ public class UndeployTask implements DynamicPeripheralTask {
      */
     @Override
     public void run() {
-        //Read dynamic peripheral from the repository
-        Optional<DynamicPeripheral> dynamicPeripheralOptional = dynamicPeripheralRepository.findById(this.originalDynamicPeripheral.getId());
+        //Read dynamic deployment from the repository
+        DynamicDeployment dynamicDeployment = dynamicDeploymentRepository.findById(this.originalDynamicDeployment.getId()).orElse(null);
 
         //Sanity checks
-        if (!dynamicPeripheralOptional.isPresent()) {
+        if (dynamicDeployment == null) {
             //Task ends because data is not available
             return;
         }
 
-        //Get peripheral from optional
-        DynamicPeripheral dynamicPeripheral = dynamicPeripheralOptional.get();
-
-        //Check intention for dynamic peripheral
-        if (dynamicPeripheral.isActivatingIntended()) {
+        //Check intention for dynamic deployment
+        if (dynamicDeployment.isActivatingIntended()) {
             //De-activate is not intended, so no need to undeploy
             return;
         }
 
-        //Update the state of the dynamic peripheral
-        this.updateDynamicPeripheral(dynamicPeripheral.setState(DynamicPeripheralState.IN_PROGRESS));
+        //Update the state of the dynamic deployment
+        this.updateDynamicDeployment(dynamicDeployment.setState(DynamicDeploymentState.IN_PROGRESS));
 
-        //Check whether the dynamic peripheral is currently deployed
-        if(!((dynamicPeripheral.getLastDeviceDetails() != null) &&
-                this.discoveryDeploymentService.isDeployed(dynamicPeripheral))){
-            //Dynamic peripheral is not deployed, so just update the state
-            updateDynamicPeripheral(dynamicPeripheral.setLastDeviceDetails(null)
-                    .setState(DynamicPeripheralState.DISABLED));
+        //Check whether the dynamic deployment is currently deployed
+        if ((dynamicDeployment.getLastDeviceDetails() == null) ||
+                (!this.discoveryDeploymentService.isDeployed(dynamicDeployment))) {
+            //Dynamic deployment is not deployed, so just update the state
+            updateDynamicDeployment(dynamicDeployment.setLastDeviceDetails(null)
+                    .setState(DynamicDeploymentState.DISABLED));
             return;
         }
 
-        //Dynamic peripheral is deployed, so undeploy it
-        this.discoveryDeploymentService.undeploy(dynamicPeripheral);
+        //Dynamic deployment is deployed, so undeploy it
+        this.discoveryDeploymentService.undeploy(dynamicDeployment);
 
-        //Update state of dynamic peripheral accordingly
-        updateDynamicPeripheral(dynamicPeripheral.setLastDeviceDetails(null)
-                .setState(DynamicPeripheralState.DISABLED));
+        //Update state of dynamic deployment accordingly
+        updateDynamicDeployment(dynamicDeployment.setLastDeviceDetails(null)
+                .setState(DynamicDeploymentState.DISABLED));
     }
 
     /**
-     * Writes a given {@link DynamicPeripheral} to the repository, thus updating its fields in the database.
+     * Writes a given {@link DynamicDeployment} to the repository, thus updating its fields in the database.
      *
-     * @param dynamicPeripheral The dynamic peripheral to update
+     * @param dynamicDeployment The dynamic deployment to update
      */
-    private void updateDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
+    private void updateDynamicDeployment(DynamicDeployment dynamicDeployment) {
         //Write state to repository
-        this.dynamicPeripheralRepository.save(dynamicPeripheral);
+        this.dynamicDeploymentRepository.save(dynamicDeployment);
     }
 
     /**
-     * Returns the {@link DynamicPeripheral} object that has been originally passed to this task and is
+     * Returns the {@link DynamicDeployment} object that has been originally passed to this task and is
      * supposed to be (re-)deployed.
      *
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral getDynamicPeripheral() {
-        return this.originalDynamicPeripheral;
+    public DynamicDeployment getDynamicDeployment() {
+        return this.originalDynamicDeployment;
     }
 
     /**
-     * Sets the {@link DynamicPeripheral} that is supposed to be (re-)deployed within this task.
+     * Sets the {@link DynamicDeployment} that is supposed to be (re-)deployed within this task.
      *
-     * @param dynamicPeripheral The dynamic peripheral to set
+     * @param dynamicDeployment The dynamic deployment to set
      */
-    private void setDynamicPeripheral(DynamicPeripheral dynamicPeripheral) {
+    private void setDynamicDeployment(DynamicDeployment dynamicDeployment) {
         //Null check
-        if (dynamicPeripheral == null) {
-            throw new IllegalArgumentException("The dynamic peripheral must not be null.");
+        if (dynamicDeployment == null) {
+            throw new IllegalArgumentException("The dynamic deployment must not be null.");
         }
 
-        this.originalDynamicPeripheral = dynamicPeripheral;
+        this.originalDynamicDeployment = dynamicDeployment;
     }
 
     /**
-     * Returns the ID of the {@link DynamicPeripheral} on which this task operates.
+     * Returns the ID of the {@link DynamicDeployment} on which this task operates.
      *
-     * @return The dynamic peripheral ID
+     * @return The dynamic deployment ID
      */
     @Override
-    public String getDynamicPeripheralId() {
-        return this.originalDynamicPeripheral.getId();
+    public String getDynamicDeploymentId() {
+        return this.originalDynamicDeployment.getId();
     }
 
 
     /**
-     * Returns the ID of the device template that is used by the {@link DynamicPeripheral} on which this task operates.
+     * Returns the ID of the device template that is used by the {@link DynamicDeployment} on which this task operates.
      *
      * @return The device template ID
      */
     @Override
     public String getDeviceTemplateId() {
-        return this.originalDynamicPeripheral.getDeviceTemplate().getId();
+        return this.originalDynamicDeployment.getDeviceTemplate().getId();
     }
 
     /**

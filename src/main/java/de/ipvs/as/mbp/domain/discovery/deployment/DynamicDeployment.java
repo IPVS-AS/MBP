@@ -1,8 +1,7 @@
-package de.ipvs.as.mbp.domain.discovery.peripheral;
+package de.ipvs.as.mbp.domain.discovery.deployment;
 
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
-import de.ipvs.as.mbp.domain.discovery.device.monitoring.DeviceBlockSet;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
@@ -17,19 +16,19 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Objects of this class represent dynamic peripherals, i.e. actuators or sensors that do not make use of a fixed
- * {@link Device}, but use a {@link DeviceTemplate} instead in order to automatically find suitable devices
- * on which a user-defined {@link Operator} can be deployed, installed and executed.
+ * Objects of this class represent dynamic deployments, i.e. deployments for actuators or sensors that do not make use
+ * of a fixed {@link Device}, but use a {@link DeviceTemplate} instead in order to automatically find the most
+ * appropriate devices on which a user-defined {@link Operator} can be deployed, installed and executed.
  */
 @Document
-@MBPEntity(createValidator = DynamicPeripheralCreateValidator.class)
-public class DynamicPeripheral extends UserEntity {
+@MBPEntity(createValidator = DynamicDeploymentCreateValidator.class)
+public class DynamicDeployment extends UserEntity {
 
     @Id
     @GeneratedValue
     private String id;
 
-    //Name of the dynamic peripheral
+    //Name of the dynamic deployment
     private String name;
 
     //The operator to deploy on the chosen devices
@@ -44,28 +43,24 @@ public class DynamicPeripheral extends UserEntity {
     @DBRef
     private List<RequestTopic> requestTopics;
 
-    //The user's last intention regarding activating/deactivating the dynamic peripheral
+    //The user's last intention regarding activating/deactivating the dynamic deployment
     private boolean activatingIntended = false;
 
-    //The current state of the dynamic peripheral
-    private DynamicPeripheralState state = DynamicPeripheralState.DISABLED;
+    //The current state of the dynamic deployment
+    private DynamicDeploymentState state = DynamicDeploymentState.DISABLED;
 
     //Details about the currently used device
-    private DynamicPeripheralDeviceDetails lastDeviceDetails;
-
-    //Set of devices to ignore as potential candidates
-    private DeviceBlockSet blockSet;
+    private DynamicDeploymentDeviceDetails lastDeviceDetails;
 
     /**
-     * Creates a new, empty dynamic peripheral.
+     * Creates a new, empty dynamic deployment.
      */
-    public DynamicPeripheral() {
+    public DynamicDeployment() {
         //Initialize data structures
-        this.blockSet = new DeviceBlockSet();
     }
 
     /**
-     * Return the id of the dynamic peripheral.
+     * Return the id of the dynamic deployment.
      *
      * @return the id
      */
@@ -75,18 +70,18 @@ public class DynamicPeripheral extends UserEntity {
     }
 
     /**
-     * Sets the id of the dynamic peripheral.
+     * Sets the id of the dynamic deployment.
      *
      * @param id The id to set
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setId(String id) {
+    public DynamicDeployment setId(String id) {
         this.id = id;
         return this;
     }
 
     /**
-     * Returns the name of the dynamic peripheral.
+     * Returns the name of the dynamic deployment.
      *
      * @return The name
      */
@@ -95,18 +90,18 @@ public class DynamicPeripheral extends UserEntity {
     }
 
     /**
-     * Sets the name of the dynamic peripheral.
+     * Sets the name of the dynamic deployment.
      *
      * @param name The name to set
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setName(String name) {
+    public DynamicDeployment setName(String name) {
         this.name = name;
         return this;
     }
 
     /**
-     * Returns the operator of the dynamic peripheral.
+     * Returns the operator of the dynamic deployment.
      *
      * @return The operator
      */
@@ -115,18 +110,18 @@ public class DynamicPeripheral extends UserEntity {
     }
 
     /**
-     * Sets the operator of the dynamic peripheral.
+     * Sets the operator of the dynamic deployment.
      *
      * @param operator The operator to set
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setOperator(Operator operator) {
+    public DynamicDeployment setOperator(Operator operator) {
         this.operator = operator;
         return this;
     }
 
     /**
-     * Returns the device template of the dynamic peripheral.
+     * Returns the device template of the dynamic deployment.
      *
      * @return The device template
      */
@@ -135,12 +130,12 @@ public class DynamicPeripheral extends UserEntity {
     }
 
     /**
-     * Sets the device template of the dynamic peripheral.
+     * Sets the device template of the dynamic deployment.
      *
      * @param deviceTemplate The device template to set
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setDeviceTemplate(DeviceTemplate deviceTemplate) {
+    public DynamicDeployment setDeviceTemplate(DeviceTemplate deviceTemplate) {
         this.deviceTemplate = deviceTemplate;
         return this;
     }
@@ -160,16 +155,16 @@ public class DynamicPeripheral extends UserEntity {
      * suitable candidate device from the discovery repositories.
      *
      * @param requestTopics The collection of request topics
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setRequestTopics(Collection<RequestTopic> requestTopics) {
+    public DynamicDeployment setRequestTopics(Collection<RequestTopic> requestTopics) {
         this.requestTopics = new ArrayList<>(requestTopics);
         return this;
     }
 
 
     /**
-     * Returns whether the dynamic peripheral is currently intended to be active by the user.
+     * Returns whether the dynamic deployment is currently intended to be active by the user.
      *
      * @return True, if active; false otherwise
      */
@@ -178,75 +173,56 @@ public class DynamicPeripheral extends UserEntity {
     }
 
     /**
-     * Sets whether the dynamic peripheral is currently intended to be active by the user.
+     * Sets whether the dynamic deployment is currently intended to be active by the user.
      *
      * @param activatingIntended True, if active; false otherwise
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setActivatingIntended(boolean activatingIntended) {
+    public DynamicDeployment setActivatingIntended(boolean activatingIntended) {
         this.activatingIntended = activatingIntended;
         return this;
     }
 
 
     /**
-     * Returns the state of the dynamic peripheral.
+     * Returns the state of the dynamic deployment.
      *
      * @return The state
      */
-    public DynamicPeripheralState getState() {
+    public DynamicDeploymentState getState() {
         return state;
     }
 
     /**
-     * Sets the state of the dynamic peripheral.
+     * Sets the state of the dynamic deployment.
      *
      * @param state The state to set
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setState(DynamicPeripheralState state) {
+    public DynamicDeployment setState(DynamicDeploymentState state) {
         this.state = state;
         return this;
     }
 
     /**
-     * Returns {@link DynamicPeripheralDeviceDetails} about the device that was most recently used for deploying
-     * the operator of the dynamic peripheral.
+     * Returns {@link DynamicDeploymentDeviceDetails} about the device that was most recently used for deploying
+     * the operator of the dynamic deployment.
      *
      * @return The device details
      */
-    public DynamicPeripheralDeviceDetails getLastDeviceDetails() {
+    public DynamicDeploymentDeviceDetails getLastDeviceDetails() {
         return lastDeviceDetails;
     }
 
     /**
-     * Sets the {@link DynamicPeripheralDeviceDetails} about the device that was most recently used for deploying
-     * the operator of the dynamic peripheral.
+     * Sets the {@link DynamicDeploymentDeviceDetails} about the device that was most recently used for deploying
+     * the operator of the dynamic deployment.
      *
      * @param lastDeviceDetails The device details to set
-     * @return The dynamic peripheral
+     * @return The dynamic deployment
      */
-    public DynamicPeripheral setLastDeviceDetails(DynamicPeripheralDeviceDetails lastDeviceDetails) {
+    public DynamicDeployment setLastDeviceDetails(DynamicDeploymentDeviceDetails lastDeviceDetails) {
         this.lastDeviceDetails = lastDeviceDetails;
-        return this;
-    }
-
-    /**
-     * Returns the set of devices that are not considered as potential candidate devices for the dynamic peripheral.
-     *
-     * @return The block list
-     */
-    public DeviceBlockSet getBlockSet() {
-        return blockSet;
-    }
-
-    /**
-     * Sets the set of devices that are not considered as potential candidate devices for the dynamic peripheral.
-     *
-     * @return The block list
-     */
-    public DynamicPeripheral setBlockSet(DeviceBlockSet blockSet) {
-        this.blockSet = blockSet;
         return this;
     }
 }

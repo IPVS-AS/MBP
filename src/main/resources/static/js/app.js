@@ -459,20 +459,20 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Dynamic peripheral list
-            .when(viewPrefix + '/dynamic-peripherals', {
-                category: 'dynamic-peripherals',
-                templateUrl: 'templates/dynamic-peripherals',
-                controller: 'DynamicPeripheralListController as ctrl',
+            //Dynamic deployment list
+            .when(viewPrefix + '/dynamic-deployments', {
+                category: 'dynamic-deployments',
+                templateUrl: 'templates/dynamic-deployments',
+                controller: 'DynamicDeploymentListController as ctrl',
                 resolve: {
-                    dynamicPeripheralList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('discovery/dynamic-peripherals', 'dynamicPeripherals');
+                    dynamicDeploymentList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/dynamic-deployments', 'dynamicDeployments');
                     }],
-                    addDynamicPeripheral: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.addOne, 'discovery/dynamic-peripherals');
+                    addDynamicDeployment: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'discovery/dynamic-deployments');
                     }],
-                    deleteDynamicPeripheral: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.deleteOne, 'discovery/dynamic-peripherals');
+                    deleteDynamicDeployment: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'discovery/dynamic-deployments');
                     }],
                     operatorList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('operators');
@@ -486,14 +486,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Dynamic peripheral details
-            .when(viewPrefix + '/dynamic-peripherals/:id', {
-                category: 'dynamic-peripherals',
-                templateUrl: 'templates/dynamic-peripherals-id',
-                controller: 'DynamicPeripheralDetailsController as ctrl',
+            //Dynamic deployment details
+            .when(viewPrefix + '/dynamic-deployments/:id', {
+                category: 'dynamic-deployments',
+                templateUrl: 'templates/dynamic-deployments-id',
+                controller: 'DynamicDeploymentDetailsController as ctrl',
                 resolve: {
-                    dynamicPeripheralDetails: ['$route', 'HttpService', function ($route, HttpService) {
-                        return HttpService.getOne('discovery/dynamic-peripherals', $route.current.params.id);
+                    dynamicDeploymentDetails: ['$route', 'HttpService', function ($route, HttpService) {
+                        return HttpService.getOne('discovery/dynamic-deployments', $route.current.params.id);
                     }]
                 }
             })

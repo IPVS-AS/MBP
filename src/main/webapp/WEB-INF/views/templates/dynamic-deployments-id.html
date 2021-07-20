@@ -6,7 +6,7 @@
                  ng-class="{'bg-red': ctrl.deploymentState=='NOT_READY', 'bg-green': ctrl.deploymentState=='READY', 'bg-teal': ctrl.deploymentState=='DEPLOYED', 'bg-cyan': ctrl.deploymentState=='RUNNING', 'bg-grey': ctrl.deploymentState=='UNKNOWN'}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
                 <h2 style="margin-left: 35px;">
-                    {{ctrl.dynamicPeripheralDetails.name}}
+                    {{ctrl.dynamicDeploymentDetails.name}}
                     <small></small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -127,7 +127,7 @@
                 <div class="form-group align-right">
                     <div class="form-line">
                         <unit-input ng-model="ctrl.displayUnitInput"
-                                    unit-filter="{{ctrl.dynamicPeripheral.operator.unit}}"></unit-input>
+                                    unit-filter="{{ctrl.dynamicDeployment.operator.unit}}"></unit-input>
                     </div>
                     <span class="help-block" ng-show="false"></span><br/>
                     <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">

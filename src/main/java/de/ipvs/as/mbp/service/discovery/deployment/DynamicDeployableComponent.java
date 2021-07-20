@@ -3,13 +3,13 @@ package de.ipvs.as.mbp.service.discovery.deployment;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralDeviceDetails;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
 
 /**
- * Objects of this class wrap a {@link DynamicPeripheral} that is supposed to be deployed and a corresponding
+ * Objects of this class wrap a {@link DynamicDeployment} that is supposed to be deployed and a corresponding
  * {@link DeviceDescription} describing the target device into a {@link Component}s that can actually be deployed
  * with the common {@link IDeployer}s.
  */
@@ -18,42 +18,42 @@ public class DynamicDeployableComponent extends Component {
     private static final String TYPE_NAME = "dynamic";
 
     /**
-     * Creates a new dynamic deployable component from a given {@link DynamicPeripheral} that is supposed to be
+     * Creates a new dynamic deployable component from a given {@link DynamicDeployment} that is supposed to be
      * deployed and the corresponding {@link DeviceDescription} describing the target device of the deployment.
      *
-     * @param dynamicPeripheral The dynamic peripheral to use
+     * @param dynamicDeployment The dynamic deployment to use
      * @param deviceDescription THe device description to use
      */
-    public DynamicDeployableComponent(DynamicPeripheral dynamicPeripheral, DeviceDescription deviceDescription) {
+    public DynamicDeployableComponent(DynamicDeployment dynamicDeployment, DeviceDescription deviceDescription) {
         //Call overloaded constructor
-        this(dynamicPeripheral, new DynamicPeripheralDeviceDetails(deviceDescription));
+        this(dynamicDeployment, new DynamicDeploymentDeviceDetails(deviceDescription));
     }
 
     /**
-     * Creates a new dynamic deployable component from a given {@link DynamicPeripheral} and uses the
-     * {@link DynamicPeripheralDeviceDetails} that are referenced in it to retrieve the target device information.
+     * Creates a new dynamic deployable component from a given {@link DynamicDeployment} and uses the
+     * {@link DynamicDeploymentDeviceDetails} that are referenced in it to retrieve the target device information.
      *
-     * @param dynamicPeripheral The dynamic peripheral to use
+     * @param dynamicDeployment The dynamic deployment to use
      */
-    public DynamicDeployableComponent(DynamicPeripheral dynamicPeripheral) {
+    public DynamicDeployableComponent(DynamicDeployment dynamicDeployment) {
         //Call overloaded constructor
-        this(dynamicPeripheral, dynamicPeripheral.getLastDeviceDetails());
+        this(dynamicDeployment, dynamicDeployment.getLastDeviceDetails());
     }
 
     /**
-     * Creates a new dynamic deployable component from a given {@link DynamicPeripheral} and given
-     * {@link DynamicPeripheralDeviceDetails} that contain the relevant information about the target device.
+     * Creates a new dynamic deployable component from a given {@link DynamicDeployment} and given
+     * {@link DynamicDeploymentDeviceDetails} that contain the relevant information about the target device.
      *
-     * @param dynamicPeripheral The dynamic peripheral to use
+     * @param dynamicDeployment The dynamic deployment to use
      * @param deviceDetails     The device details to use
      */
-    public DynamicDeployableComponent(DynamicPeripheral dynamicPeripheral, DynamicPeripheralDeviceDetails deviceDetails) {
+    public DynamicDeployableComponent(DynamicDeployment dynamicDeployment, DynamicDeploymentDeviceDetails deviceDetails) {
         //Call constructor of super class
         super();
 
         //Null check
-        if (dynamicPeripheral == null) {
-            throw new IllegalArgumentException("The dynamic peripheral must not be null.");
+        if (dynamicDeployment == null) {
+            throw new IllegalArgumentException("The dynamic deployment must not be null.");
         } else if (deviceDetails == null) {
             throw new IllegalArgumentException("The device details must not be null.");
         }
@@ -72,12 +72,12 @@ public class DynamicDeployableComponent extends Component {
         }
 
         //Set all fields of the component
-        this.setId(dynamicPeripheral.getId());
-        this.setName(dynamicPeripheral.getName());
+        this.setId(dynamicDeployment.getId());
+        this.setName(dynamicDeployment.getName());
         this.setComponentType("dynamic_deployment");
-        this.setOperator(dynamicPeripheral.getOperator());
+        this.setOperator(dynamicDeployment.getOperator());
         this.setDevice(device);
-        this.setOwner(dynamicPeripheral.getOwner());
+        this.setOwner(dynamicDeployment.getOwner());
     }
 
     @Override

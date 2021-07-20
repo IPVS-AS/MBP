@@ -1,8 +1,8 @@
 package de.ipvs.as.mbp.service.discovery.deployment;
 
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheralDeviceDetails;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 import java.util.Collections;
 
 /**
- * Offers services related to the deployment of {@link DynamicPeripheral} in the scope of device discovery operations
+ * Offers services related to the deployment of {@link DynamicDeployment} in the scope of device discovery operations
  * within the {@link DiscoveryEngine}.
  */
 @Service
@@ -38,17 +38,17 @@ public class DiscoveryDeploymentService {
     }
 
     /**
-     * Tries to deploy a given {@link DynamicPeripheral} to a device, given by its {@link DeviceDescription} and to
+     * Tries to deploy a given {@link DynamicDeployment} to a device, given by its {@link DeviceDescription} and to
      * start the associated operator on this device. The {@link Boolean} that is returned as result of this method
      * indicates whether the deployment and the starting of the operator were successful.
      *
-     * @param dynamicPeripheral The dynamic peripheral to deploy
-     * @param device            The description of the device on which the dynamic peripheral is supposed to be deployed
+     * @param dynamicDeployment The dynamic deployment to deploy
+     * @param device            The description of the device on which the dynamic deployment is supposed to be deployed
      * @return True, if the deployment and starting of the operator were successful; false otherwise
      */
-    public boolean deploy(DynamicPeripheral dynamicPeripheral, DeviceDescription device) {
+    public boolean deploy(DynamicDeployment dynamicDeployment, DeviceDescription device) {
         //Create deployable component
-        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicPeripheral, device);
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicDeployment, device);
 
         //Get deployer from dispatcher
         IDeployer deployer = this.deployerDispatcher.getDeployer();
@@ -71,14 +71,14 @@ public class DiscoveryDeploymentService {
     }
 
     /**
-     * Undeploys a given {@link DynamicPeripheral} from the device that is referenced as
-     * {@link DynamicPeripheralDeviceDetails} within the {@link DynamicPeripheral} in case it is currently deployed.
+     * Undeploys a given {@link DynamicDeployment} from the device that is referenced as
+     * {@link DynamicDeploymentDeviceDetails} within the {@link DynamicDeployment} in case it is currently deployed.
      *
-     * @param dynamicPeripheral The dynamic peripheral to undeploy
+     * @param dynamicDeployment The dynamic deployment to undeploy
      */
-    public void undeploy(DynamicPeripheral dynamicPeripheral) {
+    public void undeploy(DynamicDeployment dynamicDeployment) {
         //Create deployable component
-        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicPeripheral);
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicDeployment);
 
         //Get deployer from the dispatcher
         IDeployer deployer = this.deployerDispatcher.getDeployer();
@@ -91,15 +91,15 @@ public class DiscoveryDeploymentService {
     }
 
     /**
-     * Checks and returns whether a given {@link DynamicPeripheral} is currently deployed to the device that is
-     * referenced as {@link DynamicPeripheralDeviceDetails} within the {@link DynamicPeripheral}.
+     * Checks and returns whether a given {@link DynamicDeployment} is currently deployed to the device that is
+     * referenced as {@link DynamicDeploymentDeviceDetails} within the {@link DynamicDeployment}.
      *
-     * @param dynamicPeripheral The dynamic peripheral to check
-     * @return True, if the dynamic peripheral is deployed; false otherwise
+     * @param dynamicDeployment The dynamic deployment to check
+     * @return True, if the dynamic deployment is deployed; false otherwise
      */
-    public boolean isDeployed(DynamicPeripheral dynamicPeripheral) {
+    public boolean isDeployed(DynamicDeployment dynamicDeployment) {
         //Create deployable component
-        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicPeripheral);
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicDeployment);
 
         //Get deployer from the dispatcher
         IDeployer deployer = this.deployerDispatcher.getDeployer();

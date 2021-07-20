@@ -1,12 +1,15 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
+import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -77,5 +80,47 @@ public class DiscoveryService {
 
         //Call the corresponding gateway method
         return discoveryGateway.getAvailableRepositories(requestTopic);
+    }
+
+    /**
+     * Activates a given {@link DynamicDeployment}. If this is not possible, e.g. because the deployment is already
+     * activated, an exception is thrown.
+     *
+     * @param dynamicDeployment The dynamic deployment to activate
+     */
+    public void activateDynamicDeployment(DynamicDeployment dynamicDeployment) {
+        //Null check
+        if (dynamicDeployment == null) {
+            throw new IllegalArgumentException("The dynamic deployment must not be null.");
+        }
+
+        //Use the discovery engine for activating the deployment
+        boolean success = this.discoveryEngine.activateDynamicDeployment(dynamicDeployment.getId());
+
+        //Check for success
+        if (!success) {
+            throw new MBPException(HttpStatus.PRECONDITION_FAILED, "The dynamic deployment is already activated.");
+        }
+    }
+
+    /**
+     * Deactivates a given {@link DynamicDeployment}. If this is not possible, e.g. because the deployment is already
+     * deactivated, an exception is thrown.
+     *
+     * @param dynamicDeployment The dynamic deployment to deactivate
+     */
+    public void deactivateDynamicDeployment(DynamicDeployment dynamicDeployment) {
+        //Null check
+        if (dynamicDeployment == null) {
+            throw new IllegalArgumentException("The dynamic deployment must not be null.");
+        }
+
+        //Use the discovery engine for deactivating the deployment
+        boolean success = this.discoveryEngine.deactivateDynamicDeployment(dynamicDeployment.getId());
+
+        //Check for success
+        if (!success) {
+            throw new MBPException(HttpStatus.PRECONDITION_FAILED, "The dynamic deployment is already deactivated.");
+        }
     }
 }

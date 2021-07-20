@@ -1,8 +1,8 @@
 package de.ipvs.as.mbp.web.rest;
 
 import de.ipvs.as.mbp.RestConfiguration;
-import de.ipvs.as.mbp.domain.discovery.peripheral.DynamicPeripheral;
-import de.ipvs.as.mbp.repository.discovery.DynamicPeripheralRepository;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class RestDebugController {
 
     @Autowired
-    private DynamicPeripheralRepository dynamicPeripheralRepository;
+    private DynamicDeploymentRepository dynamicDeploymentRepository;
 
     @Autowired
     private DiscoveryEngine discoveryEngine;
@@ -37,17 +37,14 @@ public class RestDebugController {
      */
     @RequestMapping(value = "/debug", method = RequestMethod.GET)
     public ResponseEntity<String> debug() throws ExecutionException, InterruptedException {
-        List<DynamicPeripheral> dynamicPeripheralList = dynamicPeripheralRepository.findAll();
+        List<DynamicDeployment> dynamicDeploymentList = dynamicDeploymentRepository.findAll();
 
-        if (dynamicPeripheralList.isEmpty()) return new ResponseEntity<>("debug", HttpStatus.OK);
+        if (dynamicDeploymentList.isEmpty()) return new ResponseEntity<>("debug", HttpStatus.OK);
 
 
-        DynamicPeripheral peripheral = dynamicPeripheralList.get(0);
+        DynamicDeployment deployment = dynamicDeploymentList.get(0);
 
-        //peripheral.setEnablingIntended(false);
-        //dynamicPeripheralRepository.save(peripheral);
-
-        discoveryEngine.activateDynamicPeripheral(peripheral.getId());
+        discoveryEngine.activateDynamicDeployment(deployment.getId());
 
         return new ResponseEntity<>("debug", HttpStatus.OK);
     }
