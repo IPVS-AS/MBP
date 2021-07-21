@@ -19,6 +19,27 @@ app.controller('DynamicDeploymentListController',
 
             /**
              * [Public]
+             * Toggles the activation intention of a certain dynamic deployment, given by its ID.
+             *
+             * @param id The ID of the dynamic deployment
+             */
+            function toggleActivationIntention(id) {
+                alert(id);
+            }
+
+
+            /**
+             * [Public]
+             * Reloads and updates the deployment state of a certain dynamic deployment, given by its ID.
+             *
+             * @param id The ID of the dynamic deployment
+             */
+            function reloadDeploymentState(id) {
+                alert(id);
+            }
+
+            /**
+             * [Public]
              * Shows an alert that asks the user if he is sure that he wants to delete a certain dynamic deployment.
              *
              * @param data A data object that contains the id of the dynamic deployment that is supposed to be deleted
@@ -49,26 +70,6 @@ app.controller('DynamicDeploymentListController',
                 });
             }
 
-            //Expose controllers
-            angular.extend(vm, {
-                dynamicDeploymentListCtrl: $controller('ItemListController as dynamicDeploymentListCtrl', {
-                    $scope: $scope,
-                    list: dynamicDeploymentList
-                }),
-                addDynamicDeploymentCtrl: $controller('AddItemController as addDynamicDeploymentCtrl', {
-                    $scope: $scope,
-                    entity: 'dynamic deployment',
-                    addItem: addDynamicDeployment
-                }),
-                deleteDynamicDeploymentCtrl: $controller('DeleteItemController as deleteDynamicDeploymentCtrl', {
-                    $scope: $scope,
-                    deleteItem: deleteDynamicDeployment,
-                    confirmDeletion: confirmDelete
-                }),
-                operatorList: operatorList,
-                deviceTemplateList: deviceTemplateList,
-                requestTopicList: requestTopicList
-            });
 
             //Watch controller result of dynamic deployment additions
             $scope.$watch(() => vm.addDynamicDeploymentCtrl.result, (data) => {
@@ -90,6 +91,29 @@ app.controller('DynamicDeploymentListController',
 
                 //Callback, remove dynamic deployment from list
                 vm.dynamicDeploymentListCtrl.removeItem(vm.deleteDynamicDeploymentCtrl.result);
+            });
+
+            //Expose controllers
+            angular.extend(vm, {
+                dynamicDeploymentListCtrl: $controller('ItemListController as dynamicDeploymentListCtrl', {
+                    $scope: $scope,
+                    list: dynamicDeploymentList
+                }),
+                addDynamicDeploymentCtrl: $controller('AddItemController as addDynamicDeploymentCtrl', {
+                    $scope: $scope,
+                    entity: 'dynamic deployment',
+                    addItem: addDynamicDeployment
+                }),
+                deleteDynamicDeploymentCtrl: $controller('DeleteItemController as deleteDynamicDeploymentCtrl', {
+                    $scope: $scope,
+                    deleteItem: deleteDynamicDeployment,
+                    confirmDeletion: confirmDelete
+                }),
+                operatorList: operatorList,
+                deviceTemplateList: deviceTemplateList,
+                requestTopicList: requestTopicList,
+                toggleActivationIntention: toggleActivationIntention,
+                reloadDeploymentState: reloadDeploymentState,
             });
         }
     ]);
