@@ -110,11 +110,10 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
 
         //TODO Verify if working
         //Abort if not forced and candidate devices of the device template are not in use
-        if ((!force) && (!isDeviceTemplateInUse)) {
+        if ((!this.force) && (!isDeviceTemplateInUse)) {
             return;
         }
 
-        
         //Abort if not forced and candidate devices are already available
         if ((!this.force) && this.candidateDevicesRepository.existsById(deviceTemplate.getId())) {
             return;
