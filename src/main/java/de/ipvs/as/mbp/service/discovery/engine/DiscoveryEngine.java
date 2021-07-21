@@ -308,13 +308,13 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
         
         /*
-        Remark: All tasks implement mechanisms in order to ensure that no unnecessary or time-consuming actions are executed, 
+        Remark: All tasks implement mechanisms in order to ensure that no unnecessary time-consuming actions are executed, 
         mostly by checking the activationIntentions of the dynamic deployments and whether the device template is currently in use.
         However, when the queue looks like "Undeploy -> Deploy -> Undeploy -> Deploy" (ending with a deployment), then all undeploy
         tasks will not be executed/terminate qucikly due to the activation intention, but all deploy tasks will be executed and check whether
-        there is currently a better device available. While minor improvements are possible (remember and check whether the current device is 
-        number one of the current ranking with an additional flag), the general behaviour is probably desired, because this way user can re-trigger
-        the check for the optimal deployment device in case the operator was not deployed on the best device during the first try due to deployment failures.
+        there is currently a better device available. This general behaviour is probably desired, because this way user can re-trigger
+        the check for the optimal deployment device in case the operator was not deployed on the best device during the first try due to deployment failure
+        or when the most recently used device is not available anymore due to technical problems and failures.
         */
     }
 
