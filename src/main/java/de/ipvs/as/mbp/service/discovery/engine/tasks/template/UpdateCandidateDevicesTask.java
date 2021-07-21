@@ -5,6 +5,7 @@ import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
@@ -34,6 +35,7 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
     Injected fields
      */
     private final CandidateDevicesRepository candidateDevicesRepository;
+    private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final DiscoveryGateway discoveryGateway;
 
     /**
@@ -91,6 +93,7 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
 
         //Inject components
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
+        this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
     }
 
@@ -100,7 +103,19 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
      */
     @Override
     public void run() {
-        //Check if candidate devices are already available and not forced
+        //Stream through all dynamic deployments that use the provided device template
+        boolean isDeviceTemplateInUse = this.dynamicDeploymentRepository
+                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find deployments by device template ID
+                .anyMatch(DynamicDeployment::isActivatingIntended); //Check whether any of them is intended to be active
+
+        //TODO Verify if working
+        //Abort if not forced and candidate devices of the device template are not in use
+        if ((!force) && (!isDeviceTemplateInUse)) {
+            return;
+        }
+
+        
+        //Abort if not forced and candidate devices are already available
         if ((!this.force) && this.candidateDevicesRepository.existsById(deviceTemplate.getId())) {
             return;
         }
