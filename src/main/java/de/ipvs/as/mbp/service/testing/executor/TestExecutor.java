@@ -251,7 +251,7 @@ public class TestExecutor {
 
     private String setReportInformation(TestDetails testDetails) {
         TestReport testReport = new TestReport();
-        String reportId = null;
+        String reportId = testReport.getId();
 
         try {
             // Set the exact start time of the test
@@ -390,7 +390,9 @@ public class TestExecutor {
             testReport.setEndTestTimeNow();
             testReport.setSuccessful("ERROR DURING TEST");
             List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
+            stopTest(test.getId());
             saveAmountRulesTriggered(testReport.getId(), rulesAfter);
+
         }
     }
 
@@ -475,10 +477,10 @@ public class TestExecutor {
 
         assert eventInstance != null;
         event = Integer.parseInt(eventInstance.getValue().toString());
-        if (event != 1 || event != 2) {
-            convertedConfig.add(getAnomalyType(Integer.parseInt(eventInstance.getValue().toString())));
-        } else {
+        if (event == 1 || event == 2) {
             convertedConfig.add(getAnomalyType(Integer.parseInt(anomalyInstance.getValue().toString())));
+        } else {
+            convertedConfig.add(getAnomalyType(Integer.parseInt(eventInstance.getValue().toString())));
         }
 
         return convertedConfig;
