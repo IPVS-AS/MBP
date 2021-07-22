@@ -130,7 +130,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 //Check whether activating or de-activating is intended
                 if (dynamicDeployment.isActivatingIntended()) {
                     //Dynamic deployment is intended to be activated, so submit corresponding deployment task
-                    submitTask(new DeployByRankingTask(dynamicDeployment));
+                    submitTask(new DeployByRankingTask(dynamicDeployment, true));
                 } else {
                     //Dynamic deployment is intended to be deactivated, so submit corresponding un-deployment task
                     submitTask(new UndeployTask(dynamicDeployment));
@@ -169,6 +169,31 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     }
 
     /**
+     * Returns whether operations for a certain {@link DynamicDeployment}, given by its ID, are currently in progress.
+     * This is determined by checking whether a non-empty task queue exists for the {@link DynamicDeployment}.
+     *
+     * @param dynamicDeploymentId The ID of the dynamic deployment to check
+     * @return True, if operations are in progress; false otherwise
+     */
+    public boolean isDynamicDeploymentInProgress(String dynamicDeploymentId) {
+        //Sanity check
+        if ((dynamicDeploymentId == null) || dynamicDeploymentId.isEmpty()) {
+            return false;
+        }
+
+        //Check if a queue exists for the dynamic deployment
+        if (!this.dynamicDeploymentTasks.containsKey(dynamicDeploymentId)) {
+            return false;
+        }
+
+        //Get queue for the dynamic deployment
+        Queue<TaskWrapper<DynamicDeploymentTask>> queue = this.dynamicDeploymentTasks.getOrDefault(dynamicDeploymentId, null);
+
+        //Check if the queue is valid and contains tasks
+        return (queue != null) && (!queue.isEmpty());
+    }
+
+    /**
      * Activates the deployment of a {@link DynamicDeployment}, given by its ID, by placing corresponding tasks
      * in the task queues. For the deployment, the device that appears most appropriate with respect to the
      * {@link DeviceTemplate} underlying the {@link DynamicDeployment} is used. In case the deployment fails, it is
@@ -190,10 +215,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicDeployment.getOwner().getId(), null);
 
         //Submit task for retrieving candidate devices (will abort if not needed due to force=false)
-        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, false));
+        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, this, false));
 
         //Submit task for deploying the dynamic deployment
-        submitTask(new DeployByRankingTask(dynamicDeployment));
+        submitTask(new DeployByRankingTask(dynamicDeployment, true));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -260,8 +285,28 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
      * @param task The task to submit
      */
     private synchronized void submitTask(DeviceTemplateTask task) {
-        //Delegate call
-        this.addTaskToQueueMap(task, this.deviceTemplateTasks, task.getDeviceTemplateId());
+        //Null check
+        if (task == null) {
+            throw new IllegalArgumentException("The task must not be null.");
+        }
+
+        //Get device template ID
+        String deviceTemplateId = task.getDeviceTemplateId();
+
+        //Check if there is already a queue with this ID
+        if (!deviceTemplateTasks.containsKey(deviceTemplateId)) {
+            //Create new queue and add the task
+            LinkedList<TaskWrapper<DeviceTemplateTask>> newQueue = new LinkedList<>();
+            newQueue.add(new TaskWrapper<>(task));
+
+            //Add queue to queue map
+            deviceTemplateTasks.put(deviceTemplateId, newQueue);
+            return;
+        }
+
+        //Add task to dedicated queue
+        deviceTemplateTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
+        //TODO optimize queue
     }
 
     /**
@@ -271,8 +316,56 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
      * @param task The task to submit
      */
     private synchronized void submitTask(DynamicDeploymentTask task) {
-        //Delegate call
-        this.addTaskToQueueMap(task, this.dynamicDeploymentTasks, task.getDynamicDeploymentId());
+        //Null check
+        if (task == null) {
+            throw new IllegalArgumentException("The task must not be null.");
+        }
+
+        //Get ID of the dynamic deployment
+        String dynamicDeploymentId = task.getDynamicDeploymentId();
+
+        //Check if there is already a queue with this ID
+        if (!dynamicDeploymentTasks.containsKey(dynamicDeploymentId)) {
+            //Create new queue and add the task
+            LinkedList<TaskWrapper<DynamicDeploymentTask>> newQueue = new LinkedList<>();
+            newQueue.add(new TaskWrapper<>(task));
+
+            //Add queue to queue map
+            dynamicDeploymentTasks.put(dynamicDeploymentId, newQueue);
+            return;
+        }
+
+        //Get queue for the dynamic deployment
+        Queue<TaskWrapper<DynamicDeploymentTask>> queue = dynamicDeploymentTasks.get(dynamicDeploymentId);
+
+        /* Optimization:
+        ---------------------
+        The following block tries to optimize the queue by removing redundant tasks. This approach keeps the effective
+        queue size by a maximum of 2, including the currently running task and the next one.
+         */
+
+        //Iterate over the queue using an iterator
+        Iterator<TaskWrapper<DynamicDeploymentTask>> queueIterator = queue.iterator();
+        while (queueIterator.hasNext()) {
+            //Get current queue task
+            TaskWrapper<DynamicDeploymentTask> taskWrapper = queueIterator.next();
+
+            //Check if task is running
+            if (taskWrapper.isStarted()) continue;
+
+            //Check if queued task and new one are redundant
+            if (task.isUserCreated()) {
+                //New task is created by user, so replace current one
+                queueIterator.remove();
+                break;
+            }
+
+            //New task is not user created and since there is a previous task (undeploy or deploy), we do not need it
+            return;
+        }
+
+        //Just add the task to the queue
+        queue.add(new TaskWrapper<>(task));
     }
 
     /**
@@ -311,7 +404,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         Remark: All tasks implement mechanisms in order to ensure that no unnecessary time-consuming actions are executed, 
         mostly by checking the activationIntentions of the dynamic deployments and whether the device template is currently in use.
         However, when the queue looks like "Undeploy -> Deploy -> Undeploy -> Deploy" (ending with a deployment), then all undeploy
-        tasks will not be executed/terminate qucikly due to the activation intention, but all deploy tasks will be executed and check whether
+        tasks will not be executed/terminate quickly due to the activation intention, but all deploy tasks will be executed and check whether
         there is currently a better device available. This general behaviour is probably desired, because this way user can re-trigger
         the check for the optimal deployment device in case the operator was not deployed on the best device during the first try due to deployment failure
         or when the most recently used device is not available anymore due to technical problems and failures.
@@ -322,8 +415,8 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         /* Rules:
         - Only first task in each queue is executed and remains in queue during its execution
         - After the execution of a task concluded, the task is removed from the queue
-        - No dynamic deployment task is started as long as there is a task in the queue for the corresponding device template
-        - No device template task is started as long as there is a currently running dynamic deployment task for a dynamic deployment that uses the template
+        - No dynamic deployment task that depends on candidate devices is started as long as there is a task in the queue for the corresponding device template
+        - No device template task is started as long as there is a currently running dynamic deployment task depending on candidate devices for a dynamic deployment that uses the template
         - Device template tasks are checked before dynamic deployment tasks
 
         Result: When a new device template task and a dynamic deployment task are added, old dynamic deployment tasks
@@ -349,7 +442,9 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
             //Check if there is a currently running task for a dynamic deployment that uses the same device template
             if ((deviceTemplateId == null) || this.dynamicDeploymentTasks.values().stream()
-                    .flatMap(Collection::stream).filter(TaskWrapper::isStarted)
+                    .flatMap(Collection::stream)
+                    .filter(TaskWrapper::isStarted) //Filter for currently running tasks
+                    .filter(x -> x.getTask().dependsOnCandidateDevices()) //Filter for tasks depending on candidate devices
                     .anyMatch(x -> deviceTemplateId.equals(x.getTask().getDeviceTemplateId()))) {
                 continue;
             }
@@ -372,9 +467,13 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             //Check if task has already been started
             if (firstTask.isStarted()) continue;
 
+            //Get task object and device template ID
+            DynamicDeploymentTask taskObject = firstTask.getTask();
+            String deviceTemplateId = taskObject.getDeviceTemplateId();
+
             //Check if task is blocked due to a device template task with same device template ID
-            String deviceTemplateId = firstTask.getTask().getDeviceTemplateId();
-            if ((this.deviceTemplateTasks.containsKey(deviceTemplateId)) && (!this.deviceTemplateTasks.get(deviceTemplateId).isEmpty())) {
+            if ((taskObject.dependsOnCandidateDevices()) && (this.deviceTemplateTasks.containsKey(deviceTemplateId)) &&
+                    (!this.deviceTemplateTasks.get(deviceTemplateId).isEmpty())) {
                 continue;
             }
 
@@ -414,6 +513,8 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         //Check if task really completed
         if (!completedTask.isDone()) return;
 
+        System.out.println("Finished: " + completedTask.getTask().getClass().getSimpleName());
+
         //Retrieve actual task from wrapper
         DiscoveryTask task = completedTask.getTask();
 
@@ -441,6 +542,9 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 this.dynamicDeploymentTasks.remove(dynamicDeploymentId);
             }
         }
+
+        //TODO
+        //printQueues();
 
         //Execute next tasks (if available)
         executeTasks();
@@ -497,7 +601,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             System.out.printf("%s: ", s);
 
             //Stream through the queue elements, get their descriptions and join them
-            System.out.println(queue.stream().map(t -> t.getTask().toHumanReadableString()).collect(Collectors.joining(" --> ")));
+            System.out.println(queue.stream().map(t -> t.getTask().toHumanReadableString() + (t.isStarted() ? " (running)" : "")).collect(Collectors.joining(" --> ")));
         });
 
         /*

@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Enumeration of states in which {@link DynamicDeployment}s can be.
+ * Enumeration of stable states in which {@link DynamicDeployment}s can be.
  */
 public enum DynamicDeploymentState {
     DISABLED("disabled"), //Dynamic deployment is not set to active by the user
-    IN_PROGRESS("in_progress"), //Operation in progress
     NO_CANDIDATE("no_candidate"),  //No candidate device found
     ALL_FAILED("all_failed"), // Candidate devices found, but deployment failed for all candidates
     DEPLOYED("deployed"); //Device found and successfully deployed

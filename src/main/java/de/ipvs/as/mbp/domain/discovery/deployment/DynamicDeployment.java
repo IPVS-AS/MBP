@@ -1,11 +1,14 @@
 package de.ipvs.as.mbp.domain.discovery.deployment;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -46,8 +49,8 @@ public class DynamicDeployment extends UserEntity {
     //The user's last intention regarding activating/deactivating the dynamic deployment
     private boolean activatingIntended = false;
 
-    //The current state of the dynamic deployment
-    private DynamicDeploymentState state = DynamicDeploymentState.DISABLED;
+    //The most recent state of the dynamic deployment
+    private DynamicDeploymentState lastState = DynamicDeploymentState.DISABLED;
 
     //Details about the currently used device
     private DynamicDeploymentDeviceDetails lastDeviceDetails;
@@ -185,22 +188,22 @@ public class DynamicDeployment extends UserEntity {
 
 
     /**
-     * Returns the state of the dynamic deployment.
+     * Returns the last state of the dynamic deployment.
      *
      * @return The state
      */
-    public DynamicDeploymentState getState() {
-        return state;
+    public DynamicDeploymentState getLastState() {
+        return lastState;
     }
 
     /**
-     * Sets the state of the dynamic deployment.
+     * Sets the last state of the dynamic deployment.
      *
-     * @param state The state to set
+     * @param lastState The state to set
      * @return The dynamic deployment
      */
-    public DynamicDeployment setState(DynamicDeploymentState state) {
-        this.state = state;
+    public DynamicDeployment setLastState(DynamicDeploymentState lastState) {
+        this.lastState = lastState;
         return this;
     }
 
@@ -224,5 +227,19 @@ public class DynamicDeployment extends UserEntity {
     public DynamicDeployment setLastDeviceDetails(DynamicDeploymentDeviceDetails lastDeviceDetails) {
         this.lastDeviceDetails = lastDeviceDetails;
         return this;
+    }
+
+    @JsonProperty("inProgress")
+    public boolean isInProgress() {
+        //Check if ID of the dynamic deployment is available
+        if ((this.id == null) || this.id.isEmpty()) {
+            return false;
+        }
+
+        //Get the discovery engine bean
+        DiscoveryEngine engine = DynamicBeanProvider.get(DiscoveryEngine.class);
+
+        //Check whether the dynamic deployment is in progress
+        return engine.isDynamicDeploymentInProgress(this.id);
     }
 }

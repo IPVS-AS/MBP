@@ -2,8 +2,10 @@
  * Controller for the dynamic deployments list page.
  */
 app.controller('DynamicDeploymentListController',
-    ['$scope', '$controller', 'dynamicDeploymentList', 'addDynamicDeployment', 'deleteDynamicDeployment', 'operatorList', 'deviceTemplateList', 'requestTopicList', 'DiscoveryService', 'NotificationService',
-        function ($scope, $controller, dynamicDeploymentList, addDynamicDeployment, deleteDynamicDeployment, operatorList, deviceTemplateList, requestTopicList, DiscoveryService, NotificationService) {
+    ['$scope', '$controller', '$timeout', 'dynamicDeploymentList', 'addDynamicDeployment', 'deleteDynamicDeployment',
+        'operatorList', 'deviceTemplateList', 'requestTopicList', 'DiscoveryService', 'NotificationService',
+        function ($scope, $controller, $timeout, dynamicDeploymentList, addDynamicDeployment, deleteDynamicDeployment,
+                  operatorList, deviceTemplateList, requestTopicList, DiscoveryService, NotificationService) {
 
             let vm = this;
 
@@ -24,7 +26,32 @@ app.controller('DynamicDeploymentListController',
              * @param id The ID of the dynamic deployment
              */
             function toggleActivationIntention(id) {
-                alert(id);
+                //Find dynamic deployment with the given ID
+                let dynamicDeployment = dynamicDeploymentList.find(d => d.id === id);
+
+                //Null check
+                if (dynamicDeployment == null) return;
+
+                //Check whether activating or deactivating is desired
+                if (dynamicDeployment.activatingIntended) {
+                    //Activate the deployment
+                    DiscoveryService.activateDynamicDeployment(id).then(function () {
+                        //Notify the user
+                        NotificationService.notify("The dynamic deployment was activated.", "success");
+
+                        //Update the status
+                        reloadDeploymentState(id);
+                    });
+                } else {
+                    //Deactivate the deployment
+                    DiscoveryService.deactivateDynamicDeployment(id).then(function () {
+                        //Notify the user
+                        NotificationService.notify("The dynamic deployment was deactivated.", "success");
+
+                        //Update the status
+                        reloadDeploymentState(id);
+                    });
+                }
             }
 
 
@@ -35,7 +62,30 @@ app.controller('DynamicDeploymentListController',
              * @param id The ID of the dynamic deployment
              */
             function reloadDeploymentState(id) {
-                alert(id);
+                //Find dynamic deployment with the given ID
+                let dynamicDeployment = dynamicDeploymentList.find(d => d.id === id);
+
+                //Null check
+                if (dynamicDeployment == null) return;
+
+                //Set status to loading
+                dynamicDeployment.lastState = 'loading';
+
+                //Retrieve fresh data about the dynamic deployment
+                DiscoveryService.getDynamicDeployment(id).then(function (data) {
+                    //Update fields
+                    $timeout(function () {
+                        dynamicDeployment.inProgress = data.inProgress;
+                        dynamicDeployment.lastState = data.lastState;
+                        dynamicDeployment.activatingIntended = data.activatingIntended;
+                    }, 10);
+                }, function () {
+                    //Failed, set fields to failure
+                    $timeout(function () {
+                        dynamicDeployment.inProgress = false;
+                        dynamicDeployment.lastState = "";
+                    }, 10);
+                });
             }
 
             /**
@@ -113,7 +163,7 @@ app.controller('DynamicDeploymentListController',
                 deviceTemplateList: deviceTemplateList,
                 requestTopicList: requestTopicList,
                 toggleActivationIntention: toggleActivationIntention,
-                reloadDeploymentState: reloadDeploymentState,
+                reloadDeploymentState: reloadDeploymentState
             });
         }
     ]);

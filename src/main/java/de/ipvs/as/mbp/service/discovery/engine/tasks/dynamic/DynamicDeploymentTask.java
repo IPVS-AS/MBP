@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic;
 
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.DiscoveryTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
@@ -24,4 +25,19 @@ public interface DynamicDeploymentTask extends DiscoveryTask {
      * @return The device template ID
      */
     String getDeviceTemplateId();
+
+    /**
+     * Returns whether this task requires access to the candidate devices of the {@link DeviceTemplate} that is
+     * referenced in the {@link DynamicDeployment}.
+     *
+     * @return True, if this task depends on the candidate devices; false otherwise
+     */
+    boolean dependsOnCandidateDevices();
+
+    /**
+     * Returns whether this task was created on behalf of an user.
+     *
+     * @return True, if the task was created on behalf of an user; false otherwise
+     */
+    boolean isUserCreated();
 }

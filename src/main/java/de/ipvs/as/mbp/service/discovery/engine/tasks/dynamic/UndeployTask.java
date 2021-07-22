@@ -4,9 +4,14 @@ import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 /**
  * The purpose of this task is to undeploy the {@link Operator} of a given {@link DynamicDeployment}
@@ -14,6 +19,9 @@ import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
  * in case the {@link DynamicDeployment} is deployed on it.
  */
 public class UndeployTask implements DynamicDeploymentTask {
+
+    //Whether this tasks requires access to the candidate devices
+    private static final boolean DEPENDS_ON_CANDIDATE_DEVICES = false;
 
     //The original version of the dynamic deployment that is supposed to be deployed
     private DynamicDeployment originalDynamicDeployment;
@@ -23,6 +31,7 @@ public class UndeployTask implements DynamicDeploymentTask {
      */
     private final DiscoveryDeploymentService discoveryDeploymentService;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
+    private final MongoTemplate mongoTemplate;
 
     /**
      * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment}.
@@ -36,6 +45,7 @@ public class UndeployTask implements DynamicDeploymentTask {
         //Inject components
         this.discoveryDeploymentService = DynamicBeanProvider.get(DiscoveryDeploymentService.class);
         this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
+        this.mongoTemplate = DynamicBeanProvider.get(MongoTemplate.class);
     }
 
     /**
@@ -59,15 +69,11 @@ public class UndeployTask implements DynamicDeploymentTask {
             return;
         }
 
-        //Update the state of the dynamic deployment
-        this.updateDynamicDeployment(dynamicDeployment.setState(DynamicDeploymentState.IN_PROGRESS));
-
         //Check whether the dynamic deployment is currently deployed
         if ((dynamicDeployment.getLastDeviceDetails() == null) ||
                 (!this.discoveryDeploymentService.isDeployed(dynamicDeployment))) {
             //Dynamic deployment is not deployed, so just update the state
-            updateDynamicDeployment(dynamicDeployment.setLastDeviceDetails(null)
-                    .setState(DynamicDeploymentState.DISABLED));
+            updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.DISABLED);
             return;
         }
 
@@ -75,18 +81,25 @@ public class UndeployTask implements DynamicDeploymentTask {
         this.discoveryDeploymentService.undeploy(dynamicDeployment);
 
         //Update state of dynamic deployment accordingly
-        updateDynamicDeployment(dynamicDeployment.setLastDeviceDetails(null)
-                .setState(DynamicDeploymentState.DISABLED));
+        updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.DISABLED);
     }
 
     /**
-     * Writes a given {@link DynamicDeployment} to the repository, thus updating its fields in the database.
+     * Updates the last device details and last state field of a certain {@link DynamicDeployment}, given by its
+     * ID, in its repository. By using this method instead of the {@link DynamicDeploymentRepository},
+     * lost updates on other fields can be avoided.
      *
-     * @param dynamicDeployment The dynamic deployment to update
+     * @param dynamicDeploymentId The ID of the {@link DynamicDeployment} to update
+     * @param newDeviceDetails    The new device details to set
+     * @param newState            The new state to set
      */
-    private void updateDynamicDeployment(DynamicDeployment dynamicDeployment) {
-        //Write state to repository
-        this.dynamicDeploymentRepository.save(dynamicDeployment);
+    private void updateDynamicDeployment(String dynamicDeploymentId, DynamicDeploymentDeviceDetails newDeviceDetails, DynamicDeploymentState newState) {
+        //Create query and update clauses
+        Query query = Query.query(Criteria.where("id").is(dynamicDeploymentId));
+        Update update = new Update().set("lastDeviceDetails", newDeviceDetails).set("lastState", newState);
+
+        //Write changes to repository
+        mongoTemplate.updateFirst(query, update, DynamicDeployment.class);
     }
 
     /**
@@ -132,6 +145,27 @@ public class UndeployTask implements DynamicDeploymentTask {
     @Override
     public String getDeviceTemplateId() {
         return this.originalDynamicDeployment.getDeviceTemplate().getId();
+    }
+
+    /**
+     * Returns whether this task requires access to the candidate devices of the {@link DeviceTemplate} that is
+     * referenced in the {@link DynamicDeployment}.
+     *
+     * @return True, if this task depends on the candidate devices; false otherwise
+     */
+    @Override
+    public boolean dependsOnCandidateDevices() {
+        return DEPENDS_ON_CANDIDATE_DEVICES;
+    }
+
+    /**
+     * Returns whether this task was created on behalf of an user.
+     *
+     * @return True, if the task was created on behalf of an user; false otherwise
+     */
+    @Override
+    public boolean isUserCreated() {
+        return true;
     }
 
     /**

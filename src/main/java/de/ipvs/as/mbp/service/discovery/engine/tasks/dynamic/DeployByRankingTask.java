@@ -4,17 +4,19 @@ import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
-import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
-
-import java.util.Optional;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 /**
  * The purpose of this task is to deploy a given {@link DynamicDeployment} with respect to the ranking which
@@ -38,9 +40,14 @@ import java.util.Optional;
  * in case a device is available that appears to be really better suited than the currently used device.
  */
 public class DeployByRankingTask implements DynamicDeploymentTask {
+    //Whether this tasks requires access to the candidate devices
+    private static final boolean DEPENDS_ON_CANDIDATE_DEVICES = true;
 
     //The original version of the dynamic deployment that is supposed to be deployed
     private DynamicDeployment originalDynamicDeployment;
+
+    //Indicates whether the task was created on behalf of an user
+    private boolean isUserCreated = false;
 
     /*
     Injected fields
@@ -49,6 +56,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     private final DiscoveryDeploymentService discoveryDeploymentService;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final CandidateDevicesRepository candidateDevicesRepository;
+    private final MongoTemplate mongoTemplate;
 
     /**
      * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment}.
@@ -56,14 +64,28 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
      * @param dynamicDeployment The dynamic deployment to use
      */
     public DeployByRankingTask(DynamicDeployment dynamicDeployment) {
+        //Delegate call
+        this(dynamicDeployment, false);
+    }
+
+    /**
+     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment} and an indication
+     * whether the task was created on behalf of an user.
+     *
+     * @param dynamicDeployment The dynamic deployment to use
+     * @param isUserCreated     True, if the task was created on behalf of an user; false otherwise
+     */
+    public DeployByRankingTask(DynamicDeployment dynamicDeployment, boolean isUserCreated) {
         //Set fields
         setDynamicDeployment(dynamicDeployment);
+        setIsUserCreated(isUserCreated);
 
         //Inject components
         this.candidateDevicesProcessor = DynamicBeanProvider.get(CandidateDevicesProcessor.class);
         this.discoveryDeploymentService = DynamicBeanProvider.get(DiscoveryDeploymentService.class);
         this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
+        this.mongoTemplate = DynamicBeanProvider.get(MongoTemplate.class);
     }
 
     /**
@@ -73,27 +95,20 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     @Override
     public void run() {
         //Read dynamic deployment and candidate devices from their repositories
-        Optional<DynamicDeployment> dynamicDeploymentOptional = dynamicDeploymentRepository.findById(this.originalDynamicDeployment.getId());
-        Optional<CandidateDevicesResult> candidateDevicesOptional = candidateDevicesRepository.findById(getDeviceTemplateId());
+        DynamicDeployment dynamicDeployment = dynamicDeploymentRepository.findById(this.originalDynamicDeployment.getId()).orElse(null);
+        CandidateDevicesResult candidateDevices = candidateDevicesRepository.findById(getDeviceTemplateId()).orElse(null);
 
         //Sanity checks
-        if ((!dynamicDeploymentOptional.isPresent()) || (!candidateDevicesOptional.isPresent())) {
+        if ((dynamicDeployment == null) || (candidateDevices == null)) {
             //Task ends because data is not available
             return;
         }
-
-        //Get objects from optionals
-        DynamicDeployment dynamicDeployment = dynamicDeploymentOptional.get();
-        CandidateDevicesResult candidateDevices = candidateDevicesOptional.get();
 
         //Check intention for dynamic deployment
         if (!dynamicDeployment.isActivatingIntended()) {
             //Active is not intended, so no need to deploy; potential undeployment will be done by another task
             return;
         }
-
-        //Update the state of the dynamic deployment
-        this.updateDynamicDeployment(dynamicDeployment.setState(DynamicDeploymentState.IN_PROGRESS));
 
         //Determine whether the dynamic deployment is currently deployed
         boolean isDeployed = (dynamicDeployment.getLastDeviceDetails() != null) &&
@@ -109,8 +124,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
                 this.discoveryDeploymentService.undeploy(dynamicDeployment);
             }
             //Update last device details and status
-            updateDynamicDeployment(dynamicDeployment.setLastDeviceDetails(null)
-                    .setState(DynamicDeploymentState.NO_CANDIDATE));
+            updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.NO_CANDIDATE);
             return;
         }
 
@@ -125,7 +139,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
             //Check if score is still in range
             if (candidateDevice.getScore() <= minScoreExclusive) {
                 //Deployment is already deployed and the device is still best suited
-                updateDynamicDeployment(dynamicDeployment.setState(DynamicDeploymentState.DEPLOYED));
+                updateDynamicDeployment(dynamicDeployment.getId(), dynamicDeployment.getLastDeviceDetails(), DynamicDeploymentState.DEPLOYED);
                 return;
             }
 
@@ -139,9 +153,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
                 if (isDeployed) this.discoveryDeploymentService.undeploy(dynamicDeployment);
 
                 //Update the dynamic deployment accordingly and set the state
-                this.updateDynamicDeployment(dynamicDeployment
-                        .setLastDeviceDetails(new DynamicDeploymentDeviceDetails(candidateDevice))
-                        .setState(DynamicDeploymentState.DEPLOYED));
+                updateDynamicDeployment(dynamicDeployment.getId(), new DynamicDeploymentDeviceDetails(candidateDevice), DynamicDeploymentState.DEPLOYED);
                 return;
             }
         }
@@ -156,23 +168,30 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         //Check if deployment exists
         if (isDeployed) {
             //Former deployment is still the most appropriate deployment, update status accordingly
-            updateDynamicDeployment(dynamicDeployment.setState(DynamicDeploymentState.DEPLOYED));
+            updateDynamicDeployment(dynamicDeployment.getId(), dynamicDeployment.getLastDeviceDetails(), DynamicDeploymentState.DEPLOYED);
             return;
         }
 
         //No deployment exists and deployment failed for all candidate devices
-        updateDynamicDeployment(dynamicDeployment.setLastDeviceDetails(null)
-                .setState(DynamicDeploymentState.ALL_FAILED));
+        updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.ALL_FAILED);
     }
 
     /**
-     * Writes a given {@link DynamicDeployment} to the repository, thus updating its fields in the database.
+     * Updates the last device details and last state field of a certain {@link DynamicDeployment}, given by its
+     * ID, in its repository. By using this method instead of the {@link DynamicDeploymentRepository},
+     * lost updates on other fields can be avoided.
      *
-     * @param dynamicDeployment The dynamic deployment to update
+     * @param dynamicDeploymentId The ID of the {@link DynamicDeployment} to update
+     * @param newDeviceDetails    The new device details to set
+     * @param newState            The new state to set
      */
-    private void updateDynamicDeployment(DynamicDeployment dynamicDeployment) {
-        //Write state to repository
-        this.dynamicDeploymentRepository.save(dynamicDeployment);
+    private void updateDynamicDeployment(String dynamicDeploymentId, DynamicDeploymentDeviceDetails newDeviceDetails, DynamicDeploymentState newState) {
+        //Create query and update clauses
+        Query query = Query.query(Criteria.where("id").is(dynamicDeploymentId));
+        Update update = new Update().set("lastDeviceDetails", newDeviceDetails).set("lastState", newState);
+
+        //Write changes to repository
+        mongoTemplate.updateFirst(query, update, DynamicDeployment.class);
     }
 
     /**
@@ -200,6 +219,25 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     }
 
     /**
+     * Returns whether this task was created on behalf of an user.
+     *
+     * @return True, if the task was created on behalf of an user; false otherwise
+     */
+    @Override
+    public boolean isUserCreated() {
+        return this.isUserCreated;
+    }
+
+    /**
+     * Sets whether this task was created on behalf of an user.
+     *
+     * @param isUserCreated True, if the task was created on behalf of an user; false otherwise
+     */
+    private void setIsUserCreated(boolean isUserCreated) {
+        this.isUserCreated = isUserCreated;
+    }
+
+    /**
      * Returns the ID of the {@link DynamicDeployment} on which this task operates.
      *
      * @return The dynamic deployment ID
@@ -218,6 +256,17 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     @Override
     public String getDeviceTemplateId() {
         return this.originalDynamicDeployment.getDeviceTemplate().getId();
+    }
+
+    /**
+     * Returns whether this task requires access to the candidate devices of the {@link DeviceTemplate} that is
+     * referenced in the {@link DynamicDeployment}.
+     *
+     * @return True, if this task depends on the candidate devices; false otherwise
+     */
+    @Override
+    public boolean dependsOnCandidateDevices() {
+        return DEPENDS_ON_CANDIDATE_DEVICES;
     }
 
     /**

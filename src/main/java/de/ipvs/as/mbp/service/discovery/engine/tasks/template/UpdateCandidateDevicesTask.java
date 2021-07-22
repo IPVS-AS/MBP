@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
@@ -111,13 +112,17 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
         //TODO Verify if working
         //Abort if not forced and candidate devices of the device template are not in use
         if ((!this.force) && (!isDeviceTemplateInUse)) {
+            System.out.println("Template in use.");
             return;
         }
 
         //Abort if not forced and candidate devices are already available
         if ((!this.force) && this.candidateDevicesRepository.existsById(deviceTemplate.getId())) {
+            System.out.println("Stuff exists already.");
             return;
         }
+
+        System.out.println("Sending message");
 
         //Not available or forced, thus retrieve the candidate devices
         CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);

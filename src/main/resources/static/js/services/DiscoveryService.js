@@ -2,12 +2,15 @@
  * Provides a collection discovery-related service functions.
  */
 app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', function (ENDPOINT_URI, HttpService) {
-    //Base URL for discovery
+    //Base URL for discovery and dynamic deployments
     const URL_DISCOVERY = ENDPOINT_URI + '/discovery/';
+    const URL_DYNAMIC_DEPLOYMENTS = URL_DISCOVERY + 'dynamic-deployments';
 
     //URL suffixes for the various requests
     const URL_SUFFIX_TEST_TOPIC = 'getRepositories/';
     const URL_SUFFIX_TEST_DEVICE_TEMPLATE = 'testDeviceTemplate';
+    const URL_SUFFIX_ACTIVATE_DEPLOYMENT = '/activate';
+    const URL_SUFFIX_DEACTIVATE_DEPLOYMENT = '/deactivate';
 
     /**
      * [Public]
@@ -40,9 +43,42 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', function (ENDPOI
         return HttpService.getRequest(URL_DISCOVERY + URL_SUFFIX_TEST_TOPIC + requestTopicId);
     }
 
+    /**
+     * [Public]
+     * Performs a server request in order to retrieve the data of a certain dynamic deployment object, given by its ID.
+     *
+     * @param dynamicDeployment The ID of the dynamic deployment to retrieve
+     */
+    function getDynamicDeployment(dynamicDeployment) {
+        return HttpService.getOne('discovery/dynamic-deployments', dynamicDeployment);
+    }
+
+    /**
+     * [Public]
+     * Performs a server request in order to activate a certain dynamic deployment, given by its ID.
+     *
+     * @param dynamicDeploymentId The ID of the dynamic deployment to activate
+     */
+    function activateDynamicDeployment(dynamicDeploymentId) {
+        return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_ACTIVATE_DEPLOYMENT);
+    }
+
+    /**
+     * [Public]
+     * Performs a server request in order to deactivate a certain dynamic deployment, given by its ID.
+     *
+     * @param dynamicDeploymentId The ID of the dynamic deployment to deactivate
+     */
+    function deactivateDynamicDeployment(dynamicDeploymentId) {
+        return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DEACTIVATE_DEPLOYMENT);
+    }
+
     //Expose public functions
     return {
         testDeviceTemplate: testDeviceTemplate,
-        testRequestTopic: testRequestTopic
+        testRequestTopic: testRequestTopic,
+        getDynamicDeployment: getDynamicDeployment,
+        activateDynamicDeployment: activateDynamicDeployment,
+        deactivateDynamicDeployment: deactivateDynamicDeployment
     };
 }]);

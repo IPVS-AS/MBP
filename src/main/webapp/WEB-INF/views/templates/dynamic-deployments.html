@@ -3,7 +3,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="header">
-                <div class="col-lg-8">
+                <div class="col-lg-9">
                     <h2>Dynamic deployments
                         <small>Deployments of actuators and sensors that do not make use of a fixed device,
                             but use a device template in order to dynamically and automatically search for the most
@@ -29,15 +29,15 @@
                         <th class="align-center">Operator</th>
                         <th class="align-center">Device template</th>
                         <th class="align-center">Owner</th>
+                        <th class="align-center">Active</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{deployment.id}}" ng-repeat="deployment in displayedCollection">
                         <td><a ng-href="{{'view/dynamic-deployments/' + deployment.id}}">{{deployment.name}}</a></td>
                         <td class="align-center">
-                            <div ng-switch="deployment.state" ng-click="ctrl.reloadDeploymentState(deployment.id)"
-                                 class="clickable">
-                                <div ng-switch-when="loading">
+                            <div ng-click="ctrl.reloadDeploymentState(deployment.id)" class="clickable">
+                                <div ng-show="deployment.lastState === 'loading'">
                                     <div class="preloader pl-size-xs">
                                         <div class="spinner-layer pl-blue">
                                             <div class="circle-clipper left">
@@ -49,23 +49,20 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div ng-switch-when="disabled">
-                                    <span class="label label-default">Disabled</span>
-                                </div>
-                                <div ng-switch-when="in_progress">
+                                <div ng-show="deployment.lastState !== 'loading' && deployment.inProgress">
                                     <span class="label label-primary">In progress</span>
                                 </div>
-                                <div ng-switch-when="no_candidate">
+                                <div ng-show="deployment.lastState === 'disabled' && !deployment.inProgress">
+                                    <span class="label label-default">Disabled</span>
+                                </div>
+                                <div ng-show="deployment.lastState === 'no_candidate' && !deployment.inProgress">
                                     <span class="label label-warning">No candidates</span>
                                 </div>
-                                <div ng-switch-when="all_failed">
+                                <div ng-show="deployment.lastState === 'all_failed' && !deployment.inProgress">
                                     <span class="label label-warning">All failed</span>
                                 </div>
-                                <div ng-switch-when="deployed">
+                                <div ng-show="deployment.lastState === 'deployed' && !deployment.inProgress">
                                     <span class="label label-warning">Deployed</span>
-                                </div>
-                                <div ng-switch-default>
-                                    <span class="label label-default">Unknown</span>
                                 </div>
                             </div>
                         </td>
@@ -76,7 +73,7 @@
                             <div class="switch">
                                 <label>
                                     <input type="checkbox" ng-model="deployment.activatingIntended"
-                                           ng-change="deployment.toggleActivationIntention(deployment.id)">
+                                           ng-change="ctrl.toggleActivationIntention(deployment.id)">
                                     <span class="lever"></span>
                                 </label>
                             </div>

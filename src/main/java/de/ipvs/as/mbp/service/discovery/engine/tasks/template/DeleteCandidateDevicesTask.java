@@ -2,8 +2,8 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
-import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
@@ -69,6 +69,7 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
 
         //Abort if not forced and candidate devices of the device template are in use
         if ((!force) && isDeviceTemplateInUse) {
+            System.out.println("Not deleted.");
             return;
         }
 
@@ -77,6 +78,7 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
 
         //Send message to discovery repositories in order to cancel the subscriptions
         this.discoveryGateway.cancelSubscription(deviceTemplate);
+        System.out.println("Deleted and unsubscribed.");
     }
 
     /**
