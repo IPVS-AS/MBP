@@ -2,14 +2,11 @@ package de.ipvs.as.mbp.domain.component;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.ComponentRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import sun.util.locale.LanguageTag;
 
 /**
  * Creation validator for component entities.
