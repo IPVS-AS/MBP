@@ -35,7 +35,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
     private static final String JSON_KEY_VALUE = "value";
 
     //Pattern for retrieving component types from message topics
-    private static final Pattern COMPONENT_TYPES_PATTERN = Pattern.compile("^([a-zA-Z0-9]+)/.+");
+    private static final Pattern COMPONENT_TYPES_PATTERN = Pattern.compile("^([a-zA-Z0-9_-]+)/.+");
 
     //Set of observers
     private Set<ValueLogReceiverObserver> observerSet;
