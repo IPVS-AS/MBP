@@ -2,9 +2,9 @@ package de.ipvs.as.mbp.service.discovery.deployment;
 
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
 
@@ -59,14 +59,15 @@ public class DynamicDeployableComponent extends Component {
         }
 
         //Create device
-        Device device = new Device().setId("").setName("")
+        Device device = new Device().setId(deviceDetails.getMacAddress()) //Use MAC address in order to enable SSH session caching
+                .setName("")
                 .setIpAddress(deviceDetails.getIpAddress())
                 .setUsername(deviceDetails.getUsername())
                 .setPassword(deviceDetails.getPassword());
 
         //Check if a key pair is provided
         String privateKey = deviceDetails.getPrivateKey();
-        if ((privateKey != null) && privateKey.isEmpty()) {
+        if ((privateKey != null) && (!privateKey.isEmpty())) {
             //Add key pair
             device.setKeyPair(new KeyPair().setId("").setName("").setPublicKey("").setPrivateKey(privateKey));
         }

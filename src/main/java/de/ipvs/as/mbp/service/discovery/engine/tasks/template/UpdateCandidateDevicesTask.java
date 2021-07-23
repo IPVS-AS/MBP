@@ -112,7 +112,7 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
         //TODO Verify if working
         //Abort if not forced and candidate devices of the device template are not in use
         if ((!this.force) && (!isDeviceTemplateInUse)) {
-            System.out.println("Template in use.");
+            System.out.println("Template not in use.");
             return;
         }
 
@@ -122,13 +122,13 @@ public class UpdateCandidateDevicesTask implements DeviceTemplateTask {
             return;
         }
 
-        System.out.println("Sending message");
-
         //Not available or forced, thus retrieve the candidate devices
         CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);
 
         //Save the candidate devices to repository
         candidateDevicesRepository.save(candidateDevices);
+
+        System.out.println("************* Saved and subscribed *************");
     }
 
     /**

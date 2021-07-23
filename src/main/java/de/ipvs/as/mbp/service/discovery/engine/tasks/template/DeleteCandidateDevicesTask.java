@@ -76,9 +76,15 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
         //Candidate devices are not in use, so delete them
         this.candidateDevicesRepository.deleteById(getDeviceTemplateId());
 
+        //Check whether a subscription exists
+        if (!this.discoveryGateway.isSubscribed(deviceTemplate)) {
+            System.out.println("No subscription.");
+            return;
+        }
+
         //Send message to discovery repositories in order to cancel the subscriptions
         this.discoveryGateway.cancelSubscription(deviceTemplate);
-        System.out.println("Deleted and unsubscribed.");
+        System.out.println("************* Deleted and unsubscribed. *************");
     }
 
     /**

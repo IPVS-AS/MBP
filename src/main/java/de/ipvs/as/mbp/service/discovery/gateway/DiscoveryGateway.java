@@ -217,9 +217,11 @@ public class DiscoveryGateway {
      * @param deviceTemplate The device template for which the subscription is supposed to be cancelled
      */
     public void cancelSubscription(DeviceTemplate deviceTemplate) {
-        //Null check
+        //Sanity checks
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
+        } else if (!this.candidateDeviceSubscriptions.containsKey(deviceTemplate.getId())) {
+            return;
         }
 
         //Remove subscription from map, but remember the old subscription object
@@ -247,6 +249,22 @@ public class DiscoveryGateway {
 
         //No subscriptions remain for this owner, so entirely unsubscribe from the topic
         this.pubSubService.unsubscribe(this.subscriptionReturnTopics.get(ownerId), this.subscriptionNotificationListener);
+    }
+
+    /**
+     * Returns whether there is an existing subscription for the given {@link DeviceTemplate}.
+     *
+     * @param deviceTemplate The device template to check
+     * @return True, if an subscription exists for the device template; false otherwise
+     */
+    public boolean isSubscribed(DeviceTemplate deviceTemplate) {
+        //Sanity check
+        if (deviceTemplate == null) {
+            throw new IllegalArgumentException("The device template must not be null.");
+        }
+
+        //Check whether a subscription exists
+        return this.candidateDeviceSubscriptions.containsKey(deviceTemplate.getId());
     }
 
     /**

@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -368,49 +369,6 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         queue.add(new TaskWrapper<>(task));
     }
 
-    /**
-     * Adds a given {@link DiscoveryTask} to a given {@link Map} (queue ID --> queue) of {@link Queue}s. In order to
-     * identify the queue that matches the given task, a queue ID is provided. If the queue does not already exist
-     * in the queue map, it will be created and added.
-     *
-     * @param task     The task to add
-     * @param queueMap The queue map (queue ID --> queue) to which the task is supposed to be added
-     * @param queueId  The ID of the queue that matches the task
-     * @param <T>      The type of the task
-     */
-    private synchronized <T extends DiscoveryTask> void addTaskToQueueMap(T task, Map<String, Queue<TaskWrapper<T>>> queueMap, String queueId) {
-        //Null check
-        if (task == null) {
-            throw new IllegalArgumentException("The task must not be null.");
-        }
-
-        //Ignore task if ID is invalid
-        if ((queueId == null) || (queueId.isEmpty())) return;
-
-        //Check if there is already a queue with this ID
-        if (queueMap.containsKey(queueId)) {
-            //Add task to dedicated queue
-            queueMap.get(queueId).add(new TaskWrapper<>(task));
-        } else {
-            //Create new queue and add the task
-            LinkedList<TaskWrapper<T>> newQueue = new LinkedList<>();
-            newQueue.add(new TaskWrapper<>(task));
-
-            //Add queue to queue map
-            queueMap.put(queueId, newQueue);
-        }
-        
-        /*
-        Remark: All tasks implement mechanisms in order to ensure that no unnecessary time-consuming actions are executed, 
-        mostly by checking the activationIntentions of the dynamic deployments and whether the device template is currently in use.
-        However, when the queue looks like "Undeploy -> Deploy -> Undeploy -> Deploy" (ending with a deployment), then all undeploy
-        tasks will not be executed/terminate quickly due to the activation intention, but all deploy tasks will be executed and check whether
-        there is currently a better device available. This general behaviour is probably desired, because this way user can re-trigger
-        the check for the optimal deployment device in case the operator was not deployed on the best device during the first try due to deployment failure
-        or when the most recently used device is not available anymore due to technical problems and failures.
-        */
-    }
-
     private synchronized void executeTasks() {
         /* Rules:
         - Only first task in each queue is executed and remains in queue during its execution
@@ -513,7 +471,14 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         //Check if task really completed
         if (!completedTask.isDone()) return;
 
-        System.out.println("Finished: " + completedTask.getTask().getClass().getSimpleName());
+        //Check for exceptional completion
+        try {
+            completedTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            System.err.println("Task " + completedTask.getTask().getClass().getSimpleName() + " completed exceptionally.");
+        }
+
+        //System.out.println("Finished: " + completedTask.getTask().getClass().getSimpleName());
 
         //Retrieve actual task from wrapper
         DiscoveryTask task = completedTask.getTask();
@@ -542,9 +507,6 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 this.dynamicDeploymentTasks.remove(dynamicDeploymentId);
             }
         }
-
-        //TODO
-        //printQueues();
 
         //Execute next tasks (if available)
         executeTasks();

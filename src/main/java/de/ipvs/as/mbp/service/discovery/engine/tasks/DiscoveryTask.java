@@ -4,7 +4,8 @@ import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 
 /**
  * Interface for discovery-related tasks that can be scheduled by the {@link DiscoveryEngine} in a
- * {@link TaskWrapper} for asynchronous execution.
+ * {@link TaskWrapper} for asynchronous execution. The tasks are supposed to be designed in a way that
+ * they terminate quickly in case the notice that their execution is not necessary or not desired anymore.
  */
 public interface DiscoveryTask extends Runnable {
     /**
