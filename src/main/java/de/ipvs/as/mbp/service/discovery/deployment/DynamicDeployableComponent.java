@@ -18,6 +18,13 @@ public class DynamicDeployableComponent extends Component {
     private static final String TYPE_NAME = "dynamic";
 
     /**
+     * Creates a new, empty dynamic deployable component.
+     */
+    public DynamicDeployableComponent() {
+
+    }
+
+    /**
      * Creates a new dynamic deployable component from a given {@link DynamicDeployment} that is supposed to be
      * deployed and the corresponding {@link DeviceDescription} describing the target device of the deployment.
      *
@@ -75,7 +82,7 @@ public class DynamicDeployableComponent extends Component {
         //Set all fields of the component
         this.setId(dynamicDeployment.getId());
         this.setName(dynamicDeployment.getName());
-        this.setComponentType("dynamic_deployment");
+        this.setComponentType(TYPE_NAME);
         this.setOperator(dynamicDeployment.getOperator());
         this.setDevice(device);
         this.setOwner(dynamicDeployment.getOwner());

@@ -4,6 +4,7 @@ package de.ipvs.as.mbp.service.receiver;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
@@ -11,6 +12,8 @@ import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
+import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +27,14 @@ import java.util.*;
 /**
  * Background service that receives incoming value log messages from the publish-subscribe-based messaging service.
  * In order to be treated and processed as value logs, the topics of the incoming messages must comply to certain
- * topics filters. This service implements the observer pattern which allows other components to register themselves
- * to the ValueLogReceiver and get notified in case a new value log from a device arrives at the MBP.
+ * topics filters. This service implements the observer pattern which allows {@link ValueLogObserver}s to register
+ * themselves to the ValueLogReceiver and get notified in case a new value log from a device arrives at the MBP.
  */
 @Service
 @EnableScheduling
 public class ValueLogReceiver {
     //List of topic filters to subscribe to
-    private static final List<String> SUBSCRIBE_TOPIC_FILTERS = Arrays.asList("device/#", "sensor/#", "actuator/#", "monitoring/#");
+    private static final List<String> SUBSCRIBE_TOPIC_FILTERS = Arrays.asList("device/#", "sensor/#", "actuator/#", "monitoring/#", "dynamic/#");
 
     //JSON key names of value log messages
     private static final String JSON_KEY_COMPONENT_TYPE = "component";
@@ -46,25 +49,29 @@ public class ValueLogReceiver {
     private final SensorRepository sensorRepository;
     private final DeviceRepository deviceRepository;
     private final MonitoringOperatorRepository monitoringOperatorRepository;
+    private final DynamicDeploymentRepository dynamicDeploymentRepository;
 
     /**
      * Initializes the value log receiver service.
      *
-     * @param pubSubService                The messaging service for receiving the value logs (auto-wired)
-     * @param actuatorRepository           Repository in which the actuators are stored (auto-wired)
-     * @param sensorRepository             Repository in which the sensors are stored (auto-wired)
-     * @param deviceRepository             Repository in which the devices are stored (auto-wired)
-     * @param monitoringOperatorRepository Repository in which the monitoring operators are stored (auto-wired)
+     * @param pubSubService                The messaging service for receiving the value logs
+     * @param actuatorRepository           Repository in which the {@link Actuator}s are stored
+     * @param sensorRepository             Repository in which the {@link Sensor}s are stored
+     * @param deviceRepository             Repository in which the {@link Device}s are stored
+     * @param monitoringOperatorRepository Repository in which the {@link MonitoringOperator}s are stored
+     * @param dynamicDeploymentRepository  Repository in which the {@link DynamicDeployment}s are stored
      */
     @Autowired
     public ValueLogReceiver(PubSubService pubSubService, ActuatorRepository actuatorRepository,
                             SensorRepository sensorRepository, DeviceRepository deviceRepository,
-                            MonitoringOperatorRepository monitoringOperatorRepository) {
+                            MonitoringOperatorRepository monitoringOperatorRepository,
+                            DynamicDeploymentRepository dynamicDeploymentRepository) {
         //Store component references
         this.actuatorRepository = actuatorRepository;
         this.sensorRepository = sensorRepository;
         this.deviceRepository = deviceRepository;
         this.monitoringOperatorRepository = monitoringOperatorRepository;
+        this.dynamicDeploymentRepository = dynamicDeploymentRepository;
 
         //Initialize the set of observers
         observerSet = new HashSet<>();
@@ -152,7 +159,7 @@ public class ValueLogReceiver {
             String componentID = message.getString(JSON_COMPONENT_ID);
 
             //Check component ID for validity
-            if (!isComponentIDValid(componentID, componentType)) {
+            if (!isComponentIDValid(componentID, componentType, topic)) {
                 System.out.println("Value with invalid component ID \"" + componentID + "\" received");
                 return;
             }
@@ -189,14 +196,15 @@ public class ValueLogReceiver {
     }
 
     /**
-     * Checks and returns whether a given component ID is valid for a given component type by checking if
-     * a component with such an ID exists in one of the component repositories.
+     * Checks and returns whether a given component ID is valid for a given component type and topic string
+     * by checking if a component with such an ID exists in one of the component repositories.
      *
      * @param componentID   The component ID to check
      * @param componentType The type of the component to check
+     * @param topic         The topic under which the the component data was received
      * @return True, if the component ID is valid for this component type; false otherwise
      */
-    private boolean isComponentIDValid(String componentID, String componentType) {
+    private boolean isComponentIDValid(String componentID, String componentType, String topic) {
         //Sanity checks
         if ((componentID == null) || componentID.isEmpty() || (componentType == null) || (componentType.isEmpty())) {
             return false;
@@ -226,6 +234,9 @@ public class ValueLogReceiver {
 
             //Check compatibility between monitoring operator and device
             return monitoringOperator.get().isCompatibleWith(device.get().getComponentType());
+        } else if (componentType.toLowerCase().equals(new DynamicDeployableComponent().getComponentTypeName())) {
+            //Component is dynamic deployment, check if it exists
+            return dynamicDeploymentRepository.existsById(componentID);
         }
 
         //Given component type is unknown
