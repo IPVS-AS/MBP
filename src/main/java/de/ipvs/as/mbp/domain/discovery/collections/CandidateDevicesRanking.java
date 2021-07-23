@@ -263,7 +263,7 @@ public class CandidateDevicesRanking implements Iterable<ScoredCandidateDevice> 
      */
     public Stream<ScoredCandidateDevice> stream() {
         //Stream through the list while preserving the order
-        return candidateDevicesRanking.stream().sorted();
+        return candidateDevicesRanking.stream().sorted(COMPARATOR);
     }
 
     /**
