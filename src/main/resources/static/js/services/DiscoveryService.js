@@ -11,6 +11,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', function (ENDPOI
     const URL_SUFFIX_TEST_DEVICE_TEMPLATE = 'testDeviceTemplate';
     const URL_SUFFIX_ACTIVATE_DEPLOYMENT = '/activate';
     const URL_SUFFIX_DEACTIVATE_DEPLOYMENT = '/deactivate';
+    const URL_SUFFIX_VALUE_LOG_STATS = '/stats';
 
     /**
      * [Public]
@@ -73,12 +74,34 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', function (ENDPOI
         return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DEACTIVATE_DEPLOYMENT);
     }
 
+    /**
+     * [Public]
+     * Performs a server request in order to retrieve the value log stats of a certain dynamic deployment, given by
+     * its ID. Optionally, a unit may be provided in which the values are supposed to be displayed.
+     *
+     * @param dynamicDeploymentId The id of the dynamic deployment for which the stats are supposed to be retrieved
+     * @param unit The unit in which the values are supposed to be retrieved
+     * @returns {*}
+     */
+    function getValueLogStats(dynamicDeploymentId, unit) {
+        let parameters = {};
+
+        //Check if unit was provided
+        if (unit) {
+            parameters.unit = unit;
+        }
+
+        //Execute request
+        return HttpService.getRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_VALUE_LOG_STATS, parameters);
+    }
+
     //Expose public functions
     return {
         testDeviceTemplate: testDeviceTemplate,
         testRequestTopic: testRequestTopic,
         getDynamicDeployment: getDynamicDeployment,
         activateDynamicDeployment: activateDynamicDeployment,
-        deactivateDynamicDeployment: deactivateDynamicDeployment
+        deactivateDynamicDeployment: deactivateDynamicDeployment,
+        getValueLogStats: getValueLogStats
     };
 }]);

@@ -1,29 +1,30 @@
 package de.ipvs.as.mbp.service.cep.trigger;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
+import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
-import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.service.cep.engine.core.CEPEngine;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 import de.ipvs.as.mbp.service.cep.engine.core.exceptions.EventNotRegisteredException;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQuery;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQueryValidation;
+import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
+import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This service provides means for registering rule triggers with callbacks at the CEP engine. Furthermore,
@@ -111,6 +112,10 @@ public class CEPTriggerService implements ValueLogObserver {
      */
     @Override
     public void onValueReceived(ValueLog valueLog) {
+        //TODO
+        //Ignore value logs of dynamic deployments for the moment
+        if (valueLog.getComponent().equalsIgnoreCase(new DynamicDeployableComponent().getComponentTypeName())) return;
+
         //Create event from value log
         CEPValueLogEvent valueLogEvent = new CEPValueLogEvent(valueLog);
 
@@ -192,10 +197,10 @@ public class CEPTriggerService implements ValueLogObserver {
      * Registers all components that are currently stored in their repositories (auto-wired)
      * as event types at the CEP engine.
      *
-     * @param actuatorRepository          The actuator repository
-     * @param sensorRepository            The sensor repository
+     * @param actuatorRepository           The actuator repository
+     * @param sensorRepository             The sensor repository
      * @param monitoringOperatorRepository The monitoring adapter repository
-     * @param deviceRepository            The device repository
+     * @param deviceRepository             The device repository
      */
     @Autowired
     private void registerAvailableEventTypes(ActuatorRepository actuatorRepository, SensorRepository sensorRepository,

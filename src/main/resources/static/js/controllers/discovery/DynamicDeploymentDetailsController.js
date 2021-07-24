@@ -25,7 +25,7 @@ app.controller('DynamicDeploymentDetailsController',
              */
             (function initController() {
                 //Initialize value log stats
-                //initValueLogStats();
+                initValueLogStats();
 
                 //Initialize charts
                 //initLiveChart();
@@ -195,9 +195,9 @@ app.controller('DynamicDeploymentDetailsController',
                  * from the server.
                  */
                 function getStats(unit) {
-                    return ComponentService.getValueLogStats(DEPLOYMENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
+                    return DiscoveryService.getValueLogStats(DEPLOYMENT_ID, unit).then(function (response) {
                         return response;
-                    }, function (response) {
+                    }, function () {
                         //Failure
                         NotificationService.notify('Could not load value log statistics.', 'error');
                         return {};

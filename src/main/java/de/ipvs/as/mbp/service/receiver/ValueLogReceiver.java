@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Background service that receives incoming value log messages from the publish-subscribe-based messaging service.
@@ -40,6 +42,9 @@ public class ValueLogReceiver {
     private static final String JSON_KEY_COMPONENT_TYPE = "component";
     private static final String JSON_COMPONENT_ID = "id";
     private static final String JSON_KEY_VALUE = "value";
+
+    //Pattern for retrieving component types from message topics
+    private static final Pattern COMPONENT_TYPES_PATTERN = Pattern.compile("^([a-zA-Z0-9_-]+)/.+");
 
     //Set ob observers which want to be notified about incoming value logs
     private final Set<ValueLogObserver> observerSet;
@@ -152,11 +157,14 @@ public class ValueLogReceiver {
             //Record current time
             Instant time = ZonedDateTime.now().toInstant();
 
-            //Create new value log object in which all the extracted fields can be stored
+            //Create new empty value log
             ValueLog valueLog = new ValueLog();
 
-            String componentType = message.getString(JSON_KEY_COMPONENT_TYPE);
+            //Retrieve component ID from message
             String componentID = message.getString(JSON_COMPONENT_ID);
+
+            //Extract component type from topic under which the message was published
+            String componentType = extractComponentType(topic);
 
             //Check component ID for validity
             if (!isComponentIDValid(componentID, componentType, topic)) {
@@ -211,13 +219,13 @@ public class ValueLogReceiver {
         }
 
         //Check component type
-        if (componentType.toLowerCase().equals(new Actuator().getComponentTypeName())) {
+        if (componentType.equalsIgnoreCase(new Actuator().getComponentTypeName())) {
             //Component is actuator, check if component exists
             return actuatorRepository.existsById(componentID);
-        } else if (componentType.toLowerCase().equals(new Sensor().getComponentTypeName())) {
+        } else if (componentType.equalsIgnoreCase(new Sensor().getComponentTypeName())) {
             //Component is sensor, check if component exists
             return sensorRepository.existsById(componentID);
-        } else if (componentType.toLowerCase().equals(new MonitoringComponent().getComponentTypeName())) {
+        } else if (componentType.equalsIgnoreCase(new MonitoringComponent().getComponentTypeName())) {
             //Component is monitoring component, create monitoring component object
             MonitoringComponent monitoringComponent = new MonitoringComponent(componentID);
 
@@ -241,5 +249,25 @@ public class ValueLogReceiver {
 
         //Given component type is unknown
         return false;
+    }
+
+    /**
+     * Extracts the type of a component from the topic under which the component published a message.
+     *
+     * @param topic The topic to evaluate
+     * @return The determined component type or null, if invalid
+     */
+    private String extractComponentType(String topic) {
+        //Sanity checks
+        if ((topic == null) || topic.isEmpty()) return null;
+
+        //Try to extract the component type by using the regular expression pattern
+        Matcher matcher = COMPONENT_TYPES_PATTERN.matcher(topic);
+
+        //Check if the matches of interest could be found
+        if (!matcher.find()) return null;
+
+        //Return group result containing the component type
+        return matcher.group(1);
     }
 }

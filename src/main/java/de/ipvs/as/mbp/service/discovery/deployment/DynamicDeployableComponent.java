@@ -61,8 +61,18 @@ public class DynamicDeployableComponent extends Component {
         //Null check
         if (dynamicDeployment == null) {
             throw new IllegalArgumentException("The dynamic deployment must not be null.");
-        } else if (deviceDetails == null) {
-            throw new IllegalArgumentException("The device details must not be null.");
+        }
+
+        //Copy fields to the component
+        this.setId(dynamicDeployment.getId());
+        this.setName(dynamicDeployment.getName());
+        this.setComponentType(TYPE_NAME);
+        this.setOperator(dynamicDeployment.getOperator());
+        this.setOwner(dynamicDeployment.getOwner());
+
+        //Check whether device details are available
+        if (deviceDetails == null) {
+            return;
         }
 
         //Create device
@@ -79,13 +89,8 @@ public class DynamicDeployableComponent extends Component {
             device.setKeyPair(new KeyPair().setId("").setName("").setPublicKey("").setPrivateKey(privateKey));
         }
 
-        //Set all fields of the component
-        this.setId(dynamicDeployment.getId());
-        this.setName(dynamicDeployment.getName());
-        this.setComponentType(TYPE_NAME);
-        this.setOperator(dynamicDeployment.getOperator());
+        //Add device to component
         this.setDevice(device);
-        this.setOwner(dynamicDeployment.getOwner());
     }
 
     @Override
