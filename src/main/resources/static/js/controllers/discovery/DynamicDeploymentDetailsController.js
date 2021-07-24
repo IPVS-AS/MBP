@@ -2,8 +2,10 @@
  * Controller for the dynamic peripherals details pages.
  */
 app.controller('DynamicDeploymentDetailsController',
-    ['$scope', '$routeParams', '$interval', 'dynamicDeploymentDetails', 'DiscoveryService', 'UnitService', 'NotificationService',
-        function ($scope, $routeParams, $interval, dynamicDeploymentDetails, DiscoveryService, UnitService, NotificationService) {
+    ['$scope', '$routeParams', '$interval', '$timeout', 'dynamicDeploymentDetails',
+        'DiscoveryService', 'UnitService', 'NotificationService',
+        function ($scope, $routeParams, $interval, $timeout, dynamicDeploymentDetails,
+                  DiscoveryService, UnitService, NotificationService) {
             //Selectors that allow the selection of different ui cards
             const INFO_CARD_SELECTOR = ".info-card";
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
@@ -28,8 +30,8 @@ app.controller('DynamicDeploymentDetailsController',
                 initValueLogStats();
 
                 //Initialize charts
-                //initLiveChart();
-                //initHistoricalChart();
+                initLiveChart();
+                initHistoricalChart();
 
                 //Interval for updating states on a regular basis
                 let interval = $interval(function () {
@@ -73,7 +75,7 @@ app.controller('DynamicDeploymentDetailsController',
                 let inputUnit = vm.displayUnitInput;
 
                 //Check whether the entered unit is compatible with the operator unit
-                UnitService.checkUnitsForCompatibility(OPERATOR_UNIT, inputUnit).then(function (response) {
+                UnitService.checkUnitsForCompatibility(OPERATOR_UNIT, inputUnit).then((response) => {
                     //Check compatibility according to server response
                     if (!response) {
                         NotificationService.notify("The entered unit is not compatible to the operator unit.", "error");
@@ -84,7 +86,7 @@ app.controller('DynamicDeploymentDetailsController',
                     $timeout(() => {
                         vm.displayUnit = vm.displayUnitInput;
                     }, 10);
-                }, function () {
+                }, () => {
                     NotificationService.notify("The entered unit is invalid.", "error");
                 });
             }
@@ -121,26 +123,27 @@ app.controller('DynamicDeploymentDetailsController',
                 };
 
                 //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(DEPLOYMENT_ID, COMPONENT_TYPE, pageDetails, unit);
+                return DiscoveryService.getValueLogs(DEPLOYMENT_ID, pageDetails, unit);
             }
 
             /**
              * [Public]
-             * Asks the user if he really wants to delete all value logs for the current component. If this is the case,
-             * the deletion is executed by creating the corresponding server request.
+             * Asks the user if he really wants to delete all value logs for the current dynamix deployment.
+             * If this is the case, the deletion is executed by initiating the corresponding server request.
              */
             function deleteValueLogs() {
                 /**
                  * Executes the deletion of the value logs by performing the server request.
                  */
                 function executeDeletion() {
-                    ComponentService.deleteValueLogs(DEPLOYMENT_ID, COMPONENT_TYPE).then(function (response) {
+                    DiscoveryService.deleteValueLogs(DEPLOYMENT_ID).then(() => {
                         //Update historical chart and stats
                         $scope.historicalChartApi.updateChart();
                         $scope.valueLogStatsApi.updateStats();
 
+                        //Notify the user
                         NotificationService.notify("Value logs were deleted successfully.", "success");
-                    }, function (response) {
+                    }, () => {
                         NotificationService.notify("Could not delete value logs.", "error");
                     });
                 }
@@ -156,11 +159,9 @@ app.controller('DynamicDeploymentDetailsController',
                     confirmButtonClass: 'bg-red',
                     focusConfirm: false,
                     cancelButtonText: 'Cancel'
-                }).then(function (result) {
+                }).then((result) => {
                     //Check if the user confirmed the deletion
-                    if (result.value) {
-                        executeDeletion();
-                    }
+                    if (result.value) executeDeletion();
                 });
             }
 
@@ -213,7 +214,7 @@ app.controller('DynamicDeploymentDetailsController',
 
             /**
              * [Private]
-             * Initializes the live chart for displaying the most recent sensor values.
+             * Initializes the live chart for displaying the most recent values of the dynamic deployment.
              */
             function initLiveChart() {
                 /**
@@ -241,7 +242,7 @@ app.controller('DynamicDeploymentDetailsController',
                  * @returns {boolean} True, if the chart may update; false otherwise
                  */
                 function isUpdateable() {
-                    return vm.deploymentState === 'RUNNING';
+                    return vm.dynamicDeployment.lastState === 'deployed';
                 }
 
                 //Expose

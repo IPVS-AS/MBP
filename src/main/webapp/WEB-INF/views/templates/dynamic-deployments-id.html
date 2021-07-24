@@ -153,19 +153,18 @@
 <!-- Live Values Card -->
 <div class="row clearfix">
     <div class="col-lg-12">
-        <div class="card live-chart-card animate-show-hide" ng-show="ctrl.deploymentState=='RUNNING'">
+        <div class="card live-chart-card animate-show-hide" ng-show="ctrl.dynamicDeployment.lastState=='deployed'">
             <div class="header">
                 <i class="material-icons" style="position: absolute; margin-top: 1px">live_tv</i>
                 <h2 style="margin-left: 35px;">Live Chart</h2>
             </div>
             <div class="body">
-                <!--
                 <live-chart loading-start="ctrl.liveChart.loadingStart()"
                             loading-finish="ctrl.liveChart.loadingFinish()"
                             get-data="ctrl.liveChart.getData(numberLogs, descending, unit)"
                             is-updateable="ctrl.liveChart.isUpdateable()"
                             unit="{{ctrl.displayUnit}}">
-                </live-chart>-->
+                </live-chart>
             </div>
         </div>
     </div>
@@ -187,13 +186,12 @@
                 </ul>
             </div>
             <div class="body">
-                <!--
                 <historical-chart api="historicalChartApi"
                                   loading-start="ctrl.historicalChart.loadingStart()"
                                   loading-finish="ctrl.historicalChart.loadingFinish()"
                                   get-data="ctrl.historicalChart.getData(numberLogs, descending, unit, startTime, endTime)"
                                   unit="{{ctrl.displayUnit}}">
-                </historical-chart>-->
+                </historical-chart>
             </div>
         </div>
     </div>

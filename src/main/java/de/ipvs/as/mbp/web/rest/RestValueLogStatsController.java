@@ -126,7 +126,7 @@ public class RestValueLogStatsController {
      * @throws MissingPermissionException In case of missing permissions
      * @throws EntityNotFoundException    In case an entity could not be found
      */
-    @GetMapping("/monitoring/{deviceId}/stats")
+    @GetMapping("/monitorings/{deviceId}/stats")
     @ApiOperation(value = "Retrieves a list of statistics for recorded monitoring value logs in a certain unit", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 400, message = "Invalid unit specification!"),
