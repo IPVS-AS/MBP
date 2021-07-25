@@ -3,11 +3,20 @@
     <div class="col-lg-6">
         <div class="card deployment-card">
             <div class="header"
-                 ng-class="{'bg-red': ctrl.deploymentState=='NOT_READY', 'bg-green': ctrl.deploymentState=='READY', 'bg-teal': ctrl.deploymentState=='DEPLOYED', 'bg-cyan': ctrl.deploymentState=='RUNNING', 'bg-grey': ctrl.deploymentState=='UNKNOWN'}">
-                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
+                 ng-class="{'bg-blue': ctrl.dynamicDeployment.inProgress, 'bg-grey': ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress, 'bg-orange': (ctrl.dynamicDeployment.lastState === 'no_candidate' || ctrl.dynamicDeployment.lastState === 'all_failed') && !ctrl.dynamicDeployment.inProgress, 'bg-green': ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress}">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">device_hub</i>
                 <h2 style="margin-left: 35px;">
-                    {{ctrl.dynamicDeploymentDetails.name}}
-                    <small></small>
+                    {{ctrl.dynamicDeployment.name}}
+                    <small ng-show="ctrl.dynamicDeployment.inProgress">Deployment operations are currently in
+                        progress.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress">The
+                        dynamic deployment is deactivated.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'no_candidate' && !ctrl.dynamicDeployment.inProgress">No
+                        candidate devices could be retrieved.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'all_failed' && !ctrl.dynamicDeployment.inProgress">The
+                        deployment failed for all candidate devices.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress">Successfully
+                        deployed to the most appropriate candidate device.</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
@@ -21,55 +30,57 @@
                 <table class="table table-hover">
                     <tbody>
                     <tr>
-                        <th>Sensor type:</th>
-                        <td>{{ctrl.component.componentType}}</td>
-                    </tr>
-                    <tr>
                         <th>Operator:</th>
-                        <td>{{ctrl.component.operator.name}}</td>
+                        <td>{{ctrl.dynamicDeployment.operator.name}}</td>
                     </tr>
                     <tr>
-                        <th>Unit:</th>
-                        <td>{{ctrl.component.operator.unit ?
-                                ctrl.component.operator.unit : 'None'}}
-                        </td>
+                        <th>Device template:</th>
+                        <td>{{ctrl.dynamicDeployment.deviceTemplate.name}}</td>
                     </tr>
                     <tr>
-                        <th>Device:</th>
-                        <td>{{ctrl.component.device.name}} (IP:
-                            {{ctrl.component.device.ipAddress}})
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Device state:</th>
+                        <th>Request topics:</th>
                         <td>
-                            <div ng-switch="ctrl.deviceState"
-                                 ng-click="ctrl.updateDeviceState()" class="clickable">
-                                <div ng-switch-when="LOADING">
-                                    <div class="preloader pl-size-xs">
-                                        <div class="spinner-layer pl-blue">
-                                            <div class="circle-clipper left">
-                                                <div class="circle"></div>
-                                            </div>
-                                            <div class="circle-clipper right">
-                                                <div class="circle"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div ng-switch-when="OFFLINE">
-                                    <span class="label label-danger">Unavailable</span>
-                                </div>
-                                <div ng-switch-when="ONLINE">
-                                    <span class="label label-warning">Not connected</span>
-                                </div>
-                                <div ng-switch-when="SSH_AVAILABLE">
-                                    <span class="label label-success">Connected</span>
-                                </div>
-                                <div ng-switch-default>
-                                    <span class="label label-default">Unknown</span>
-                                </div>
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="topic in ctrl.dynamicDeployment.requestTopics">
+                                    {{topic.suffix}}
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>State:</th>
+                        <td>
+                            <div ng-show="ctrl.dynamicDeployment.inProgress">
+                                <span class="label label-primary">In progress</span>
                             </div>
+                            <div ng-show="ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress">
+                                <span class="label label-default">Disabled</span>
+                            </div>
+                            <div ng-show="ctrl.dynamicDeployment.lastState === 'no_candidate' && !ctrl.dynamicDeployment.inProgress">
+                                <span class="label label-warning">No candidates</span>
+                            </div>
+                            <div ng-show="ctrl.dynamicDeployment.lastState === 'all_failed' && !ctrl.dynamicDeployment.inProgress">
+                                <span class="label label-warning">All failed</span>
+                            </div>
+                            <div ng-show="ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress">
+                                <span class="label label-success">Deployed</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr ng-show="ctrl.dynamicDeployment.lastDeviceDetails">
+                        <th>Current device:</th>
+                        <td>
+                            <ul class="list-group">
+                                <li class="list-group-item"><strong>IP address:</strong>
+                                    {{ctrl.dynamicDeployment.lastDeviceDetails.ipAddress}}
+                                </li>
+                                <li class="list-group-item"><strong>MAC address:</strong>
+                                    {{ctrl.dynamicDeployment.lastDeviceDetails.macAddress}}
+                                </li>
+                                <li class="list-group-item"><strong>User name:</strong>
+                                    {{ctrl.dynamicDeployment.lastDeviceDetails.username}}
+                                </li>
+                            </ul>
                         </td>
                     </tr>
                     </tbody>
