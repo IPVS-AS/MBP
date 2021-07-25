@@ -7,12 +7,10 @@ app.controller('DynamicDeploymentDetailsController',
         function ($scope, $routeParams, $interval, $timeout, dynamicDeploymentDetails,
                   DiscoveryService, UnitService, NotificationService) {
             //Selectors that allow the selection of different ui cards
-            const INFO_CARD_SELECTOR = ".info-card";
+            const INFO_CARD_SELECTOR = ".details-info-card";
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const STATS_CARD_SELECTOR = ".stats-card";
-
-            const COMPONENT_TYPE = "dynamic_deployment"
 
             //Properties of the current dynamic deployment
             const DEPLOYMENT_ID = $routeParams.id;
@@ -33,10 +31,8 @@ app.controller('DynamicDeploymentDetailsController',
                 initLiveChart();
                 initHistoricalChart();
 
-                //Interval for updating states on a regular basis
-                let interval = $interval(function () {
-                    //Update states
-                }, 2 * 60 * 1000);
+                //Interval for updating deployment details information
+                let interval = $interval(reloadDeploymentDetails, 30 * 1000);
 
                 //Cancel interval on route change
                 $scope.$on('$destroy', () => {
@@ -44,25 +40,58 @@ app.controller('DynamicDeploymentDetailsController',
                 });
             })();
 
+
             /**
              * [Public]
-             * Toggles the activation intention of a certain dynamic deployment, given by its ID.
-             *
-             * @param id The ID of the dynamic deployment
+             * Reloads and updates the details information of the current dynamic deployment.
              */
-            function toggleActivationIntention(id) {
-                alert(id);
+            function reloadDeploymentDetails() {
+                //Show waiting screen
+                showWaitingScreen("Retrieving data...");
+
+                //Retrieve details data about the dynamic deployment
+                DiscoveryService.getDynamicDeployment(DEPLOYMENT_ID).then((data) => {
+                    //Update fields
+                    $timeout(() => {
+                        vm.dynamicDeployment.inProgress = data.inProgress;
+                        vm.dynamicDeployment.lastState = data.lastState;
+                        vm.dynamicDeployment.activatingIntended = data.activatingIntended;
+                        vm.dynamicDeployment.lastDeviceDetails = data.lastDeviceDetails;
+                    }, 10);
+                }).always(() => {
+                    //Hide waiting screen again
+                    hideWaitingScreen();
+                });
             }
 
+            /**
+             * [Public]
+             * Executes a server request in order to activate the current dynamic deployment.
+             */
+            function activateDeployment() {
+                //Create the server request
+                DiscoveryService.activateDynamicDeployment(DEPLOYMENT_ID).then(() => {
+                    //Notify the user
+                    NotificationService.notify("The dynamic deployment was activated.", "success");
+
+                    //Update the deployment details
+                    reloadDeploymentDetails();
+                });
+            }
 
             /**
              * [Public]
-             * Reloads and updates the deployment state of a certain dynamic deployment, given by its ID.
-             *
-             * @param id The ID of the dynamic deployment
+             * Executes a server request in order to deactivate the current dynamic deployment.
              */
-            function reloadDeploymentState(id) {
-                alert(id);
+            function deactivateDeployment() {
+                //Create the server request
+                DiscoveryService.deactivateDynamicDeployment(DEPLOYMENT_ID).then(() => {
+                    //Notify the user
+                    NotificationService.notify("The dynamic deployment was deactivated.", "success");
+
+                    //Update the deployment details
+                    reloadDeploymentDetails();
+                });
             }
 
             /**
@@ -289,7 +318,7 @@ app.controller('DynamicDeploymentDetailsController',
 
             /**
              * [Private]
-             * Displays a waiting screen with a certain text for the deployment DOM container.
+             * Displays a waiting screen with a certain text above the details information card.
              * @param text The text to display
              */
             function showWaitingScreen(text) {
@@ -308,7 +337,7 @@ app.controller('DynamicDeploymentDetailsController',
 
             /**
              * [Private]
-             * Hides the waiting screen for the deployment DOM container.
+             * Hides the waiting screen above the details information card.
              */
             function hideWaitingScreen() {
                 $(INFO_CARD_SELECTOR).waitMe("hide");
@@ -319,8 +348,9 @@ app.controller('DynamicDeploymentDetailsController',
                 dynamicDeployment: dynamicDeploymentDetails,
                 displayUnit: OPERATOR_UNIT,
                 displayUnitInput: OPERATOR_UNIT,
-                toggleActivationIntention: toggleActivationIntention,
-                reloadDeploymentState: reloadDeploymentState,
+                activateDeployment: activateDeployment,
+                deactivateDeployment: deactivateDeployment,
+                reloadDeploymentDetails: reloadDeploymentDetails,
                 onDisplayUnitChange: onDisplayUnitChange,
                 deleteValueLogs: deleteValueLogs
             });

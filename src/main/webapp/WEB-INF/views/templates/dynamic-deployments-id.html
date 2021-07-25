@@ -1,7 +1,7 @@
 <div class="row clearfix">
     <!-- Sensor Properties Card -->
     <div class="col-lg-6">
-        <div class="card deployment-card">
+        <div class="card details-info-card">
             <div class="header"
                  ng-class="{'bg-blue': ctrl.dynamicDeployment.inProgress, 'bg-grey': ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress, 'bg-orange': (ctrl.dynamicDeployment.lastState === 'no_candidate' || ctrl.dynamicDeployment.lastState === 'all_failed') && !ctrl.dynamicDeployment.inProgress, 'bg-green': ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">device_hub</i>
@@ -20,7 +20,7 @@
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a ng-click="" class="clickable">
+                        <a ng-click="ctrl.reloadDeploymentDetails()" class="clickable">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
@@ -40,30 +40,30 @@
                     <tr>
                         <th>Request topics:</th>
                         <td>
-                            <ul class="list-group">
-                                <li class="list-group-item" ng-repeat="topic in ctrl.dynamicDeployment.requestTopics">
-                                    {{topic.suffix}}
-                                </li>
-                            </ul>
+                            <div ng-repeat="topic in ctrl.dynamicDeployment.requestTopics">
+                                <code>{{topic.suffix}}</code>
+                            </div>
                         </td>
                     </tr>
                     <tr>
                         <th>State:</th>
                         <td>
-                            <div ng-show="ctrl.dynamicDeployment.inProgress">
-                                <span class="label label-primary">In progress</span>
-                            </div>
-                            <div ng-show="ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress">
-                                <span class="label label-default">Disabled</span>
-                            </div>
-                            <div ng-show="ctrl.dynamicDeployment.lastState === 'no_candidate' && !ctrl.dynamicDeployment.inProgress">
-                                <span class="label label-warning">No candidates</span>
-                            </div>
-                            <div ng-show="ctrl.dynamicDeployment.lastState === 'all_failed' && !ctrl.dynamicDeployment.inProgress">
-                                <span class="label label-warning">All failed</span>
-                            </div>
-                            <div ng-show="ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress">
-                                <span class="label label-success">Deployed</span>
+                            <div class="clickable" ng-click="ctrl.reloadDeploymentDetails()">
+                                <div ng-show="ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-primary">{{ctrl.dynamicDeployment.activatingIntended ? 'Activating' : 'Deactivating'}}</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-default">Disabled</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'no_candidate' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-warning">No candidates</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'all_failed' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-warning">All failed</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-success">Deployed</span>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -85,31 +85,18 @@
                     </tr>
                     </tbody>
                 </table>
+                <br/>
                 <div>
-                    <span ng-show="ctrl.deploymentState=='READY'">
-                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.deploy()">
-                            <i class="material-icons">file_download</i>
-                            <span>Install operator</span>
+                    <span ng-show="!ctrl.dynamicDeployment.activatingIntended">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.activateDeployment()" style="color: white;">
+                            <i class="material-icons">play_circle_outline</i>
+                            <span>Activate deployment</span>
                         </button>
                     </span>
-                    <span ng-show="ctrl.deploymentState=='DEPLOYED'">
-                        <button class="btn bg-mbp-mid-blue waves-effect"
-                                ng-click="ctrl.startComponent()">
-                            <i class="material-icons">play_arrow</i>
-                            <span>Start operator</span>
-                        </button>
-                    </span>
-                    <span ng-show="ctrl.deploymentState=='RUNNING'">
-                        <button class="btn bg-mbp-mid-blue waves-effect"
-                                ng-click="ctrl.stopComponent()">
-                            <i class="material-icons">stop</i>
-                            <span>Stop operator</span>
-                        </button>
-                    </span>
-                    <span ng-show="['DEPLOYED', 'RUNNING'].includes(ctrl.deploymentState)">
-                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.undeploy()">
-                            <i class="material-icons">file_upload</i>
-                            <span>Uninstall operator</span>
+                    <span ng-show="ctrl.dynamicDeployment.activatingIntended">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.deactivateDeployment()" style="color: white;">
+                            <i class="material-icons">pause_circle_outline</i>
+                            <span>Deactivate deployment</span>
                         </button>
                     </span>
                 </div>

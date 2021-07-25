@@ -71,7 +71,7 @@ app.controller('DynamicDeploymentListController',
                 //Set status to loading
                 dynamicDeployment.lastState = 'loading';
 
-                //Retrieve fresh data about the dynamic deployment
+                //Retrieve details data about the dynamic deployment
                 DiscoveryService.getDynamicDeployment(id).then(function (data) {
                     //Update fields
                     $timeout(function () {

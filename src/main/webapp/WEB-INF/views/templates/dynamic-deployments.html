@@ -50,7 +50,7 @@
                                     </div>
                                 </div>
                                 <div ng-show="deployment.lastState !== 'loading' && deployment.inProgress">
-                                    <span class="label label-primary">In progress</span>
+                                    <span class="label label-primary">{{deployment.activatingIntended ? 'Activating' : 'Deactivating'}}</span>
                                 </div>
                                 <div ng-show="deployment.lastState === 'disabled' && !deployment.inProgress">
                                     <span class="label label-default">Disabled</span>
