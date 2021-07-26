@@ -5,6 +5,7 @@ package de.ipvs.as.mbp.domain.discovery.deployment.log;
  */
 public enum DynamicDeploymentLogEntryType {
     INFO, //General information
+    SUCCESS, //Action succeeded
     UNDESIRABLE, //Occurrence of undesirable events
     ERROR; //Error hindering certain actions
 }

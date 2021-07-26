@@ -96,7 +96,7 @@ public class DynamicDeploymentLogService {
         }
 
         //Check if dynamic deployment exists
-        if (dynamicDeploymentRepository.existsById(dynamicDeploymentId)) {
+        if (!dynamicDeploymentRepository.existsById(dynamicDeploymentId)) {
             throw new IllegalArgumentException("A dynamic deployment with this ID does not exist.");
         }
     }

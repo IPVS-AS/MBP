@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.service.discovery.processing.CandidateDeviceScorer;
 import de.ipvs.as.mbp.service.discovery.ranking.CandidateDevicesRanker;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,6 +107,29 @@ public class CandidateDevicesRanking implements Iterable<ScoredCandidateDevice> 
                 .filter(d -> (d.getIdentifiers() != null) && macAddress.equals(d.getIdentifiers().getMacAddress()))
                 .map(ScoredCandidateDevice::getScore) //Map device to score
                 .findFirst().orElse(-1.0); //Return the score or -1 if no matching device found
+    }
+
+    /**
+     * Returns a human-readable string representation of the ranking summarizing the contained devices.
+     *
+     * @return The human-readable description
+     */
+    public java.lang.String toHumanReadableDescription() {
+        //Create string builder for putting the string together
+        StringBuilder builder = new StringBuilder(String.format("Ranking contains %d devices", this.size()));
+
+        //CHeck if ranking is empty
+        if (this.isEmpty()) {
+            return builder.append(".").toString();
+        }
+
+        //Create counter for the ranks
+        AtomicInteger rank = new AtomicInteger(1);
+
+        //Put string together
+        return builder.append(":\n").append(this.stream()
+                .map(c -> String.format("%d: %s [%f]", rank.getAndIncrement(), c.getIdentifiers().getMacAddress(), Math.round(c.getScore() * 1e3) / 1e3))
+                .collect(Collectors.joining("\n"))).toString();
     }
 
     /**
