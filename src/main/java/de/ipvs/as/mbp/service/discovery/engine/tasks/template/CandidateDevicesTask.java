@@ -11,7 +11,7 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
  * that are stored from them. The tasks can be scheduled by the {@link DiscoveryEngine} in a
  * {@link TaskWrapper} for asynchronous execution.
  */
-public interface DeviceTemplateTask extends DiscoveryTask {
+public interface CandidateDevicesTask extends DiscoveryTask {
     /**
      * Returns the ID of the {@link DeviceTemplate} on which this task operates.
      *

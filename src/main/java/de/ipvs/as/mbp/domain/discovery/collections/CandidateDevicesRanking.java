@@ -114,7 +114,7 @@ public class CandidateDevicesRanking implements Iterable<ScoredCandidateDevice> 
      *
      * @return The human-readable description
      */
-    public java.lang.String toHumanReadableDescription() {
+    public String toHumanReadableDescription() {
         //Create string builder for putting the string together
         StringBuilder builder = new StringBuilder(String.format("Ranking contains %d devices", this.size()));
 

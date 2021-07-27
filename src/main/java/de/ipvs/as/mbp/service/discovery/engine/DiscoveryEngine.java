@@ -4,6 +4,8 @@ import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
@@ -15,12 +17,13 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.TaskWrapper;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DeployByRankingTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicDeploymentTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.UndeployTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.template.CandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeleteCandidateDevicesTask;
-import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeviceTemplateTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.MergeCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
+import de.ipvs.as.mbp.service.discovery.log.DiscoveryLogService;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -34,6 +37,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntryTrigger.*;
 
 /**
  * This components manages the overall discovery process by orchestrating the various involved components and takes
@@ -55,6 +60,9 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     private CandidateDevicesProcessor candidateDevicesProcessor;
 
     @Autowired
+    private DiscoveryLogService discoveryLoggingService;
+
+    @Autowired
     private RequestTopicRepository requestTopicRepository;
 
     @Autowired
@@ -63,10 +71,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     @Autowired
     private DeviceTemplateRepository deviceTemplateRepository;
 
-    //Map (device template ID --> Queue) of task queues for device templates
-    private final Map<String, Queue<TaskWrapper<DeviceTemplateTask>>> deviceTemplateTasks;
+    //Map (device template ID --> Queue) of task queues for candidate devices tasks
+    private final Map<String, Queue<TaskWrapper<CandidateDevicesTask>>> candidateDevicesTasks;
 
-    //Map (dynamic deployment ID --> Queue) of task queues for dynamic deployments
+    //Map (dynamic deployment ID --> Queue) of task queues for dynamic deployment tasks
     private final Map<String, Queue<TaskWrapper<DynamicDeploymentTask>>> dynamicDeploymentTasks;
 
     //Executor service for executing tasks
@@ -78,7 +86,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     public DiscoveryEngine() {
         //Initialize data structures
         this.dynamicDeploymentTasks = new HashMap<>();
-        this.deviceTemplateTasks = new HashMap<>();
+        this.candidateDevicesTasks = new HashMap<>();
 
         //Initialize executor service
         this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
@@ -111,16 +119,16 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             List<DynamicDeployment> dynamicDeployments = this.dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplate.getId());
 
             /*
-            Device template tasks
+            Candidate devices tasks
              */
             //Check if any of the found dynamic deployments are intended to be activated
             if (dynamicDeployments.stream().anyMatch(DynamicDeployment::isActivatingIntended)) {
                 //Such dynamic deployments exist, so get request topics, update the candidate devices and subscribe
                 List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
-                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true));
+                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true, new DiscoveryLogEntry(MBP, "Update candidate devices")));
             } else {
                 //No such dynamic deployments exist, so deletion of candidate devices and unsubscription is safe
-                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true));
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLogEntry(MBP, "Delete candidate devices")));
             }
 
             /*
@@ -131,10 +139,12 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 //Check whether activating or de-activating is intended
                 if (dynamicDeployment.isActivatingIntended()) {
                     //Dynamic deployment is intended to be activated, so submit corresponding deployment task
-                    submitTask(new DeployByRankingTask(dynamicDeployment, true));
+                    submitTask(new DeployByRankingTask(dynamicDeployment, true,
+                            new DiscoveryLogEntry(MBP, "Deploy on startup")));
                 } else {
                     //Dynamic deployment is intended to be deactivated, so submit corresponding un-deployment task
-                    submitTask(new UndeployTask(dynamicDeployment));
+                    submitTask(new UndeployTask(dynamicDeployment,
+                            new DiscoveryLogEntry(MBP, "Undeploy on startup")));
                 }
             });
         }
@@ -216,10 +226,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicDeployment.getOwner().getId(), null);
 
         //Submit task for retrieving candidate devices (will abort if not needed due to force=false)
-        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, this, false));
+        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, this, false, new DiscoveryLogEntry(USER, "Update candidate devices")));
 
         //Submit task for deploying the dynamic deployment
-        submitTask(new DeployByRankingTask(dynamicDeployment, true));
+        submitTask(new DeployByRankingTask(dynamicDeployment, true, new DiscoveryLogEntry(USER, "Activate deployment")));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -244,10 +254,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
 
         //Submit task for potentially deleting candidate devices data and cancel subscriptions
-        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate()));
+        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), new DiscoveryLogEntry(USER, "Delete candidate devices")));
 
         //Submit task for undeploying the dynamic deployment
-        submitTask(new UndeployTask(dynamicDeployment));
+        submitTask(new UndeployTask(dynamicDeployment, new DiscoveryLogEntry(USER, "Deactivate deployment")));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -272,20 +282,20 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
 
         //Create task for merging the updated candidate devices with the existing ones
-        submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices));
+        submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices, new DiscoveryLogEntry(DISCOVERY_REPOSITORY, "Merge candidate devices")));
 
         //Iterate over all dynamic deployments that use the affected device template
         this.dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplate.getId())
-                .forEach(d -> submitTask(new DeployByRankingTask(d))); //Submit re-deployment task for each
+                .forEach(d -> submitTask(new DeployByRankingTask(d, new DiscoveryLogEntry(DISCOVERY_REPOSITORY, "Re-evaluate deployment"))));
     }
 
     /**
-     * Submits a given {@link DeviceTemplateTask} so that it can be added to the corresponding task queue
+     * Submits a given {@link CandidateDevicesTask} so that it can be added to the corresponding task queue
      * and be scheduled for asynchronous execution.
      *
      * @param task The task to submit
      */
-    private synchronized void submitTask(DeviceTemplateTask task) {
+    private synchronized void submitTask(CandidateDevicesTask task) {
         //Null check
         if (task == null) {
             throw new IllegalArgumentException("The task must not be null.");
@@ -295,19 +305,19 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         String deviceTemplateId = task.getDeviceTemplateId();
 
         //Check if there is already a queue with this ID
-        if (!deviceTemplateTasks.containsKey(deviceTemplateId)) {
+        if (!candidateDevicesTasks.containsKey(deviceTemplateId)) {
             //Create new queue and add the task
-            LinkedList<TaskWrapper<DeviceTemplateTask>> newQueue = new LinkedList<>();
+            LinkedList<TaskWrapper<CandidateDevicesTask>> newQueue = new LinkedList<>();
             newQueue.add(new TaskWrapper<>(task));
 
             //Add queue to queue map
-            deviceTemplateTasks.put(deviceTemplateId, newQueue);
+            candidateDevicesTasks.put(deviceTemplateId, newQueue);
             return;
         }
 
         //Add task to dedicated queue
-        deviceTemplateTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
-        //TODO optimize queue
+        candidateDevicesTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
+        //TODO optimize queue maybe
     }
 
     /**
@@ -374,20 +384,20 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         - Only first task in each queue is executed and remains in queue during its execution
         - After the execution of a task concluded, the task is removed from the queue
         - No dynamic deployment task that depends on candidate devices is started as long as there is a task in the queue for the corresponding device template
-        - No device template task is started as long as there is a currently running dynamic deployment task depending on candidate devices for a dynamic deployment that uses the template
-        - Device template tasks are checked before dynamic deployment tasks
+        - No candidate devices task is started as long as there is a currently running dynamic deployment task depending on candidate devices for a dynamic deployment that uses the template
+        - Candidate devices tasks are checked before dynamic deployment tasks
 
-        Result: When a new device template task and a dynamic deployment task are added, old dynamic deployment tasks
-        are executed first, then the new device template task, then the new dynamic deployment task.
+        Result: When a new candidate devices task and a dynamic deployment task are added, old dynamic deployment tasks
+        are executed first, then the new candidate devices task, then the new dynamic deployment task.
          */
 
         /*
-        Device template tasks
+        Candidate devices tasks
          */
         //Iterate through all available device template queues
-        for (Queue<TaskWrapper<DeviceTemplateTask>> queue : this.deviceTemplateTasks.values()) {
+        for (Queue<TaskWrapper<CandidateDevicesTask>> queue : this.candidateDevicesTasks.values()) {
             //Peek first task
-            TaskWrapper<DeviceTemplateTask> firstTask = queue.peek();
+            TaskWrapper<CandidateDevicesTask> firstTask = queue.peek();
 
             //Null check
             if (firstTask == null) continue;
@@ -429,9 +439,9 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             DynamicDeploymentTask taskObject = firstTask.getTask();
             String deviceTemplateId = taskObject.getDeviceTemplateId();
 
-            //Check if task is blocked due to a device template task with same device template ID
-            if ((taskObject.dependsOnCandidateDevices()) && (this.deviceTemplateTasks.containsKey(deviceTemplateId)) &&
-                    (!this.deviceTemplateTasks.get(deviceTemplateId).isEmpty())) {
+            //Check if task is blocked due to a candidate devices task with same device template ID
+            if ((taskObject.dependsOnCandidateDevices()) && (this.candidateDevicesTasks.containsKey(deviceTemplateId)) &&
+                    (!this.candidateDevicesTasks.get(deviceTemplateId).isEmpty())) {
                 continue;
             }
 
@@ -478,22 +488,20 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             System.err.println("Task " + completedTask.getTask().getClass().getSimpleName() + " completed exceptionally.");
         }
 
-        //System.out.println("Finished: " + completedTask.getTask().getClass().getSimpleName());
-
         //Retrieve actual task from wrapper
         DiscoveryTask task = completedTask.getTask();
 
         //Check type of the task
-        if (task instanceof DeviceTemplateTask) {
+        if (task instanceof CandidateDevicesTask) {
             //Get ID of device template
-            String deviceTemplateId = ((DeviceTemplateTask) task).getDeviceTemplateId();
+            String deviceTemplateId = ((CandidateDevicesTask) task).getDeviceTemplateId();
             //Get corresponding device template queue
-            Queue<TaskWrapper<DeviceTemplateTask>> queue = this.deviceTemplateTasks.get(deviceTemplateId);
+            Queue<TaskWrapper<CandidateDevicesTask>> queue = this.candidateDevicesTasks.get(deviceTemplateId);
             //Remove task from the queue
             queue.remove(completedTask);
             //If empty, remove queue from map
             if (queue.isEmpty()) {
-                this.deviceTemplateTasks.remove(deviceTemplateId);
+                this.candidateDevicesTasks.remove(deviceTemplateId);
             }
         } else if (task instanceof DynamicDeploymentTask) {
             //Get ID of dynamic deployment
@@ -508,8 +516,41 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             }
         }
 
+        //Save logs of the task (if available)
+        writeTaskLogs(task);
+
         //Execute next tasks (if available)
         executeTasks();
+    }
+
+    /**
+     * Extracts the {@link DiscoveryLogEntry} (if available) from a given {@link DiscoveryTask} and adds it to the
+     * {@link DiscoveryLog}s of the pertaining {@link DynamicDeployment}s.
+     *
+     * @param task The task from which the {@link DiscoveryLogEntry} is supposed to be processed
+     */
+    private void writeTaskLogs(DiscoveryTask task) {
+        //Null check
+        if (task == null) return;
+
+        //Retrieve log entry from the task
+        DiscoveryLogEntry logEntry = task.getLogEntry();
+
+        //Check if logs are available
+        if ((logEntry == null) || (logEntry.isEmpty())) return;
+
+        //Check type of task
+        if (task instanceof CandidateDevicesTask) {
+            //Get ID of affected device template
+            String deviceTemplateId = ((CandidateDevicesTask) task).getDeviceTemplateId();
+
+            //Save the log entry for all dynamic deployments that use the device template
+            dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplateId).stream()
+                    .map(DynamicDeployment::getId).forEach(id -> discoveryLoggingService.addLogEntry(id, logEntry));
+        } else if (task instanceof DynamicDeploymentTask) {
+            //Get ID of affected dynamic deployment and save the log entry
+            discoveryLoggingService.addLogEntry(((DynamicDeploymentTask) task).getDynamicDeploymentId(), logEntry);
+        }
     }
 
     /**
@@ -558,7 +599,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         System.out.println("Device templates: ");
 
         //Stream through the device template queues
-        this.deviceTemplateTasks.forEach((s, queue) -> {
+        this.candidateDevicesTasks.forEach((s, queue) -> {
             //Print device template ID
             System.out.printf("%s: ", s);
 

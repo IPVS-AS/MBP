@@ -1,9 +1,9 @@
 package de.ipvs.as.mbp.service.discovery.log;
 
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLog;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntry;
-import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentLogRepository;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.repository.discovery.DiscoveryLogRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -16,31 +16,31 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
- * Offers services for reading and writing {@link DynamicDeploymentLog}s of {@link DynamicDeployment}s. It especially
- * takes care of synchronizing write requests for {@link DynamicDeploymentLogEntry}s, such that the occurrence of issues
- * like lost updates can be avoided.
+ * Offers services for reading and writing {@link DiscoveryLog}s of {@link DynamicDeployment}s. It especially
+ * takes care of synchronizing write requests for {@link DiscoveryLogEntry}s, such that typical issues like lost
+ * updates are avoided.
  */
 @Service
-public class DynamicDeploymentLogService {
+public class DiscoveryLogService {
 
     @Autowired
     private DynamicDeploymentRepository dynamicDeploymentRepository;
 
     @Autowired
-    private DynamicDeploymentLogRepository dynamicDeploymentLogRepository;
+    private DiscoveryLogRepository discoveryLogRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
 
     /**
-     * Creates the {@link DynamicDeploymentLogService}.
+     * Creates the {@link DiscoveryLogService}.
      */
-    public DynamicDeploymentLogService() {
+    public DiscoveryLogService() {
 
     }
 
     /**
-     * Initializes the {@link DynamicDeploymentLogService}.
+     * Initializes the {@link DiscoveryLogService}.
      */
     @PostConstruct
     public void initialize() {
@@ -48,40 +48,41 @@ public class DynamicDeploymentLogService {
     }
 
     /**
-     * Retrieves and returns the {@link DynamicDeploymentLogEntry}s for a certain {@link DynamicDeployment}, given
+     * Retrieves and returns the {@link DiscoveryLogEntry}s for a certain {@link DynamicDeployment}, given
      * by its ID.
      *
-     * @param dynamicDeploymentId The ID of the dynamic deployment
-     * @return The resulting list of {@link DynamicDeploymentLogEntry}s.
+     * @param dynamicDeploymentId The ID of the {@link DynamicDeployment}
+     * @return The resulting list of {@link DiscoveryLogEntry}s.
      */
-    public List<DynamicDeploymentLogEntry> readLogEntries(String dynamicDeploymentId) {
+    public List<DiscoveryLogEntry> readLogEntries(String dynamicDeploymentId) {
         //Validate the dynamic deployment ID
         validateDynamicDeployment(dynamicDeploymentId);
 
         //Retrieve associated log from the repository and return its entries
-        return dynamicDeploymentLogRepository.findByDynamicDeploymentId(dynamicDeploymentId).orElse(new DynamicDeploymentLog()).getEntries();
+        return discoveryLogRepository.findByDynamicDeploymentId(dynamicDeploymentId).orElse(new DiscoveryLog()).getEntries();
     }
 
-    public synchronized void addLogEntry(String dynamicDeploymentId, DynamicDeploymentLogEntry entry) {
+
+    /**
+     * Adds a given {@link DiscoveryLogEntry} to the {@link DiscoveryLog} of a certain {@link DynamicDeployment}, given
+     * by its ID.
+     *
+     * @param dynamicDeploymentId To ID of the {@link DynamicDeployment}
+     * @param entry               The {@link DiscoveryLogEntry} to add
+     */
+    public void addLogEntry(String dynamicDeploymentId, DiscoveryLogEntry entry) {
+        //Null check
+        if (entry == null) throw new IllegalArgumentException("The log entry must not be null.");
+
         //Validate the dynamic deployment ID
         validateDynamicDeployment(dynamicDeploymentId);
 
-        //Null check
-        if (entry == null) throw new IllegalArgumentException("The log entry to write must not be null.");
-
-        //TODO remove if not needed
-        //Check if a log for this dynamic deployment does already exist
-        if (!dynamicDeploymentLogRepository.existsByDynamicDeploymentId(dynamicDeploymentId)) {
-            //Does not exist, thus create it
-            //dynamicDeploymentLogRepository.insert(new DynamicDeploymentLog(dynamicDeploymentId));
-        }
-
-        //Create query and criteria clauses for inserting the entry safely
+        //Create query and criteria clauses for inserting the entry in an atomic way
         Update update = new Update().addToSet("entries", entry);
         Criteria criteria = Criteria.where("dynamicDeploymentId").is(dynamicDeploymentId);
 
-        //Execute the update
-        mongoTemplate.upsert(Query.query(criteria), update, DynamicDeploymentLog.class);
+        //Execute the update as upsert
+        mongoTemplate.upsert(Query.query(criteria), update, DiscoveryLog.class);
     }
 
     /**

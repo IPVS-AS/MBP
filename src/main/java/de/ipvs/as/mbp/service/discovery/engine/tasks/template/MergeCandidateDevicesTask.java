@@ -3,15 +3,21 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
+
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.SUCCESS;
 
 /**
  * This task is responsible for merging the {@link CandidateDevicesCollection} that was received from a discovery
  * repository as part of an asynchronous notification with the {@link CandidateDevicesResult} that is already
  * stored for the pertaining {@link DeviceTemplate}.
  */
-public class MergeCandidateDevicesTask implements DeviceTemplateTask {
+public class MergeCandidateDevicesTask implements CandidateDevicesTask {
 
     //The device template whose candidate devices are affected
     private DeviceTemplate deviceTemplate;
@@ -22,24 +28,30 @@ public class MergeCandidateDevicesTask implements DeviceTemplateTask {
     //The updated candidate devices as received from the discovery repository
     private CandidateDevicesCollection updatedCandidateDevices;
 
+    //The log entry to extend for further log messages
+    private DiscoveryLogEntry logEntry;
+
     /*
     Injected fields
      */
     private final CandidateDevicesRepository candidateDevicesRepository;
 
     /**
-     * Creates a new {@link MergeCandidateDevicesTask} from a given {@link DeviceTemplate}, a repository name
-     * and a {@link CandidateDevicesCollection} of updated candidate devices.
+     * Creates a new {@link MergeCandidateDevicesTask} from a given {@link DeviceTemplate}, a repository name, a
+     * {@link CandidateDevicesCollection} of updated candidate devices and a {@link DiscoveryLogEntry}.
      *
      * @param deviceTemplate          The device template whose candidate devices are affected
      * @param repositoryName          The name of the repository that issued the notification
      * @param updatedCandidateDevices The updated candidate devices as received from the discovery repository
+     * @param logEntry                The {@link DiscoveryLogEntry} to use for logging within this task
      */
-    public MergeCandidateDevicesTask(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
+    public MergeCandidateDevicesTask(DeviceTemplate deviceTemplate, String repositoryName,
+                                     CandidateDevicesCollection updatedCandidateDevices, DiscoveryLogEntry logEntry) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setRepositoryName(repositoryName);
         setUpdatedCandidateDevices(updatedCandidateDevices);
+        setLogEntry(logEntry);
 
         //Inject components
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
@@ -59,11 +71,53 @@ public class MergeCandidateDevicesTask implements DeviceTemplateTask {
             return;
         }
 
+        //Write log
+        addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
+        addLogMessage(String.format("Merging %d known candidate devices of %d discovery repositories with the update of %d candidate devices.",
+                candidateDevices.getCandidateDevicesCount(), candidateDevices.getCollectionsCount(),
+                this.updatedCandidateDevices.size()));
+
         //Update the candidate devices or add them if none are available for the provided discovery repository name
         candidateDevices.replaceCandidateDevices(this.repositoryName, this.updatedCandidateDevices);
 
+        //Write log
+        addLogMessage(String.format("Saving merge result containing %d candidate devices from %d discovery repositories.",
+                candidateDevices.getCandidateDevicesCount(), candidateDevices.getCollectionsCount()));
+
         //Save the updated candidate devices object to the repository again
         candidateDevicesRepository.save(candidateDevices);
+
+        //Write log
+        addLogMessage(SUCCESS, "Completed successfully.");
+    }
+
+    /**
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
+     * {@link DiscoveryLogEntry} that collects the logs of this task.
+     *
+     * @param message The actual log message
+     */
+    private void addLogMessage(String message) {
+        //Delegate call
+        addLogMessage(INFO, message);
+    }
+
+    /**
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
+     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
+     *
+     * @param type    The type of the log message
+     * @param message The actual log message
+     */
+    private void addLogMessage(DiscoveryLogMessageType type, String message) {
+        //Check if log messages are supposed to be collected
+        if (this.logEntry == null) return;
+
+        //Create new log message
+        DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
+
+        //Add the message to the log entry of this task
+        logEntry.addMessage(logMessage);
     }
 
     /**
@@ -128,6 +182,27 @@ public class MergeCandidateDevicesTask implements DeviceTemplateTask {
     private MergeCandidateDevicesTask setUpdatedCandidateDevices(CandidateDevicesCollection updatedCandidateDevices) {
         this.updatedCandidateDevices = updatedCandidateDevices;
         return this;
+    }
+
+    /**
+     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
+     *
+     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     */
+    @Override
+    public DiscoveryLogEntry getLogEntry() {
+        return logEntry;
+    }
+
+    /**
+     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
+     *
+     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     */
+    private void setLogEntry(DiscoveryLogEntry logEntry) {
+        this.logEntry = logEntry;
     }
 
     /**

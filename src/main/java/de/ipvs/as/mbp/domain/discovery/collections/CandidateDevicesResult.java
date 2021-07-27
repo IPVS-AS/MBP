@@ -55,6 +55,41 @@ public class CandidateDevicesResult {
     }
 
     /**
+     * Returns the total number of {@link CandidateDevicesCollection}s from unique repositories that are available
+     * within the result container.
+     *
+     * @return The total number of candidate device collections
+     */
+    public long getCollectionsCount() {
+        //Stream through the candidate device collections and count them
+        return this.candidateDevices.values().stream().distinct().count();
+    }
+
+    /**
+     * Returns the total number of unique candidate devices that are available within the result container across
+     * all {@link CandidateDevicesCollection}s.
+     *
+     * @return The total number of unique candidate devices
+     */
+    public long getCandidateDevicesCount() {
+        //Stream through the candidate devices of the individual collections and count them
+        return this.candidateDevices.values().stream()
+                .distinct()
+                .flatMap(CandidateDevicesCollection::stream)
+                .distinct()
+                .count();
+    }
+
+    /**
+     * Returns whether the {@link CandidateDevicesResult} contains any candidate devices.
+     *
+     * @return True, if candidate devices are available; false otherwise
+     */
+    public boolean isEmpty() {
+        return getCandidateDevicesCount() > 0;
+    }
+
+    /**
      * Returns the descriptions of the candidate devices from a certain repository, given by its name,
      * as {@link CandidateDevicesCollection}.
      *
@@ -145,6 +180,18 @@ public class CandidateDevicesResult {
 
         //Add new candidate devices
         this.addCandidateDevices(candidateDevices);
+    }
+
+    /**
+     * Returns a human-readable string representation of the {@link CandidateDevicesResult} by summarizing its key
+     * properties.
+     *
+     * @return The human-readable description
+     */
+    public String toHumanReadableDescription() {
+        //Create string representation
+        return String.format(String.format("%d unique candidate devices from %d discovery repositories",
+                this.getCandidateDevicesCount(), this.getCollectionsCount()));
     }
 
     /**

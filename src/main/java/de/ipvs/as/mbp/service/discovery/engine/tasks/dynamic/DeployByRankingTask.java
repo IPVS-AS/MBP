@@ -7,24 +7,21 @@ import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLog;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntry;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryType;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
-import de.ipvs.as.mbp.service.discovery.log.DynamicDeploymentLogService;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryTrigger.DISCOVERY_REPOSITORY;
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryTrigger.USER;
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryType.*;
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.*;
 
 /**
  * The purpose of this task is to deploy a given {@link DynamicDeployment} with respect to the ranking which
@@ -54,13 +51,15 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     //The original version of the dynamic deployment that is supposed to be deployed
     private DynamicDeployment originalDynamicDeployment;
 
-    //Indicates whether the task was created on behalf of an user
+    //Indicates whether the task was created on behalf of an userwerk
     private boolean isUserCreated = false;
+
+    //The log entry to extend for further log messages
+    private DiscoveryLogEntry logEntry;
 
     /*
     Injected fields
      */
-    private final DynamicDeploymentLogService logService;
     private final CandidateDevicesProcessor candidateDevicesProcessor;
     private final DiscoveryDeploymentService discoveryDeploymentService;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
@@ -68,29 +67,31 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     private final MongoTemplate mongoTemplate;
 
     /**
-     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment}.
+     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLogEntry}.
      *
      * @param dynamicDeployment The dynamic deployment to use
+     * @param logEntry          The {@link DiscoveryLogEntry} to use for logging within this task
      */
-    public DeployByRankingTask(DynamicDeployment dynamicDeployment) {
+    public DeployByRankingTask(DynamicDeployment dynamicDeployment, DiscoveryLogEntry logEntry) {
         //Delegate call
-        this(dynamicDeployment, false);
+        this(dynamicDeployment, false, logEntry);
     }
 
     /**
-     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment} and an indication
-     * whether the task was created on behalf of an user.
+     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment}, an indication
+     * whether the task was created on behalf of an user and a {@link DiscoveryLogEntry}.
      *
      * @param dynamicDeployment The dynamic deployment to use
      * @param isUserCreated     True, if the task was created on behalf of an user; false otherwise
+     * @param logEntry          The {@link DiscoveryLogEntry} to use for logging within this task
      */
-    public DeployByRankingTask(DynamicDeployment dynamicDeployment, boolean isUserCreated) {
+    public DeployByRankingTask(DynamicDeployment dynamicDeployment, boolean isUserCreated, DiscoveryLogEntry logEntry) {
         //Set fields
         setDynamicDeployment(dynamicDeployment);
         setIsUserCreated(isUserCreated);
+        setLogEntry(logEntry);
 
         //Inject components
-        this.logService = DynamicBeanProvider.get(DynamicDeploymentLogService.class);
         this.candidateDevicesProcessor = DynamicBeanProvider.get(CandidateDevicesProcessor.class);
         this.discoveryDeploymentService = DynamicBeanProvider.get(DiscoveryDeploymentService.class);
         this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
@@ -121,14 +122,14 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         }
 
         //Write log
-        writeLog("Started deployment task.");
+        addLogMessage(String.format("Started task for dynamic deployment \"%s\".", originalDynamicDeployment.getName()));
 
         //Determine whether the dynamic deployment is currently deployed
         boolean isDeployed = (dynamicDeployment.getLastDeviceDetails() != null) &&
                 this.discoveryDeploymentService.isDeployed(dynamicDeployment);
 
         //Write log
-        writeLog("Operator is currently " + (isDeployed ? "deployed to " + dynamicDeployment.getLastDeviceDetails().getMacAddress() : "not deployed") + ".");
+        addLogMessage("Operator is currently " + (isDeployed ? "deployed to " + dynamicDeployment.getLastDeviceDetails().getMacAddress() : "not deployed") + ".");
 
         //Calculate and candidate devices ranking
         CandidateDevicesRanking ranking = this.candidateDevicesProcessor.process(candidateDevices, dynamicDeployment.getDeviceTemplate());
@@ -136,7 +137,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         //Check if ranking is valid
         if ((ranking == null) || (ranking.isEmpty())) {
             //Write log
-            writeLog("Ranking is empty, " + (isDeployed ? "trying to undeploy from currently used device." : "no deployment possible."), UNDESIRABLE);
+            addLogMessage(UNDESIRABLE, "Ranking is empty, " + (isDeployed ? "undeploying from previously used device." : "no deployment possible."));
 
             //No suitable candidate devices; if there is still an active deployment, we need to undeploy it
             if (isDeployed) {
@@ -148,7 +149,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         }
 
         //Write log
-        writeLog(ranking.toHumanReadableDescription());
+        addLogMessage(ranking.toHumanReadableDescription());
 
         //Get MAC address of current deployment (if existing)
         String oldMacAddress = dynamicDeployment.getLastDeviceDetails() == null ? null : dynamicDeployment.getLastDeviceDetails().getMacAddress();
@@ -158,14 +159,14 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
 
         //Write log
         if (minScoreExclusive >= 0)
-            writeLog(String.format("Currently used device has now a score of [%f].", minScoreExclusive));
+            addLogMessage(String.format("Currently used device has now a score of [%f].", minScoreExclusive));
 
         //Iterate through the ranking
         for (ScoredCandidateDevice candidateDevice : ranking) {
             //Check if score is still in range
             if (candidateDevice.getScore() <= minScoreExclusive) {
                 //Write log
-                writeLog("Currently used device is better suited than the remainder of the ranking, thus aborting.");
+                addLogMessage("Currently used device is better suited than the remainder of the ranking, thus aborting.");
 
                 //Deployment is already deployed and the device is still best suited
                 updateDynamicDeployment(dynamicDeployment.getId(), dynamicDeployment.getLastDeviceDetails(), DynamicDeploymentState.DEPLOYED);
@@ -177,16 +178,16 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
                 continue; //Skip candidate device because it is equal to the current device
 
             //Write log
-            writeLog(String.format("Trying to deploy operator to %s.", candidateDevice.getIdentifiers().getMacAddress()));
+            addLogMessage(String.format("Trying to deploy operator to %s.", candidateDevice.getIdentifiers().getMacAddress()));
 
             //Try to deploy to candidate device and check for success
             if (this.discoveryDeploymentService.deploy(dynamicDeployment, candidateDevice)) {
                 //Write log
-                writeLog(String.format("Deployment to %s succeeded.", candidateDevice.getIdentifiers().getMacAddress()), SUCCESS);
+                addLogMessage(SUCCESS, String.format("Deployment to %s succeeded.", candidateDevice.getIdentifiers().getMacAddress()));
 
                 //Success; if former deployment existed, undeploy from former device
                 if (isDeployed) {
-                    writeLog("Undeploying from old device.");
+                    addLogMessage("Undeploying from formerly used device.");
                     this.discoveryDeploymentService.undeploy(dynamicDeployment);
                 }
 
@@ -196,7 +197,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
             }
 
             //Write log
-            writeLog(String.format("Deployment failed for %s.", candidateDevice.getIdentifiers().getMacAddress()), UNDESIRABLE);
+            addLogMessage(UNDESIRABLE, String.format("Deployment failed for device %s.", candidateDevice.getIdentifiers().getMacAddress()));
         }
 
         /*
@@ -209,7 +210,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         //Check if deployment exists
         if (isDeployed) {
             //Write log
-            writeLog("Deployment failed for better suited candidate devices, thus preserving the current deployment.", UNDESIRABLE);
+            addLogMessage(UNDESIRABLE, "Deployment failed for the better suited candidate devices, thus preserving the current deployment.");
 
             //Former deployment is still the most appropriate deployment, update status accordingly
             updateDynamicDeployment(dynamicDeployment.getId(), dynamicDeployment.getLastDeviceDetails(), DynamicDeploymentState.DEPLOYED);
@@ -217,7 +218,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         }
 
         //Write log
-        writeLog("Deployment failed for all candidate devices.", UNDESIRABLE);
+        addLogMessage(UNDESIRABLE, "Deployment failed for all candidate devices.");
 
         //No deployment exists and deployment failed for all candidate devices
         updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.ALL_FAILED);
@@ -266,29 +267,32 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     }
 
     /**
-     * Creates a new {@link DynamicDeploymentLogEntry} from a given message and writes it to the
-     * {@link DynamicDeploymentLog} of the pertaining {@link DynamicDeployment}.
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
+     * {@link DiscoveryLogEntry} that collects the logs of this task.
      *
-     * @param message The message of the log entry
+     * @param message The actual log message
      */
-    private void writeLog(String message) {
+    private void addLogMessage(String message) {
         //Delegate call
-        writeLog(message, INFO);
+        addLogMessage(INFO, message);
     }
 
     /**
-     * Creates a new {@link DynamicDeploymentLogEntry} from a given message and {@link DynamicDeploymentLogEntryType}
-     * and writes it to the {@link DynamicDeploymentLog} of the pertaining {@link DynamicDeployment}.
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
+     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
      *
-     * @param message The message of the log entry
-     * @param type    The type of the log entry
+     * @param type    The type of the log message
+     * @param message The actual log message
      */
-    private void writeLog(String message, DynamicDeploymentLogEntryType type) {
-        //Create new log entry
-        DynamicDeploymentLogEntry logEntry = new DynamicDeploymentLogEntry(type, isUserCreated ? USER : DISCOVERY_REPOSITORY, this.getClass().getSimpleName(), message);
+    private void addLogMessage(DiscoveryLogMessageType type, String message) {
+        //Check if log messages are supposed to be collected
+        if (this.logEntry == null) return;
 
-        //Write log entry using the log service
-        logService.addLogEntry(getDynamicDeploymentId(), logEntry);
+        //Create new log message
+        DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
+
+        //Add the message to the log entry of this task
+        logEntry.addMessage(logMessage);
     }
 
     /**
@@ -308,6 +312,27 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
      */
     private void setIsUserCreated(boolean isUserCreated) {
         this.isUserCreated = isUserCreated;
+    }
+
+    /**
+     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
+     *
+     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     */
+    @Override
+    public DiscoveryLogEntry getLogEntry() {
+        return logEntry;
+    }
+
+    /**
+     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
+     *
+     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     */
+    private void setLogEntry(DiscoveryLogEntry logEntry) {
+        this.logEntry = logEntry;
     }
 
     /**

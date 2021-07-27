@@ -4,22 +4,21 @@ import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLog;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntry;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryType;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
-import de.ipvs.as.mbp.service.discovery.log.DynamicDeploymentLogService;
+import de.ipvs.as.mbp.service.discovery.log.DiscoveryLogService;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryTrigger.USER;
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryType.INFO;
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DynamicDeploymentLogEntryType.SUCCESS;
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.SUCCESS;
 
 /**
  * The purpose of this task is to undeploy the {@link Operator} of a given {@link DynamicDeployment}
@@ -34,25 +33,28 @@ public class UndeployTask implements DynamicDeploymentTask {
     //The original version of the dynamic deployment that is supposed to be deployed
     private DynamicDeployment originalDynamicDeployment;
 
+    //The log entry to extend for further log messages
+    private DiscoveryLogEntry logEntry;
+
     /*
     Injected fields
      */
-    private final DynamicDeploymentLogService logService;
     private final DiscoveryDeploymentService discoveryDeploymentService;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final MongoTemplate mongoTemplate;
 
     /**
-     * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment}.
+     * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLogEntry}.
      *
      * @param dynamicDeployment The dynamic deployment to use
+     * @param logEntry          The {@link DiscoveryLogEntry} to use for logging within this task
      */
-    public UndeployTask(DynamicDeployment dynamicDeployment) {
+    public UndeployTask(DynamicDeployment dynamicDeployment, DiscoveryLogEntry logEntry) {
         //Set fields
         setDynamicDeployment(dynamicDeployment);
+        setLogEntry(logEntry);
 
         //Inject components
-        this.logService = DynamicBeanProvider.get(DynamicDeploymentLogService.class);
         this.discoveryDeploymentService = DynamicBeanProvider.get(DiscoveryDeploymentService.class);
         this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.mongoTemplate = DynamicBeanProvider.get(MongoTemplate.class);
@@ -80,13 +82,13 @@ public class UndeployTask implements DynamicDeploymentTask {
         }
 
         //Write log
-        writeLog("Started undeployment task.");
+        addLogMessage(String.format("Started task for dynamic deployment \"%s\".", dynamicDeployment.getName()));
 
         //Check whether the dynamic deployment is currently deployed
         if ((dynamicDeployment.getLastDeviceDetails() == null) ||
                 (!this.discoveryDeploymentService.isDeployed(dynamicDeployment))) {
             //Write log
-            writeLog("Operator is currently not deployed, thus aborting.");
+            addLogMessage("Operator is currently not deployed, thus aborting.");
 
             //Dynamic deployment is not deployed, so just update the state
             updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.DISABLED);
@@ -94,16 +96,37 @@ public class UndeployTask implements DynamicDeploymentTask {
         }
 
         //Write log
-        writeLog(String.format("Operator is currently deployed to %s, trying to undeploy.", dynamicDeployment.getLastDeviceDetails().getMacAddress()));
+        addLogMessage(String.format("Operator is currently deployed to %s, trying to undeploy.", dynamicDeployment.getLastDeviceDetails().getMacAddress()));
 
         //Dynamic deployment is deployed, so undeploy it
         this.discoveryDeploymentService.undeploy(dynamicDeployment);
 
         //Write log
-        writeLog("Undeployed the operator from its former device.", SUCCESS);
+        addLogMessage(SUCCESS, "Undeployed the operator from its former device.");
 
         //Update state of dynamic deployment accordingly
         updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.DISABLED);
+    }
+
+    /**
+     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
+     *
+     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     */
+    @Override
+    public DiscoveryLogEntry getLogEntry() {
+        return this.logEntry;
+    }
+
+    /**
+     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
+     *
+     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     */
+    private void setLogEntry(DiscoveryLogEntry logEntry) {
+        this.logEntry = logEntry;
     }
 
     /**
@@ -125,29 +148,32 @@ public class UndeployTask implements DynamicDeploymentTask {
     }
 
     /**
-     * Creates a new {@link DynamicDeploymentLogEntry} from a given message and writes it to the
-     * {@link DynamicDeploymentLog} of the pertaining {@link DynamicDeployment}.
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
+     * {@link DiscoveryLogEntry} that collects the logs of this task.
      *
-     * @param message The message of the log entry
+     * @param message The actual log message
      */
-    private void writeLog(String message) {
+    private void addLogMessage(String message) {
         //Delegate call
-        writeLog(message, INFO);
+        addLogMessage(INFO, message);
     }
 
     /**
-     * Creates a new {@link DynamicDeploymentLogEntry} from a given message and {@link DynamicDeploymentLogEntryType}
-     * and writes it to the {@link DynamicDeploymentLog} of the pertaining {@link DynamicDeployment}.
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
+     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
      *
-     * @param message The message of the log entry
-     * @param type    The type of the log entry
+     * @param type    The type of the log message
+     * @param message The actual log message
      */
-    private void writeLog(String message, DynamicDeploymentLogEntryType type) {
-        //Create new log entry
-        DynamicDeploymentLogEntry logEntry = new DynamicDeploymentLogEntry(type, USER, this.getClass().getSimpleName(), message);
+    private void addLogMessage(DiscoveryLogMessageType type, String message) {
+        //Check if log messages are supposed to be collected
+        if (this.logEntry == null) return;
 
-        //Write log entry using the log service
-        logService.addLogEntry(getDynamicDeploymentId(), logEntry);
+        //Create new log message
+        DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
+
+        //Add the message to the log entry of this task
+        logEntry.addMessage(logMessage);
     }
 
     /**

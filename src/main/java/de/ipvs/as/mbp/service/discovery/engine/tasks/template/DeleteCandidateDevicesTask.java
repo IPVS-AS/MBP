@@ -3,10 +3,16 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
+
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.SUCCESS;
 
 /**
  * This task is responsible for checking whether the {@link CandidateDevicesResult} that is stored for a
@@ -14,13 +20,16 @@ import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
  * device. If this is not the case, this task takes care of deleting the {@link CandidateDevicesResult} and
  * cancelling the subscriptions for asynchronous notifications at the individual discovery repositories.
  */
-public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
+public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
 
     //The device template to update the candidate devices for
     private DeviceTemplate deviceTemplate;
 
     //Whether to force the deletion of candidate devices and the unsubscription
     private boolean force = false;
+
+    //The log entry to extend for further log messages
+    private DiscoveryLogEntry logEntry;
 
     /*
     Injected fields
@@ -30,25 +39,30 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
     private final CandidateDevicesRepository candidateDevicesRepository;
 
     /**
-     * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate}.
+     * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate} and
+     * {@link DiscoveryLogEntry}.
      *
      * @param deviceTemplate The device template to use
+     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate) {
-        this(deviceTemplate, false);
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLogEntry logEntry) {
+        this(deviceTemplate, false, logEntry);
     }
 
     /**
-     * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate} and a force flag.
+     * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate}, a force flag and a
+     * {@link DiscoveryLogEntry}.
      *
      * @param deviceTemplate The device template to use
      * @param force          True, if the deletion of candidate devices and the unsubscription should be forced and thus
      *                       done without checking whether the corresponding device template is currently in use
+     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force) {
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force, DiscoveryLogEntry logEntry) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setForce(force);
+        setLogEntry(logEntry);
 
         //Inject components
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
@@ -69,22 +83,60 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
 
         //Abort if not forced and candidate devices of the device template are in use
         if ((!force) && isDeviceTemplateInUse) {
-            System.out.println("Not deleted.");
             return;
         }
+
+        //Write log
+        addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
+        addLogMessage("Deleting candidate devices.");
 
         //Candidate devices are not in use, so delete them
         this.candidateDevicesRepository.deleteById(getDeviceTemplateId());
 
         //Check whether a subscription exists
         if (!this.discoveryGateway.isSubscribed(deviceTemplate)) {
-            System.out.println("No subscription.");
+            //Write log
+            addLogMessage(SUCCESS, "Completed successfully.");
             return;
         }
 
+        //Write log
+        addLogMessage("Cancelling existing subscription at the discovery repositories.");
+
         //Send message to discovery repositories in order to cancel the subscriptions
         this.discoveryGateway.cancelSubscription(deviceTemplate);
-        System.out.println("************* Deleted and unsubscribed. *************");
+
+        //Write log
+        addLogMessage(SUCCESS, "Completed successfully.");
+    }
+
+    /**
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
+     * {@link DiscoveryLogEntry} that collects the logs of this task.
+     *
+     * @param message The actual log message
+     */
+    private void addLogMessage(String message) {
+        //Delegate call
+        addLogMessage(INFO, message);
+    }
+
+    /**
+     * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
+     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
+     *
+     * @param type    The type of the log message
+     * @param message The actual log message
+     */
+    private void addLogMessage(DiscoveryLogMessageType type, String message) {
+        //Check if log messages are supposed to be collected
+        if (this.logEntry == null) return;
+
+        //Create new log message
+        DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
+
+        //Add the message to the log entry of this task
+        logEntry.addMessage(logMessage);
     }
 
     /**
@@ -131,6 +183,27 @@ public class DeleteCandidateDevicesTask implements DeviceTemplateTask {
     public DeleteCandidateDevicesTask setForce(boolean force) {
         this.force = force;
         return this;
+    }
+
+    /**
+     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
+     *
+     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     */
+    @Override
+    public DiscoveryLogEntry getLogEntry() {
+        return logEntry;
+    }
+
+    /**
+     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
+     *
+     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     */
+    private void setLogEntry(DiscoveryLogEntry logEntry) {
+        this.logEntry = logEntry;
     }
 
     /**
