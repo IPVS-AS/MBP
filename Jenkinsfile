@@ -19,6 +19,26 @@ pipeline {
             }
         }
         
+        stage ('Test') {
+            parallel {
+               stage('Backend') {
+                   steps {
+                       sh 'mvn verify'
+                   }
+               }
+               stage('Device tests') {
+                   steps {
+                       sh 'mvn verify'
+                   }
+               }
+               stage('Frontend') {
+                   steps {
+                       println('IMPLEMENT ME')
+                   }
+               }
+            }   
+        }
+        
         /*
         stage('Static Analysis') {
             when {
