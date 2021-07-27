@@ -12,6 +12,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
         const URL_SUFFIX_TEST_DEVICE_TEMPLATE = 'testDeviceTemplate';
         const URL_SUFFIX_ACTIVATE_DEPLOYMENT = '/activate';
         const URL_SUFFIX_DEACTIVATE_DEPLOYMENT = '/deactivate';
+        const URL_SUFFIX_DISCOVERY_LOGS = '/logs';
 
         //Category name
         const URL_CATEGORY_NAME = 'discovery/dynamic-deployment';
@@ -111,12 +112,23 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * Performs a server request in order to delete all recorded value logs of a certain dynamic deployment,
          * given by its ID.
          *
-         * @param dynamicDeploymentId The id of the dynamic deployment whose value logs are supposed to be deleted
+         * @param dynamicDeploymentId The ID of the dynamic deployment whose value logs are supposed to be deleted
          * @returns {*}
          */
         function deleteValueLogs(dynamicDeploymentId) {
             //Delegate the call to the component service
             return ComponentService.deleteValueLogs(dynamicDeploymentId, URL_CATEGORY_NAME);
+        }
+
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve all discovery logs that have been recorded for a certain
+         * dynamic deployment, given by its ID:
+         *
+         * @param dynamicDeploymentId The ID of the dynamic deployment to retrieve the discovery logs fro
+         */
+        function getDiscoveryLogs(dynamicDeploymentId) {
+            return HttpService.getRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DISCOVERY_LOGS);
         }
 
         //Expose public functions
@@ -128,6 +140,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
             deactivateDynamicDeployment: deactivateDynamicDeployment,
             getValueLogStats: getValueLogStats,
             getValueLogs: getValueLogs,
-            deleteValueLogs: deleteValueLogs
+            deleteValueLogs: deleteValueLogs,
+            getDiscoveryLogs: getDiscoveryLogs
         };
     }]);

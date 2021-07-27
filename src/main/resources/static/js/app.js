@@ -494,6 +494,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 resolve: {
                     dynamicDeploymentDetails: ['$route', 'HttpService', function ($route, HttpService) {
                         return HttpService.getOne('discovery/dynamic-deployments', $route.current.params.id);
+                    }],
+                    discoveryLogs: ['$route', 'DiscoveryService', function ($route, DiscoveryService) {
+                        return DiscoveryService.getDiscoveryLogs($route.current.params.id);
                     }]
                 }
             })

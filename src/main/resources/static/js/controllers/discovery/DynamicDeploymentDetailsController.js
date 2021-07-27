@@ -2,9 +2,9 @@
  * Controller for the dynamic peripherals details pages.
  */
 app.controller('DynamicDeploymentDetailsController',
-    ['$scope', '$routeParams', '$interval', '$timeout', 'dynamicDeploymentDetails',
+    ['$scope', '$routeParams', '$interval', '$timeout', 'dynamicDeploymentDetails', 'discoveryLogs',
         'DiscoveryService', 'UnitService', 'NotificationService',
-        function ($scope, $routeParams, $interval, $timeout, dynamicDeploymentDetails,
+        function ($scope, $routeParams, $interval, $timeout, dynamicDeploymentDetails, discoveryLogs,
                   DiscoveryService, UnitService, NotificationService) {
             //Selectors that allow the selection of different ui cards
             const INFO_CARD_SELECTOR = ".details-info-card";
@@ -24,6 +24,10 @@ app.controller('DynamicDeploymentDetailsController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
+                //TODO
+                console.log("Logs:");
+                console.log(discoveryLogs);
+
                 //Initialize value log stats
                 initValueLogStats();
 
@@ -354,5 +358,6 @@ app.controller('DynamicDeploymentDetailsController',
                 onDisplayUnitChange: onDisplayUnitChange,
                 deleteValueLogs: deleteValueLogs
             });
-        }]
+        }
+    ]
 );

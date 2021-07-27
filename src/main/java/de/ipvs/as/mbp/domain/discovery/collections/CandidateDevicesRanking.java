@@ -128,7 +128,8 @@ public class CandidateDevicesRanking implements Iterable<ScoredCandidateDevice> 
 
         //Put string together
         return builder.append(":\n").append(this.stream()
-                .map(c -> String.format("%d: %s [%f]", rank.getAndIncrement(), c.getIdentifiers().getMacAddress(), Math.round(c.getScore() * 1e3) / 1e3))
+                .map(c -> String.format("%d: %s [%f]", rank.getAndIncrement(), c.getIdentifiers().getMacAddress(),
+                        Math.round(c.getScore() * 1e3) / 1e3))
                 .collect(Collectors.joining("\n"))).toString();
     }
 

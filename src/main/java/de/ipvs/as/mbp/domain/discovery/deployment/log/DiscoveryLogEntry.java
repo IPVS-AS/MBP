@@ -26,7 +26,8 @@ public class DiscoveryLogEntry {
      * Creates a new, empty {@link DiscoveryLogEntry}.
      */
     public DiscoveryLogEntry() {
-
+        //Initialize data structures
+        this.messages = new LinkedList<>();
     }
 
     /**
