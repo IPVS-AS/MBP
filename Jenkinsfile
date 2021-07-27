@@ -15,7 +15,7 @@ pipeline {
 
         stage ('Build') {
             steps {
-                sh 'mvn -Dmaven.test.failure.ignore=true clean install' 
+                sh 'mvn -DskipTests clean install' 
             }
         }
         
@@ -27,13 +27,13 @@ pipeline {
             steps {
                 do_static_analysis("http://localhost:9000", "MBP")
             }
-        }*/
+        }
         
         stage ('Deploy'){
             steps {
                 do_deploy(find_file("target/", "MBP-*.war"), "localhost", "deploy/${env.BRANCH_NAME}")
              }
-        }
+        }*/
     }
 }
 
