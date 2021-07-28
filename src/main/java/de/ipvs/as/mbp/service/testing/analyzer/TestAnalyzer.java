@@ -10,14 +10,12 @@ import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
-import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,15 +44,10 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     private TestExecutor testExecutor;
 
     @Autowired
-    private final PropertiesService propertiesService;
-
-    @Autowired
     private DeploymentWrapper deploymentWrapper;
 
     @Autowired
     private TestReportRepository testReportRepository;
-
-    private final String RERUN_IDENTIFIER;
 
     /**
      * Registers the TestEngine as an Observer to the ValueLogReceiver which then will be notified about incoming value logs.
@@ -62,9 +55,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param valueLogReceiver The value log receiver instance to use
      */
     @Autowired
-    private TestAnalyzer(ValueLogReceiver valueLogReceiver) throws IOException {
-        propertiesService = new PropertiesService();
-        RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+    private TestAnalyzer(ValueLogReceiver valueLogReceiver) {
         valueLogReceiver.registerObserver(this);
     }
 

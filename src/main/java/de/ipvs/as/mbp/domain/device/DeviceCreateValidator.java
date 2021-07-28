@@ -1,8 +1,10 @@
 package de.ipvs.as.mbp.domain.device;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -11,6 +13,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class DeviceCreateValidator implements ICreateValidator<Device> {
+
+    @Autowired
+    private DeviceRepository deviceRepository;
+
 
     /**
      * Validates a given entity that is supposed to be created and throws an exception with explanations
