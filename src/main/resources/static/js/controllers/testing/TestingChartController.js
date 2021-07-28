@@ -202,41 +202,6 @@ app.controller('TestingChartController',
             }
 
             /**
-             * [Public]
-             *
-             * Retrieves a certain number of value log data (in a specific order) for the current component
-             * as a promise.
-             *
-             * @param numberLogs The number of logs to retrieve
-             * @param descending The order in which the value logs should be retrieved. True results in descending
-             * order, false in ascending order. By default, the logs are retrieved in ascending
-             * order ([oldest log] --> ... --> [most recent log])
-             * @param unit The unit in which the values are supposed to be retrieved
-             * @param sensor The sensor of which the values are supposed to be retrieved
-             * @returns A promise that passes the logs as a parameter
-             */
-            function retrieveComponentData(numberLogs, descending, unit, sensor) {
-                //Set default order
-                let order = 'asc';
-
-                //Check for user option
-                if (descending) {
-                    order = 'desc';
-                }
-
-                //Initialize parameters for the server request
-                const pageDetails = {
-                    sort: 'time,' + order,
-                    size: numberLogs
-                };
-
-
-                //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit);
-            }
-
-
-            /**
              * [Private]
              * Initializes the live chart for displaying the most recent sensor values.
              */
@@ -244,9 +209,9 @@ app.controller('TestingChartController',
                 /**
                  * Function that is called when the chart loads something
                  */
-                function loadingStart() {
+                function loadingStart(visInstanceId) {
                     //Show the waiting screen
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe({
+                    $(LIVE_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe({
                         effect: 'bounce',
                         text: 'Loading chart...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -256,9 +221,9 @@ app.controller('TestingChartController',
                 /**
                  * Function that is called when the chart finished loading
                  */
-                function loadingFinish() {
+                function loadingFinish(visInstanceId) {
                     //Hide the waiting screen for the case it was displayed before
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
+                    $(LIVE_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
                 }
 
                 /**
@@ -274,7 +239,6 @@ app.controller('TestingChartController',
                     loadingStart: loadingStart,
                     loadingFinish: loadingFinish,
                     isUpdateable: isUpdateable,
-                    getData: retrieveComponentData
                 };
             }
 
@@ -287,9 +251,9 @@ app.controller('TestingChartController',
                 /**
                  * Function that is called when the chart loads something
                  */
-                function loadingStart() {
+                function loadingStart(visInstanceId) {
                     //Show the waiting screen
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
+                    $(HISTORICAL_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe({
                         effect: 'bounce',
                         text: 'Loading chart...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -299,16 +263,15 @@ app.controller('TestingChartController',
                 /**
                  * Function that is called when the chart finished loading
                  */
-                function loadingFinish() {
+                function loadingFinish(visInstanceId) {
                     //Hide the waiting screen for the case it was displayed before
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
+                    $(HISTORICAL_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
                 }
 
                 //Expose
                 vm.historicalChart = {
                     loadingStart: loadingStart,
                     loadingFinish: loadingFinish,
-                    getData: retrieveComponentData
                 };
             }
 

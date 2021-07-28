@@ -1056,7 +1056,19 @@
 <!-- #END# Modal -->
 
 <div ng-repeat="sensor in ctrl.sensorList">
-    <!-- Live Values Card -->
+
+    <customizable-chart-card component-data="sensor"
+                             instance-id="{{$index}}"
+                             live-loading-start="testingChartCtrl.liveChart.loadingStart($index)"
+                             live-loading-finish="testingChartCtrl.liveChart.loadingFinish($index)"
+                             is-live-chart-updateable="testingChartCtrl.liveChart.isUpdateable()"
+                             historical-chart-api="historicalChartApi"
+                             historical-loading-start="testingChartCtrl.historicalChart.loadingStart($index)"
+                             historical-loading-finish="testingChartCtrl.historicalChart.loadingFinish($index)"
+                             deployment-state="testingChartCtrl.deploymentState"
+    ></customizable-chart-card>
+
+    <!-- Live Values Card
     <div class="row clearfix">
         <div class="col-lg-12">
             <div class="card live-chart-card animate-show-hide" ng-show="testingChartCtrl.deploymentState=='RUNNING'">
@@ -1078,9 +1090,10 @@
             </div>
         </div>
     </div>
+    -->
 
 
-    <!-- Historical Values Card -->
+    <!-- Historical Values Card
     <div class="row clearfix" ng-init="testingChartCtrl.specifyChart(sensor)">
         <div class="col-lg-12">
             <div class="card historical-chart-card">
@@ -1108,6 +1121,7 @@
             </div>
         </div>
     </div>
+    -->
 </div>
 
 
