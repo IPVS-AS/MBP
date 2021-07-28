@@ -5,7 +5,6 @@ import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
@@ -38,7 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntryTrigger.*;
+import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogTrigger.*;
 
 /**
  * This components manages the overall discovery process by orchestrating the various involved components and takes
@@ -125,10 +124,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             if (dynamicDeployments.stream().anyMatch(DynamicDeployment::isActivatingIntended)) {
                 //Such dynamic deployments exist, so get request topics, update the candidate devices and subscribe
                 List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
-                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true, new DiscoveryLogEntry(MBP, "Update candidate devices")));
+                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true, new DiscoveryLog(MBP, "Update candidate devices")));
             } else {
                 //No such dynamic deployments exist, so deletion of candidate devices and unsubscription is safe
-                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLogEntry(MBP, "Delete candidate devices")));
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLog(MBP, "Delete candidate devices")));
             }
 
             /*
@@ -140,11 +139,11 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 if (dynamicDeployment.isActivatingIntended()) {
                     //Dynamic deployment is intended to be activated, so submit corresponding deployment task
                     submitTask(new DeployByRankingTask(dynamicDeployment, true,
-                            new DiscoveryLogEntry(MBP, "Deploy on startup")));
+                            new DiscoveryLog(MBP, "Deploy on startup")));
                 } else {
                     //Dynamic deployment is intended to be deactivated, so submit corresponding un-deployment task
                     submitTask(new UndeployTask(dynamicDeployment,
-                            new DiscoveryLogEntry(MBP, "Undeploy on startup")));
+                            new DiscoveryLog(MBP, "Undeploy on startup")));
                 }
             });
         }
@@ -226,10 +225,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicDeployment.getOwner().getId(), null);
 
         //Submit task for retrieving candidate devices (will abort if not needed due to force=false)
-        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, this, false, new DiscoveryLogEntry(USER, "Update candidate devices")));
+        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, this, false, new DiscoveryLog(USER, "Update candidate devices")));
 
         //Submit task for deploying the dynamic deployment
-        submitTask(new DeployByRankingTask(dynamicDeployment, true, new DiscoveryLogEntry(USER, "Activate deployment")));
+        submitTask(new DeployByRankingTask(dynamicDeployment, true, new DiscoveryLog(USER, "Activate deployment")));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -254,10 +253,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
 
         //Submit task for potentially deleting candidate devices data and cancel subscriptions
-        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), new DiscoveryLogEntry(USER, "Delete candidate devices")));
+        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), new DiscoveryLog(USER, "Delete candidate devices")));
 
         //Submit task for undeploying the dynamic deployment
-        submitTask(new UndeployTask(dynamicDeployment, new DiscoveryLogEntry(USER, "Deactivate deployment")));
+        submitTask(new UndeployTask(dynamicDeployment, new DiscoveryLog(USER, "Deactivate deployment")));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -282,11 +281,11 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
 
         //Create task for merging the updated candidate devices with the existing ones
-        submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices, new DiscoveryLogEntry(DISCOVERY_REPOSITORY, "Merge candidate devices")));
+        submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices, new DiscoveryLog(DISCOVERY_REPOSITORY, "Merge candidate devices")));
 
         //Iterate over all dynamic deployments that use the affected device template
         this.dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplate.getId())
-                .forEach(d -> submitTask(new DeployByRankingTask(d, new DiscoveryLogEntry(DISCOVERY_REPOSITORY, "Re-evaluate deployment"))));
+                .forEach(d -> submitTask(new DeployByRankingTask(d, new DiscoveryLog(DISCOVERY_REPOSITORY, "Re-evaluate deployment"))));
     }
 
     /**
@@ -524,20 +523,23 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     }
 
     /**
-     * Extracts the {@link DiscoveryLogEntry} (if available) from a given {@link DiscoveryTask} and adds it to the
+     * Extracts the {@link DiscoveryLog} (if available) from a given {@link DiscoveryTask} and adds it to the
      * {@link DiscoveryLog}s of the pertaining {@link DynamicDeployment}s.
      *
-     * @param task The task from which the {@link DiscoveryLogEntry} is supposed to be processed
+     * @param task The task from which the {@link DiscoveryLog} is supposed to be processed
      */
     private void writeTaskLogs(DiscoveryTask task) {
         //Null check
         if (task == null) return;
 
-        //Retrieve log entry from the task
-        DiscoveryLogEntry logEntry = task.getLogEntry();
+        //Retrieve discovery log from the task
+        DiscoveryLog discoveryLog = task.getDiscoveryLog();
 
         //Check if logs are available
-        if ((logEntry == null) || (logEntry.isEmpty())) return;
+        if ((discoveryLog == null) || (discoveryLog.isEmpty())) return;
+
+        //Update the end timestamp of the log
+        discoveryLog.updateEndTimestamp();
 
         //Check type of task
         if (task instanceof CandidateDevicesTask) {
@@ -546,10 +548,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
             //Save the log entry for all dynamic deployments that use the device template
             dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplateId).stream()
-                    .map(DynamicDeployment::getId).forEach(id -> discoveryLoggingService.addLogEntry(id, logEntry));
+                    .map(DynamicDeployment::getId).forEach(id -> discoveryLoggingService.writeDiscoveryLog(id, discoveryLog));
         } else if (task instanceof DynamicDeploymentTask) {
             //Get ID of affected dynamic deployment and save the log entry
-            discoveryLoggingService.addLogEntry(((DynamicDeploymentTask) task).getDynamicDeploymentId(), logEntry);
+            discoveryLoggingService.writeDiscoveryLog(((DynamicDeploymentTask) task).getDynamicDeploymentId(), discoveryLog);
         }
     }
 

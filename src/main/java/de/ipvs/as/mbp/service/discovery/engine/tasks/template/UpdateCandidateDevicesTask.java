@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -39,7 +39,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     private CandidateDevicesSubscriber subscriber = null;
 
     //The log entry to extend for further log messages
-    private DiscoveryLogEntry logEntry;
+    private DiscoveryLog logEntry;
 
     /*
     Injected fields
@@ -50,59 +50,59 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
     /**
      * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a collection of
-     * {@link RequestTopic}s and a {@link DiscoveryLogEntry}.
+     * {@link RequestTopic}s and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
-     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      DiscoveryLogEntry logEntry) {
+                                      DiscoveryLog logEntry) {
         this(deviceTemplate, requestTopics, null, false, logEntry);
     }
 
     /**
      * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a collection
-     * of {@link RequestTopic}s, a force flag and a {@link DiscoveryLogEntry}.
+     * of {@link RequestTopic}s, a force flag and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
-     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      boolean force, DiscoveryLogEntry logEntry) {
+                                      boolean force, DiscoveryLog logEntry) {
         this(deviceTemplate, requestTopics, null, force, logEntry);
     }
 
     /**
      * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate},a collection
-     * of {@link RequestTopic}s, a {@link CandidateDevicesSubscriber} and a {@link DiscoveryLogEntry}.
+     * of {@link RequestTopic}s, a {@link CandidateDevicesSubscriber} and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
-     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      CandidateDevicesSubscriber subscriber, DiscoveryLogEntry logEntry) {
+                                      CandidateDevicesSubscriber subscriber, DiscoveryLog logEntry) {
         this(deviceTemplate, requestTopics, subscriber, false, logEntry);
     }
 
     /**
      * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a collection
-     * of {@link RequestTopic}s, a {@link CandidateDevicesSubscriber}, a force flag and a {@link DiscoveryLogEntry}.
+     * of {@link RequestTopic}s, a {@link CandidateDevicesSubscriber}, a force flag and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
-     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLogEntry logEntry) {
+                                      CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLog logEntry) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setRequestTopics(requestTopics);
@@ -149,7 +149,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
         CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);
 
         //Write log
-        addLogMessage(String.format("Saving %s.", candidateDevices.toHumanReadableDescription()));
+        addLogMessage(String.format("Received %s.", candidateDevices.toHumanReadableDescription()));
 
         //Save the candidate devices to repository
         candidateDevicesRepository.save(candidateDevices);
@@ -160,7 +160,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
-     * {@link DiscoveryLogEntry} that collects the logs of this task.
+     * {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param message The actual log message
      */
@@ -171,7 +171,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
-     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
+     * and adds it to the {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param type    The type of the log message
      * @param message The actual log message
@@ -179,6 +179,9 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
         if (this.logEntry == null) return;
+
+        //Update start timestamp when this is the first log message
+        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
@@ -278,23 +281,23 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     }
 
     /**
-     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * Returns the {@link DiscoveryLog} that is used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
      *
-     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     * @return The {@link DiscoveryLog} or null, if logging is not performed
      */
     @Override
-    public DiscoveryLogEntry getLogEntry() {
+    public DiscoveryLog getDiscoveryLog() {
         return logEntry;
     }
 
     /**
-     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLogEntry logEntry) {
+    private void setLogEntry(DiscoveryLog logEntry) {
         this.logEntry = logEntry;
     }
 

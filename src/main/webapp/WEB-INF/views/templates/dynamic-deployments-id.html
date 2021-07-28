@@ -88,13 +88,15 @@
                 <br/>
                 <div>
                     <span ng-show="!ctrl.dynamicDeployment.activatingIntended">
-                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.activateDeployment()" style="color: white;">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.activateDeployment()"
+                                style="color: white;">
                             <i class="material-icons">play_circle_outline</i>
                             <span>Activate deployment</span>
                         </button>
                     </span>
                     <span ng-show="ctrl.dynamicDeployment.activatingIntended">
-                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.deactivateDeployment()" style="color: white;">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.deactivateDeployment()"
+                                style="color: white;">
                             <i class="material-icons">pause_circle_outline</i>
                             <span>Deactivate deployment</span>
                         </button>
@@ -110,9 +112,14 @@
             <div class="header">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">equalizer</i>
                 <h2 style="margin-left: 35px;">Value statistics
-                    <small>Overview about received values</small>
+                    <small>Overview about received values.</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.deleteValueLogs()" class="clickable">
+                            <i class="material-icons">delete</i>
+                        </a>
+                    </li>
                     <li>
                         <a ng-click="valueLogStatsApi.updateStats()" class="clickable">
                             <i class="material-icons">refresh</i>
@@ -138,11 +145,46 @@
                                  get-stats="ctrl.valueLogStats.getStats(unit)"
                                  unit="{{ctrl.displayUnit}}">
                 </value-log-stats>
-                <div style="height: 20px"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <button class="btn btn-danger waves-effect" ng-click="ctrl.deleteValueLogs()">
-                    <i class="material-icons">delete</i>Delete all sensor values
-                </button>
+<!-- Discovery logs card -->
+<div class="row clearfix" ng-hide="ng-hide">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Discovery logs<small>Overview about the discovery logs that were collected for the
+                    discovery-related tasks of this dynamic deployment.</small></h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.deleteDiscoveryLogs()" class="clickable">
+                            <i class="material-icons">delete</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a ng-click="ctrl.updateDiscoveryLogs()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table id="discovery-logs-table" class="table table-bordered table-striped table-hover dataTable"
+                           style="width:100%;">
+                        <thead>
+                        <tr>
+                            <th>Start time</th>
+                            <th>Task</th>
+                            <th>Trigger</th>
+                            <th>End time</th>
+                            <th style="min-width: 450px;">Log messages</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

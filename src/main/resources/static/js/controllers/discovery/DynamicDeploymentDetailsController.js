@@ -6,15 +6,22 @@ app.controller('DynamicDeploymentDetailsController',
         'DiscoveryService', 'UnitService', 'NotificationService',
         function ($scope, $routeParams, $interval, $timeout, dynamicDeploymentDetails, discoveryLogs,
                   DiscoveryService, UnitService, NotificationService) {
-            //Selectors that allow the selection of different ui cards
-            const INFO_CARD_SELECTOR = ".details-info-card";
-            const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
-            const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
-            const STATS_CARD_SELECTOR = ".stats-card";
+            //Selectors for various UI cards within the DOM
+            const SELECTOR_INFO_CARD = ".details-info-card";
+            const SELECTOR_LIVE_CHART_CARD = ".live-chart-card";
+            const SELECTOR_HISTORICAL_CHART_CARD = ".historical-chart-card";
+            const SELECTOR_STATS_CARD = ".stats-card";
+
+            //Relevant DOM elements
+            const ELEMENT_DISCOVERY_LOGS_TABLE = $("#discovery-logs-table");
+            const ELEMENT_STACKTRACE_MODAL = $("#showStackTraceModal")
 
             //Properties of the current dynamic deployment
             const DEPLOYMENT_ID = $routeParams.id;
             const OPERATOR_UNIT = dynamicDeploymentDetails.operator.unit;
+
+            //Reference to the DataTable of discovery logs
+            let discoveryLogsDataTable = null;
 
             //Initialization of frontend variables
             let vm = this;
@@ -34,6 +41,9 @@ app.controller('DynamicDeploymentDetailsController',
                 //Initialize charts
                 initLiveChart();
                 initHistoricalChart();
+
+                //Initialize discovery logs table
+                initDiscoveryLogsTable();
 
                 //Interval for updating deployment details information
                 let interval = $interval(reloadDeploymentDetails, 30 * 1000);
@@ -161,12 +171,12 @@ app.controller('DynamicDeploymentDetailsController',
 
             /**
              * [Public]
-             * Asks the user if he really wants to delete all value logs for the current dynamix deployment.
+             * Asks the user if he really wants to delete all value logs for the current dynamic deployment.
              * If this is the case, the deletion is executed by initiating the corresponding server request.
              */
             function deleteValueLogs() {
                 /**
-                 * Executes the deletion of the value logs by performing the server request.
+                 * Deletes the value logs by creating the corresponding server request.
                  */
                 function executeDeletion() {
                     DiscoveryService.deleteValueLogs(DEPLOYMENT_ID).then(() => {
@@ -198,6 +208,53 @@ app.controller('DynamicDeploymentDetailsController',
                 });
             }
 
+            /**
+             * [Public]
+             * Triggers an update of the discovery logs DataTable by creating a server request for retrieving
+             * the most recent data.
+             */
+            function updateDiscoveryLogs() {
+                //Ask the DataTable to reload its data
+                discoveryLogsDataTable.ajax.reload();
+            }
+
+            /**
+             * [Public]
+             * Asks the user if he really wants to delete all discovery logs for the current dynamic deployment.
+             * If this is the case, the deletion is executed by initiating the corresponding server request.
+             */
+            function deleteDiscoveryLogs() {
+                /**
+                 * Deletes the discovery logs by creating the corresponding server request.
+                 */
+                function executeDeletion() {
+                    DiscoveryService.deleteDiscoveryLogs(DEPLOYMENT_ID).then(() => {
+                        //Update the discovery logs table
+                        updateDiscoveryLogs();
+                        //Notify the user
+                        NotificationService.notify("Discovery logs were deleted successfully.", "success");
+                    }, () => {
+                        NotificationService.notify("Could not delete discovery logs.", "error");
+                    });
+                }
+
+                //Ask the user to confirm the deletion
+                return Swal.fire({
+                    title: 'Delete discovery logs',
+                    type: 'warning',
+                    html: "Are you sure you want to delete all discovery logs that has been recorded so far for this " +
+                        "dynamic deployment? This action cannot be undone.",
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    confirmButtonClass: 'bg-red',
+                    focusConfirm: false,
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    //Check if the user confirmed the deletion
+                    if (result.value) executeDeletion();
+                });
+            }
+
 
             /**
              * [Private]
@@ -209,7 +266,7 @@ app.controller('DynamicDeploymentDetailsController',
                  */
                 function loadingStart() {
                     //Show waiting screen
-                    $(STATS_CARD_SELECTOR).waitMe({
+                    $(SELECTOR_STATS_CARD).waitMe({
                         effect: 'bounce',
                         text: 'Loading value statistics...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -221,7 +278,7 @@ app.controller('DynamicDeploymentDetailsController',
                  */
                 function loadingFinish() {
                     //Hide the waiting screen for the case it was displayed before
-                    $(STATS_CARD_SELECTOR).waitMe("hide");
+                    $(SELECTOR_STATS_CARD).waitMe("hide");
                 }
 
                 /**
@@ -255,7 +312,7 @@ app.controller('DynamicDeploymentDetailsController',
                  */
                 function loadingStart() {
                     //Show the waiting screen
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe({
+                    $(SELECTOR_LIVE_CHART_CARD).waitMe({
                         effect: 'bounce',
                         text: 'Loading chart...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -267,7 +324,7 @@ app.controller('DynamicDeploymentDetailsController',
                  */
                 function loadingFinish() {
                     //Hide the waiting screen for the case it was displayed before
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
+                    $(SELECTOR_LIVE_CHART_CARD).waitMe("hide");
                 }
 
                 /**
@@ -297,7 +354,7 @@ app.controller('DynamicDeploymentDetailsController',
                  */
                 function loadingStart() {
                     //Show the waiting screen
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
+                    $(SELECTOR_HISTORICAL_CHART_CARD).waitMe({
                         effect: 'bounce',
                         text: 'Loading chart...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -309,7 +366,7 @@ app.controller('DynamicDeploymentDetailsController',
                  */
                 function loadingFinish() {
                     //Hide the waiting screen for the case it was displayed before
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
+                    $(SELECTOR_HISTORICAL_CHART_CARD).waitMe("hide");
                 }
 
                 //Expose
@@ -318,6 +375,97 @@ app.controller('DynamicDeploymentDetailsController',
                     loadingFinish: loadingFinish,
                     getData: retrieveComponentData
                 };
+            }
+
+            /**
+             * [Private]
+             * Initializes the DataTable providing an overview about the recorded discovery logs.
+             */
+            function initDiscoveryLogsTable() {
+                //Check whether table has already been initialized
+                if (discoveryLogsDataTable != null) return;
+
+                discoveryLogsDataTable = ELEMENT_DISCOVERY_LOGS_TABLE.DataTable({
+                    data: discoveryLogs,
+                    serverSide: true,
+                    searching: false,
+                    ordering: false,
+                    columns: [
+                        {
+                            data: 'startTime',
+                            render: epochMilliToString
+                        },
+                        {data: 'taskName'},
+                        {
+                            data: 'trigger',
+                            render: (data) => {
+                                let labelClass = (data === 'MBP' ? 'label-primary' : (data === 'User' ? 'label-success' : (data === 'Discovery Repository' ? 'label-warning' : 'label-default')));
+                                return '<span class="label ' + labelClass + '">' + data + '</span>';
+                            }
+                        },
+                        {
+                            data: 'endTime',
+                            render: epochMilliToString
+                        },
+                        {
+                            data: 'messages',
+                            render: (data) => {
+                                //Sanity check
+                                if (data.length < 1) return 'None';
+
+                                //Create collapse button, table container and table element
+                                let collapseButton = $('<button type="button" class="btn btn-primary log-messages-toggle"><i class="material-icons">remove_red_eye</i>&nbsp;' + data.length + ' log message' + (data.length ? 's' : '') + '</button>');
+                                let tableContainer = $('<div>').css('display', 'none');
+                                let table = $('<table>').addClass('table log-messages');
+
+                                //Populate the table
+                                data.forEach(m => {
+                                    //Determine label class for message type
+                                    let labelClass = (m.type === 'Info' ? 'label-default' : (m.type === 'Success' ? 'label-success' : (m.type === 'Undesirable' ? 'label-warning' : 'label-danger')));
+                                    //Create and populate table row
+                                    table.append($('<tr>')
+                                        .append($('<td>' + epochMilliToString(m.time) + '</td>'))
+                                        .append($('<td><span class="label ' + labelClass + '">' + m.type + '</span></td>'))
+                                        .append($('<td>' + m.message.replaceAll('\n', '<br/>') + '</td>')));
+                                });
+
+                                //Put elements together and transform them to HTML
+                                return $('<div>').append(collapseButton).append(tableContainer.append(table)).html();
+                            }
+                        },
+                    ],
+                    ajax: function (data, callback) {
+                        //Calculate page number
+                        let pageNumber = Math.floor(data.start / data.length);
+
+                        //Perform request in order to retrieve the discovery logs
+                        DiscoveryService.getDiscoveryLogs(DEPLOYMENT_ID, data.length, pageNumber, 'startTime,desc').then(function (response) {
+                            //Trigger callback with the data from the response
+                            callback({
+                                draw: data.draw,
+                                data: response.content,
+                                recordsTotal: response.totalElements,
+                                recordsFiltered: response.totalElements,
+                            });
+                        });
+                    },
+                    "drawCallback": function () {
+                        //Find toggle buttons for log messages and register click handler
+                        $('.log-messages-toggle').on('click', function () {
+                            $(this).next().slideToggle();
+                        });
+                    },
+                    language: {
+                        "decimal": "",
+                        "emptyTable": "No discovery logs available.",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ logs",
+                        "infoEmpty": "Showing 0 to 0 of 0 logs",
+                        "infoFiltered": "(filtered from _MAX_ total logs)",
+                        "thousands": ".",
+                        "lengthMenu": "Show _MENU_ logs",
+                        "zeroRecords": "No matching logs found",
+                    }
+                });
             }
 
             /**
@@ -332,7 +480,7 @@ app.controller('DynamicDeploymentDetailsController',
                 }
 
                 //Show waiting screen
-                $(INFO_CARD_SELECTOR).waitMe({
+                $(SELECTOR_INFO_CARD).waitMe({
                     effect: 'bounce',
                     text: text,
                     bg: 'rgba(255,255,255,0.85)'
@@ -344,7 +492,23 @@ app.controller('DynamicDeploymentDetailsController',
              * Hides the waiting screen above the details information card.
              */
             function hideWaitingScreen() {
-                $(INFO_CARD_SELECTOR).waitMe("hide");
+                $(SELECTOR_INFO_CARD).waitMe("hide");
+            }
+
+            /**
+             * [Private]
+             * Converts given epoch milliseconds to a human-readable date string.
+             * @param millis The milliseconds to convert
+             */
+            function epochMilliToString(millis) {
+                return new Date(millis).toLocaleString('de-DE', {
+                    'year': 'numeric',
+                    'month': '2-digit',
+                    'day': '2-digit',
+                    'hour': '2-digit',
+                    'minute': '2-digit',
+                    'second': '2-digit'
+                }).replace(',', '');
             }
 
             //Expose the public variables and functions
@@ -356,7 +520,9 @@ app.controller('DynamicDeploymentDetailsController',
                 deactivateDeployment: deactivateDeployment,
                 reloadDeploymentDetails: reloadDeploymentDetails,
                 onDisplayUnitChange: onDisplayUnitChange,
-                deleteValueLogs: deleteValueLogs
+                deleteValueLogs: deleteValueLogs,
+                updateDiscoveryLogs: updateDiscoveryLogs,
+                deleteDiscoveryLogs: deleteDiscoveryLogs
             });
         }
     ]

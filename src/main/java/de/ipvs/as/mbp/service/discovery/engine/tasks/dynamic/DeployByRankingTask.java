@@ -7,7 +7,7 @@ import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -55,7 +55,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     private boolean isUserCreated = false;
 
     //The log entry to extend for further log messages
-    private DiscoveryLogEntry logEntry;
+    private DiscoveryLog logEntry;
 
     /*
     Injected fields
@@ -67,25 +67,25 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     private final MongoTemplate mongoTemplate;
 
     /**
-     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLogEntry}.
+     * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLog}.
      *
      * @param dynamicDeployment The dynamic deployment to use
-     * @param logEntry          The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry          The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeployByRankingTask(DynamicDeployment dynamicDeployment, DiscoveryLogEntry logEntry) {
+    public DeployByRankingTask(DynamicDeployment dynamicDeployment, DiscoveryLog logEntry) {
         //Delegate call
         this(dynamicDeployment, false, logEntry);
     }
 
     /**
      * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment}, an indication
-     * whether the task was created on behalf of an user and a {@link DiscoveryLogEntry}.
+     * whether the task was created on behalf of an user and a {@link DiscoveryLog}.
      *
      * @param dynamicDeployment The dynamic deployment to use
      * @param isUserCreated     True, if the task was created on behalf of an user; false otherwise
-     * @param logEntry          The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry          The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeployByRankingTask(DynamicDeployment dynamicDeployment, boolean isUserCreated, DiscoveryLogEntry logEntry) {
+    public DeployByRankingTask(DynamicDeployment dynamicDeployment, boolean isUserCreated, DiscoveryLog logEntry) {
         //Set fields
         setDynamicDeployment(dynamicDeployment);
         setIsUserCreated(isUserCreated);
@@ -122,27 +122,32 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         }
 
         //Write log
-        addLogMessage(String.format("Started task for dynamic deployment \"%s\".", originalDynamicDeployment.getName()));
+        addLogMessage("Started task.");
 
         //Determine whether the dynamic deployment is currently deployed
         boolean isDeployed = (dynamicDeployment.getLastDeviceDetails() != null) &&
                 this.discoveryDeploymentService.isDeployed(dynamicDeployment);
 
         //Write log
-        addLogMessage("Operator is currently " + (isDeployed ? "deployed to " + dynamicDeployment.getLastDeviceDetails().getMacAddress() : "not deployed") + ".");
+        if (isDeployed) {
+            addLogMessage(String.format("Operator is currently deployed to %s.", dynamicDeployment.getLastDeviceDetails().getMacAddress()));
+        } else {
+            addLogMessage("Operator is currently not deployed.");
+        }
 
         //Calculate and candidate devices ranking
         CandidateDevicesRanking ranking = this.candidateDevicesProcessor.process(candidateDevices, dynamicDeployment.getDeviceTemplate());
 
         //Check if ranking is valid
         if ((ranking == null) || (ranking.isEmpty())) {
-            //Write log
-            addLogMessage(UNDESIRABLE, "Ranking is empty, " + (isDeployed ? "undeploying from previously used device." : "no deployment possible."));
-
             //No suitable candidate devices; if there is still an active deployment, we need to undeploy it
             if (isDeployed) {
+                addLogMessage(UNDESIRABLE, "Ranking is empty, undeploying from previously used device.");
                 this.discoveryDeploymentService.undeploy(dynamicDeployment);
+            }else{
+                addLogMessage(UNDESIRABLE, "Ranking is empty, no deployment possible.");
             }
+                
             //Update last device details and status
             updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.NO_CANDIDATE);
             return;
@@ -268,7 +273,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
-     * {@link DiscoveryLogEntry} that collects the logs of this task.
+     * {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param message The actual log message
      */
@@ -279,7 +284,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
-     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
+     * and adds it to the {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param type    The type of the log message
      * @param message The actual log message
@@ -287,6 +292,9 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
         if (this.logEntry == null) return;
+
+        //Update start timestamp when this is the first log message
+        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
@@ -315,23 +323,23 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     }
 
     /**
-     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * Returns the {@link DiscoveryLog} that is used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
      *
-     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     * @return The {@link DiscoveryLog} or null, if logging is not performed
      */
     @Override
-    public DiscoveryLogEntry getLogEntry() {
+    public DiscoveryLog getDiscoveryLog() {
         return logEntry;
     }
 
     /**
-     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLogEntry logEntry) {
+    private void setLogEntry(DiscoveryLog logEntry) {
         this.logEntry = logEntry;
     }
 

@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST controller for retrieving exception logs. Only administrators are permitted to do so.
+ * REST controller for retrieving {@link ExceptionLog}s. Only administrators are permitted to do so.
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH + "/exception-logs")
 @Api(tags = {"Exception logs"})
-public class RestLogController {
+public class RestExceptionLogController {
 
     @Autowired
     private ExceptionLogRepository exceptionLogRepository;

@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -29,7 +29,7 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     private boolean force = false;
 
     //The log entry to extend for further log messages
-    private DiscoveryLogEntry logEntry;
+    private DiscoveryLog logEntry;
 
     /*
     Injected fields
@@ -40,25 +40,25 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
 
     /**
      * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate} and
-     * {@link DiscoveryLogEntry}.
+     * {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLogEntry logEntry) {
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLog logEntry) {
         this(deviceTemplate, false, logEntry);
     }
 
     /**
      * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate}, a force flag and a
-     * {@link DiscoveryLogEntry}.
+     * {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
      * @param force          True, if the deletion of candidate devices and the unsubscription should be forced and thus
      *                       done without checking whether the corresponding device template is currently in use
-     * @param logEntry       The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force, DiscoveryLogEntry logEntry) {
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force, DiscoveryLog logEntry) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setForce(force);
@@ -112,7 +112,7 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
-     * {@link DiscoveryLogEntry} that collects the logs of this task.
+     * {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param message The actual log message
      */
@@ -123,7 +123,7 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
-     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
+     * and adds it to the {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param type    The type of the log message
      * @param message The actual log message
@@ -131,6 +131,9 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
         if (this.logEntry == null) return;
+
+        //Update start timestamp when this is the first log message
+        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
@@ -186,23 +189,23 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     }
 
     /**
-     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * Returns the {@link DiscoveryLog} that is used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
      *
-     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     * @return The {@link DiscoveryLog} or null, if logging is not performed
      */
     @Override
-    public DiscoveryLogEntry getLogEntry() {
+    public DiscoveryLog getDiscoveryLog() {
         return logEntry;
     }
 
     /**
-     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLogEntry logEntry) {
+    private void setLogEntry(DiscoveryLog logEntry) {
         this.logEntry = logEntry;
     }
 

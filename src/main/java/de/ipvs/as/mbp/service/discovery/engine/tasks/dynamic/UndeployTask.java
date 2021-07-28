@@ -4,14 +4,13 @@ import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentState;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DiscoveryDeploymentService;
-import de.ipvs.as.mbp.service.discovery.log.DiscoveryLogService;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -34,7 +33,7 @@ public class UndeployTask implements DynamicDeploymentTask {
     private DynamicDeployment originalDynamicDeployment;
 
     //The log entry to extend for further log messages
-    private DiscoveryLogEntry logEntry;
+    private DiscoveryLog logEntry;
 
     /*
     Injected fields
@@ -44,12 +43,12 @@ public class UndeployTask implements DynamicDeploymentTask {
     private final MongoTemplate mongoTemplate;
 
     /**
-     * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLogEntry}.
+     * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLog}.
      *
      * @param dynamicDeployment The dynamic deployment to use
-     * @param logEntry          The {@link DiscoveryLogEntry} to use for logging within this task
+     * @param logEntry          The {@link DiscoveryLog} to use for logging within this task
      */
-    public UndeployTask(DynamicDeployment dynamicDeployment, DiscoveryLogEntry logEntry) {
+    public UndeployTask(DynamicDeployment dynamicDeployment, DiscoveryLog logEntry) {
         //Set fields
         setDynamicDeployment(dynamicDeployment);
         setLogEntry(logEntry);
@@ -81,22 +80,19 @@ public class UndeployTask implements DynamicDeploymentTask {
             return;
         }
 
-        //Write log
-        addLogMessage(String.format("Started task for dynamic deployment \"%s\".", dynamicDeployment.getName()));
-
         //Check whether the dynamic deployment is currently deployed
         if ((dynamicDeployment.getLastDeviceDetails() == null) ||
                 (!this.discoveryDeploymentService.isDeployed(dynamicDeployment))) {
-            //Write log
-            addLogMessage("Operator is currently not deployed, thus aborting.");
-
             //Dynamic deployment is not deployed, so just update the state
             updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.DISABLED);
             return;
         }
 
         //Write log
-        addLogMessage(String.format("Operator is currently deployed to %s, trying to undeploy.", dynamicDeployment.getLastDeviceDetails().getMacAddress()));
+        addLogMessage("Started task.");
+
+        //Write log
+        addLogMessage(String.format("Operator is currently deployed to %s, undeploying.", dynamicDeployment.getLastDeviceDetails().getMacAddress()));
 
         //Dynamic deployment is deployed, so undeploy it
         this.discoveryDeploymentService.undeploy(dynamicDeployment);
@@ -109,23 +105,23 @@ public class UndeployTask implements DynamicDeploymentTask {
     }
 
     /**
-     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * Returns the {@link DiscoveryLog} that is used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
      *
-     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     * @return The {@link DiscoveryLog} or null, if logging is not performed
      */
     @Override
-    public DiscoveryLogEntry getLogEntry() {
+    public DiscoveryLog getDiscoveryLog() {
         return this.logEntry;
     }
 
     /**
-     * Sets the {@link DiscoveryLogEntry} that is supposed to be used within this task in order to collect
+     * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLogEntry} or null, if no logging is supposed to be performed
+     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLogEntry logEntry) {
+    private void setLogEntry(DiscoveryLog logEntry) {
         this.logEntry = logEntry;
     }
 
@@ -149,7 +145,7 @@ public class UndeployTask implements DynamicDeploymentTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and adds it to the
-     * {@link DiscoveryLogEntry} that collects the logs of this task.
+     * {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param message The actual log message
      */
@@ -160,7 +156,7 @@ public class UndeployTask implements DynamicDeploymentTask {
 
     /**
      * Creates a new {@link DiscoveryLogMessage} from a given message string and a {@link DiscoveryLogMessageType}
-     * and adds it to the {@link DiscoveryLogEntry} that collects the logs of this task.
+     * and adds it to the {@link DiscoveryLog} that collects the logs of this task.
      *
      * @param type    The type of the log message
      * @param message The actual log message
@@ -168,6 +164,9 @@ public class UndeployTask implements DynamicDeploymentTask {
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
         if (this.logEntry == null) return;
+
+        //Update start timestamp when this is the first log message
+        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);

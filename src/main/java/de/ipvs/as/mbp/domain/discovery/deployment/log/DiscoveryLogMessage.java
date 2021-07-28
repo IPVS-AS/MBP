@@ -8,13 +8,13 @@ import java.time.Instant;
 
 /**
  * Objects of this class represent the individual log messages that are collected within
- * {@link DiscoveryLogEntry}s.
+ * {@link DiscoveryLog}s.
  */
 public class DiscoveryLogMessage {
 
     @ApiModelProperty(notes = "Timestamp when the log message was created.")
     @JsonSerialize(using = InstantToEpochMilliSerializer.class)
-    private Instant timestamp;
+    private Instant time;
 
     @ApiModelProperty("The type of the log message, indicating its relevance.")
     private DiscoveryLogMessageType type;
@@ -27,7 +27,7 @@ public class DiscoveryLogMessage {
      */
     public DiscoveryLogMessage() {
         //Set timestamp to current time
-        setTimestamp(Instant.now());
+        setTime(Instant.now());
     }
 
     /**
@@ -51,18 +51,18 @@ public class DiscoveryLogMessage {
      *
      * @return The timestamp
      */
-    public Instant getTimestamp() {
-        return timestamp;
+    public Instant getTime() {
+        return time;
     }
 
     /**
      * Sets the timestamp when the {@link DiscoveryLogMessage} was created.
      *
-     * @param timestamp The timestamp to set
+     * @param time The timestamp to set
      * @return The {@link DiscoveryLogMessage}
      */
-    public DiscoveryLogMessage setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public DiscoveryLogMessage setTime(Instant time) {
+        this.time = time;
         return this;
     }
 

@@ -67,7 +67,7 @@ app.controller('ExceptionLogController',
              * Initializes the DataTable within the template page.
              */
             function initDataTable() {
-                //Check whether table has already been initilaized
+                //Check whether table has already been initialized
                 if (logsDataTable != null) {
                     return;
                 }
@@ -114,7 +114,7 @@ app.controller('ExceptionLogController',
 
                         //Perform request in order to retrieve the exception logs
                         LogService.getExceptionLogs(data.length, pageNumber, 'time,desc').then(function (response) {
-                            //Issue callback with the required data from the response
+                            //Trigger callback with the data from the response
                             callback({
                                 draw: data.draw,
                                 data: response.content,

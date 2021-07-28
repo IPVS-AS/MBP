@@ -5,9 +5,10 @@ import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDTO;
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.OperatorRepository;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
@@ -18,6 +19,7 @@ import de.ipvs.as.mbp.service.discovery.log.DiscoveryLogService;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -27,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -183,22 +184,40 @@ public class RestDynamicDeploymentController {
     }
 
     @GetMapping(path = "/{id}/logs")
-    @ApiOperation(value = "Retrieves the discovery logs of a dynamic deployment, identified by its ID.")
+    @ApiOperation(value = "Retrieves a page of discovery logs that were recorded for a dynamic deployment, identified by its ID.")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to access this dynamic deployment and its logs!"),
             @ApiResponse(code = 404, message = "Dynamic deployment or requesting user not found!")})
-    public ResponseEntity<List<DiscoveryLogEntry>> getDiscoveryLogs(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-                                                                    @PathVariable("id") String id) throws EntityNotFoundException, MissingPermissionException {
+    public ResponseEntity<Page<DiscoveryLog>> getDiscoveryLogs(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+                                                               @ApiParam(value = "Page parameters", required = true) Pageable pageable,
+                                                               @ApiParam(value = "ID of the dynamic deployment", required = true) @PathVariable("id") String id) throws EntityNotFoundException, MissingPermissionException {
         //Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         //Perform access control check for the pertaining dynamic deployment
         userEntityService.checkPermission(dynamicDeploymentRepository, id, ACAccessType.READ, accessRequest);
 
-        //Read the log entries of the dynamic deployment
-        List<DiscoveryLogEntry> logEntries = discoveryLogService.readLogEntries(id);
+        //Retrieve the discovery logs for the dynamic deployment and page configuration
+        return ResponseEntity.ok(discoveryLogService.getDiscoveryLogs(id, pageable));
+    }
 
-        //Return the log entries as response
-        return ResponseEntity.ok((logEntries == null) ? Collections.emptyList() : logEntries);
+    @DeleteMapping(path = "/{id}/logs")
+    @ApiOperation(value = "Deletes all discovery logs that are available for a certain dynamic deployment, identified by its ID.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to delete the discovery logs of this dynamic deployment!"),
+            @ApiResponse(code = 404, message = "Dynamic deployment or requesting user not found!")})
+    public ResponseEntity<Void> deleteDiscoveryLogs(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+                                                    @ApiParam(value = "ID of the dynamic deployment", required = true) @PathVariable("id") String id) throws MissingAdminPrivilegesException, MissingPermissionException, EntityNotFoundException {
+        //Parse the access request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Perform access control check for the pertaining dynamic deployment
+        userEntityService.checkPermission(dynamicDeploymentRepository, id, ACAccessType.DELETE, accessRequest);
+
+        //Delete the discovery logs for this dynamic deployment
+        discoveryLogService.deleteDiscoveryLogs(id);
+
+        //Create empty response
+        return ResponseEntity.noContent().build();
     }
 }

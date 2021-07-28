@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks;
 
-import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogEntry;
+import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 
@@ -17,12 +17,12 @@ public interface DiscoveryTask extends Runnable {
     void run();
 
     /**
-     * Returns the {@link DiscoveryLogEntry} that is used within this task in order to collect
+     * Returns the {@link DiscoveryLog} that is used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. May be null, if the task does not perform logging.
      *
-     * @return The {@link DiscoveryLogEntry} or null, if logging is not performed
+     * @return The {@link DiscoveryLog} or null, if logging is not performed
      */
-    DiscoveryLogEntry getLogEntry();
+    DiscoveryLog getDiscoveryLog();
 
     /**
      * Returns a simple, short and human-readable description of the task.

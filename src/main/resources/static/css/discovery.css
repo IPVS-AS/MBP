@@ -126,3 +126,15 @@ div.discovery-template-menu .bubble-item .bubble-connector {
 #edit-templates-group #edit-devices .criteria-list > .list-group-item .form-group {
     margin-bottom: 0;
 }
+
+/*
+#discovery-logs-table table.log-messages {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#discovery-logs-table table.log-messages td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}*/

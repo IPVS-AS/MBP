@@ -26,7 +26,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          *
          * @param deviceTemplate The device template to test
          * @param requestTopicIds The set of request topic IDs
-         * @returns {*} The resulting promise of the request
+         * @returns {*|void} The resulting promise of the request
          */
         function testDeviceTemplate(deviceTemplate, requestTopicIds) {
             return HttpService.postRequest(URL_DISCOVERY + URL_SUFFIX_TEST_DEVICE_TEMPLATE, {
@@ -42,7 +42,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * works as intended by the user.
          *
          * @param requestTopicId The id of the request topic to test
-         * @returns {*} The resulting promise of the request
+         * @returns {*|void} The resulting promise of the request
          */
         function testRequestTopic(requestTopicId) {
             return HttpService.getRequest(URL_DISCOVERY + URL_SUFFIX_TEST_TOPIC + requestTopicId);
@@ -53,6 +53,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * Performs a server request in order to retrieve the data of a certain dynamic deployment object, given by its ID.
          *
          * @param dynamicDeployment The ID of the dynamic deployment to retrieve
+         * @returns {*|void} The resulting promise of the request
          */
         function getDynamicDeployment(dynamicDeployment) {
             return HttpService.getOne('discovery/dynamic-deployments', dynamicDeployment);
@@ -63,6 +64,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * Performs a server request in order to activate a certain dynamic deployment, given by its ID.
          *
          * @param dynamicDeploymentId The ID of the dynamic deployment to activate
+         * @returns {*|void} The resulting promise of the request
          */
         function activateDynamicDeployment(dynamicDeploymentId) {
             return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_ACTIVATE_DEPLOYMENT);
@@ -73,6 +75,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * Performs a server request in order to deactivate a certain dynamic deployment, given by its ID.
          *
          * @param dynamicDeploymentId The ID of the dynamic deployment to deactivate
+         * @returns {*|void} The resulting promise of the request
          */
         function deactivateDynamicDeployment(dynamicDeploymentId) {
             return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DEACTIVATE_DEPLOYMENT);
@@ -85,7 +88,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          *
          * @param dynamicDeploymentId The id of the dynamic deployment for which the stats are supposed to be retrieved
          * @param unit The unit in which the values are supposed to be retrieved
-         * @returns {*}
+         * @returns {*|void} The resulting promise of the request
          */
         function getValueLogStats(dynamicDeploymentId, unit) {
             //Delegate the call to the component service
@@ -100,7 +103,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * @param dynamicDeploymentId The id of the dynamic deployment for which the logs are supposed to be retrieved
          * @param pageDetails Page details object (size, order etc.) that specifies the logs to retrieve
          * @param unit The unit in which the values are supposed to be retrieved
-         * @returns {*}
+         * @returns {*|void} The resulting promise of the request
          */
         function getValueLogs(dynamicDeploymentId, pageDetails, unit) {
             //Delegate the call to the component service
@@ -113,8 +116,8 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
          * given by its ID.
          *
          * @param dynamicDeploymentId The ID of the dynamic deployment whose value logs are supposed to be deleted
-         * @returns {*}
-         */
+         * @returns {*|void} The resulting promise of the request
+         * */
         function deleteValueLogs(dynamicDeploymentId) {
             //Delegate the call to the component service
             return ComponentService.deleteValueLogs(dynamicDeploymentId, URL_CATEGORY_NAME);
@@ -122,13 +125,33 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
 
         /**
          * [Public]
-         * Performs a server request in order to retrieve all discovery logs that have been recorded for a certain
-         * dynamic deployment, given by its ID:
+         * Performs a server request in order to retrieve a page of discovery logs, based on a given page configuration,
+         * for a certain dynamic deployment, given by its ID.
          *
-         * @param dynamicDeploymentId The ID of the dynamic deployment to retrieve the discovery logs fro
+         * @param dynamicDeploymentId The ID of the dynamic deployment to retrieve the discovery logs for
+         * @param pageSize The desired size of the page to retrieve
+         * @param pageNumber The desired number of the page to retrieve
+         * @param sortOrder The desired sorting order within the page as string
+         * @returns {*|void} The resulting promise of the request
          */
-        function getDiscoveryLogs(dynamicDeploymentId) {
-            return HttpService.getRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DISCOVERY_LOGS);
+        function getDiscoveryLogs(dynamicDeploymentId, pageSize, pageNumber, sortOrder) {
+            return HttpService.getRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DISCOVERY_LOGS, {
+                'size': pageSize,
+                'page': pageNumber,
+                'sort': sortOrder
+            });
+        }
+
+        /**
+         * [Public]
+         * Performs a server request in order to delete all discovery logs that are currently available for a certain
+         * dynamic deployment, given by its ID.
+         *
+         * @param dynamicDeploymentId The ID of the dynamic deployment for which the logs are supposed to be deleted
+         * @returns @returns {*|void} The promise of the resulting request
+         */
+        function deleteDiscoveryLogs(dynamicDeploymentId) {
+            return HttpService.deleteRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DISCOVERY_LOGS);
         }
 
         //Expose public functions
@@ -141,6 +164,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
             getValueLogStats: getValueLogStats,
             getValueLogs: getValueLogs,
             deleteValueLogs: deleteValueLogs,
-            getDiscoveryLogs: getDiscoveryLogs
+            getDiscoveryLogs: getDiscoveryLogs,
+            deleteDiscoveryLogs: deleteDiscoveryLogs
         };
     }]);
