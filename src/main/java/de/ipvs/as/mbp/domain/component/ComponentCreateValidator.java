@@ -9,7 +9,6 @@ import de.ipvs.as.mbp.util.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import sun.util.locale.LanguageTag;
 
 /**
  * Creation validator for component entities.
