@@ -2,14 +2,12 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
-import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
-import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
@@ -45,7 +43,6 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     Injected fields
      */
     private final CandidateDevicesRepository candidateDevicesRepository;
-    private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final DiscoveryGateway discoveryGateway;
 
     /**
@@ -54,7 +51,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      *
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
-     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
                                       DiscoveryLog discoveryLog) {
@@ -69,7 +66,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
-     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
                                       boolean force, DiscoveryLog discoveryLog) {
@@ -83,7 +80,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
-     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
                                       CandidateDevicesSubscriber subscriber, DiscoveryLog discoveryLog) {
@@ -99,7 +96,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
-     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
                                       CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLog discoveryLog) {
@@ -112,7 +109,6 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
         //Inject components
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
-        this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
     }
 
@@ -122,16 +118,6 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public void run() {
-        //Stream through all dynamic deployments that use the provided device template
-        boolean isDeviceTemplateInUse = this.dynamicDeploymentRepository
-                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find deployments by device template ID
-                .anyMatch(DynamicDeployment::isActivatingIntended); //Check whether any of them is intended to be active
-
-        //Abort if not forced and candidate devices of the device template are not in use
-        if ((!this.force) && (!isDeviceTemplateInUse)) {
-            return;
-        }
-
         //Write log
         addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
 
@@ -143,7 +129,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
         }
 
         //Write log
-        addLogMessage("Requesting candidate devices from discovery repositories.");
+        addLogMessage("Requesting candidate devices from discovery repositories and creating subscriptions.");
 
         //Not available or forced, thus retrieve the candidate devices
         CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);

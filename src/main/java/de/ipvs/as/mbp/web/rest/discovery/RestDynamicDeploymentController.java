@@ -121,7 +121,7 @@ public class RestDynamicDeploymentController {
                 .setRequestTopics(requestTopics);
 
         //Save dynamic deployment in repository
-        DynamicDeployment createdDynamicDeployment = userEntityService.create(dynamicDeploymentRepository, dynamicDeployment);
+        DynamicDeployment createdDynamicDeployment = discoveryService.createDynamicDeployment(dynamicDeployment);
 
         //Return created request topic
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDynamicDeployment));

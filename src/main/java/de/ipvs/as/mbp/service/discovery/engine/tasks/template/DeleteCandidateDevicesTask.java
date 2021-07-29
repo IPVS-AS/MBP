@@ -25,9 +25,6 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     //The device template to update the candidate devices for
     private DeviceTemplate deviceTemplate;
 
-    //Whether to force the deletion of candidate devices and the unsubscription
-    private boolean force = false;
-
     //The discovery log to extend for further log messages
     private DiscoveryLog discoveryLog;
 
@@ -35,38 +32,22 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     Injected fields
      */
     private final DiscoveryGateway discoveryGateway;
-    private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final CandidateDevicesRepository candidateDevicesRepository;
-
-    /**
-     * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate} and
-     * {@link DiscoveryLog}.
-     *
-     * @param deviceTemplate The device template to use
-     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
-     */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLog discoveryLog) {
-        this(deviceTemplate, false, discoveryLog);
-    }
 
     /**
      * Creates a new {@link DeleteCandidateDevicesTask} from a given {@link DeviceTemplate}, a force flag and a
      * {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param force          True, if the deletion of candidate devices and the unsubscription should be forced and thus
-     *                       done without checking whether the corresponding device template is currently in use
-     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force, DiscoveryLog discoveryLog) {
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLog discoveryLog) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
-        setForce(force);
         setDiscoveryLog(discoveryLog);
 
         //Inject components
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
-        this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
     }
 
@@ -76,24 +57,11 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public void run() {
-        //Stream through all dynamic deployments that use the provided device template
-        boolean isDeviceTemplateInUse = this.dynamicDeploymentRepository
-                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find deployments by device template ID
-                .anyMatch(DynamicDeployment::isActivatingIntended); //Check whether any of them is intended to be active
-
-        //Abort if not forced and candidate devices of the device template are in use
-        if ((!force) && isDeviceTemplateInUse) {
-            return;
-        }
-
-        //Abort if candidate devices do not exist
-        if (!this.candidateDevicesRepository.existsById(getDeviceTemplateId())) return; //Line not really necessary
-
         //Write log
         addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
         addLogMessage("Deleting candidate devices.");
 
-        //Candidate devices are not in use, so delete them
+        //Delete the candidate devices
         this.candidateDevicesRepository.deleteById(getDeviceTemplateId());
 
         //Check whether a subscription exists
@@ -167,27 +135,6 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         }
 
         this.deviceTemplate = deviceTemplate;
-        return this;
-    }
-
-
-    /**
-     * Returns whether the deletion of candidate devices and the unsubscription is forced.
-     *
-     * @return True, if forced; false otherwise
-     */
-    public boolean isForce() {
-        return force;
-    }
-
-    /**
-     * Sets whether the deletion of candidate devices and the unsubscription is forced.
-     *
-     * @param force True, if forced; false otherwise
-     * @return The task
-     */
-    public DeleteCandidateDevicesTask setForce(boolean force) {
-        this.force = force;
         return this;
     }
 

@@ -7,6 +7,7 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
+import de.ipvs.as.mbp.service.discovery.DiscoveryService;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class RestDeviceTemplateController {
 
     @Autowired
     private DeviceTemplateRepository deviceTemplateRepository;
+
+    @Autowired
+    private DiscoveryService discoveryService;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -87,12 +91,15 @@ public class RestDeviceTemplateController {
             @ApiResponse(code = 401, message = "Not authorized to delete this device template!"),
             @ApiResponse(code = 404, message = "Device template or requesting user not found!")})
     public ResponseEntity<Void> delete(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-                                                       @PathVariable("id") String id) throws EntityNotFoundException, MissingPermissionException {
+                                       @PathVariable("id") String id) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
+        //Retrieve the device template with access control check
+        DeviceTemplate deviceTemplate = userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, id, ACAccessType.DELETE, accessRequest);
+
         //Delete the device template
-        userEntityService.deleteWithAccessControlCheck(deviceTemplateRepository, id, accessRequest);
+        discoveryService.deleteDeviceTemplate(deviceTemplate);
         return ResponseEntity.noContent().build();
     }
 }

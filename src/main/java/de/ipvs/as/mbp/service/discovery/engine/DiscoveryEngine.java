@@ -134,7 +134,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true, new DiscoveryLog(MBP, "Update candidate devices")));
             } else {
                 //No such dynamic deployments exist, so deletion of candidate devices and unsubscription is safe
-                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLog(MBP, "Delete candidate devices")));
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, new DiscoveryLog(MBP, "Delete candidate devices")));
             }
 
             /*
@@ -192,7 +192,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
      * @param dynamicDeploymentId The ID of the dynamic deployment to check
      * @return True, if operations are in progress; false otherwise
      */
-    public synchronized boolean isDynamicDeploymentInProgress(String dynamicDeploymentId) {
+    public boolean isDynamicDeploymentInProgress(String dynamicDeploymentId) {
         //Sanity check
         if ((dynamicDeploymentId == null) || dynamicDeploymentId.isEmpty()) {
             return false;
@@ -259,9 +259,6 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             return false;
         }
 
-        //Submit task for potentially deleting candidate devices data and cancel subscriptions
-        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), new DiscoveryLog(USER, "Delete candidate devices")));
-
         //Submit task for undeploying the dynamic deployment
         submitTask(new UndeployTask(dynamicDeployment, new DiscoveryLog(USER, "Deactivate deployment")));
 
@@ -287,7 +284,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         //Retrieve dynamic deployment from its repository
         DynamicDeployment dynamicDeployment = this.dynamicDeploymentRepository.findById(dynamicDeploymentId).orElse(null);
 
-        //Check if dynamic deployment was found and if it is already been flagged for deletion
+        //Check if dynamic deployment was found and if it is already flagged for deletion
         if (dynamicDeployment == null)
             throw new IllegalStateException("The dynamic deployment does not exist.");
 
@@ -304,6 +301,23 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
         //Delete the dynamic deployment from its repository
         this.dynamicDeploymentRepository.deleteById(dynamicDeploymentId);
+    }
+
+    /**
+     * Submits a task that is responsible for deleting the candidate devices that are stored for a given
+     * {@link DeviceTemplate} and for cancelling the subscriptions that are created at the discovery repositories.
+     *
+     * @param deviceTemplate The {@link DeviceTemplate} to delete the candidate devices for and cancel subscriptions
+     */
+    public synchronized void deleteCandidateDevicesAndSubscriptions(DeviceTemplate deviceTemplate) {
+        //Null checks
+        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
+
+        //Submit task for deleting the candidate devices and cancelling possible subscriptions
+        submitTask(new DeleteCandidateDevicesTask(deviceTemplate, new DiscoveryLog(USER, "Delete candidate devices")));
+
+        //Trigger the execution of tasks
+        executeTasks();
     }
 
     /**
@@ -358,7 +372,6 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
         //Add task to dedicated queue
         candidateDevicesTasks.get(deviceTemplateId).add(new TaskWrapper<>(task));
-        //TODO optimize queue maybe
     }
 
     /**
