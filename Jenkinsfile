@@ -15,7 +15,7 @@ pipeline {
 
         stage ('Build') {
             steps {
-                sh 'mvn -DskipTests clean install' 
+                sh 'mvn -DskipTests -B clean install' 
             }
         }
         
@@ -23,12 +23,12 @@ pipeline {
             parallel {
                stage('Backend') {
                    steps {
-                       sh 'mvn verify'
+                       sh 'mvn -B verify'
                    }
                }
                stage('Device tests') {
                    steps {
-                       sh 'mvn verify'
+                       sh 'mvn -B verify'
                    }
                }
                stage('Frontend') {
