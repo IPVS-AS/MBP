@@ -205,8 +205,7 @@ public class DiscoveryGateway {
         //Create and return corresponding repository subscription details object
         return new RepositorySubscriptionDetails()
                 .setReturnTopic(returnTopic) //Set generated return topic
-                .setReferenceId(deviceTemplate.getId()) //Use device template ID as reference
-                .setCancelAllPreviousSubscriptions(false); //Keep previous subscriptions
+                .setReferenceId(deviceTemplate.getId()) ;//Use device template ID as reference
     }
 
     /**
