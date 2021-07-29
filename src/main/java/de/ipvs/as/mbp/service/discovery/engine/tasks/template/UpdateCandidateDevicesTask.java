@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
@@ -121,17 +122,19 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public void run() {
-        //Check whether there are remaining dynamic deployments that use the device template
-        boolean isDeviceTemplateInUse = !this.dynamicDeploymentRepository
-                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).isEmpty();
-
-        //Abort if not forced and candidate devices of the device template are not in use
-        if ((!this.force) && (!isDeviceTemplateInUse)) {
-            return;
-        }
-
         //Write log
         addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
+
+        //Stream through all dynamic deployments that use the provided device template
+        boolean areCandidateDevicesRequired = this.dynamicDeploymentRepository
+                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).stream() //Find deployments by device template ID
+                .anyMatch(DynamicDeployment::isActivatingIntended); //Check whether any of them is intended to be active
+
+        //Abort if not forced and candidate devices of the device template are not in use
+        if ((!this.force) && (!areCandidateDevicesRequired)) {
+            addLogMessage("Candidate devices are currently not required, thus aborting.");
+            return;
+        }
 
         //Abort if not forced and candidate devices are already available
         if ((!this.force) && this.candidateDevicesRepository.existsById(deviceTemplate.getId())) {

@@ -76,12 +76,16 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public void run() {
+        //Write log
+        addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
+
         //Check whether there are remaining dynamic deployments that use the device template
         boolean isDeviceTemplateInUse = !this.dynamicDeploymentRepository
                 .findByDeviceTemplate_Id(this.deviceTemplate.getId()).isEmpty();
 
         //Abort if not forced and candidate devices of the device template are in use
         if ((!force) && isDeviceTemplateInUse) {
+            addLogMessage("Candidate devices are in use, thus aborting.");
             return;
         }
 
@@ -89,7 +93,6 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         if (!this.candidateDevicesRepository.existsById(getDeviceTemplateId())) return; //Line not really necessary
 
         //Write log
-        addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
         addLogMessage("Deleting candidate devices.");
 
         //Candidate devices are not in use, so delete them
