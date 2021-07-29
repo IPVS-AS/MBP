@@ -7,7 +7,6 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
-import de.ipvs.as.mbp.service.discovery.DiscoveryService;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +33,6 @@ public class RestDeviceTemplateController {
 
     @Autowired
     private DeviceTemplateRepository deviceTemplateRepository;
-
-    @Autowired
-    private DiscoveryService discoveryService;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -95,11 +91,8 @@ public class RestDeviceTemplateController {
         // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Retrieve the device template with access control check
-        DeviceTemplate deviceTemplate = userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, id, ACAccessType.DELETE, accessRequest);
-
         //Delete the device template
-        discoveryService.deleteDeviceTemplate(deviceTemplate);
+        userEntityService.deleteWithAccessControlCheck(deviceTemplateRepository, id, accessRequest);
         return ResponseEntity.noContent().build();
     }
 }

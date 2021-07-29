@@ -120,8 +120,8 @@ public class RestDynamicDeploymentController {
                 .setDeviceTemplate(requestDTO.getDeviceTemplateId() == null ? null : userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, requestDTO.getDeviceTemplateId(), ACAccessType.READ, accessRequest))
                 .setRequestTopics(requestTopics);
 
-        //Save dynamic deployment in repository
-        DynamicDeployment createdDynamicDeployment = discoveryService.createDynamicDeployment(dynamicDeployment);
+        //Write dynamic deployment to repository
+        DynamicDeployment createdDynamicDeployment = userEntityService.create(dynamicDeploymentRepository, dynamicDeployment);
 
         //Return created request topic
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDynamicDeployment));

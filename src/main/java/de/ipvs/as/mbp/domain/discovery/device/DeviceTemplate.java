@@ -21,7 +21,7 @@ import java.util.Objects;
  * Objects of this class represent device templates that describe requirements and criteria for the discovery of devices.
  */
 @Document
-@MBPEntity(createValidator = DeviceTemplateCreateValidator.class)
+@MBPEntity(createValidator = DeviceTemplateCreateValidator.class, deleteValidator = DeviceTemplateDeleteValidator.class)
 @ApiModel(description = "Model for device templates")
 public class DeviceTemplate extends UserEntity {
     @Id

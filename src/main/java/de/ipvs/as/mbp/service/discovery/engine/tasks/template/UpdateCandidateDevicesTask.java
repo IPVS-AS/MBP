@@ -8,6 +8,7 @@ import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
@@ -43,6 +44,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     Injected fields
      */
     private final CandidateDevicesRepository candidateDevicesRepository;
+    private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final DiscoveryGateway discoveryGateway;
 
     /**
@@ -109,6 +111,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
         //Inject components
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
+        this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
     }
 
@@ -118,6 +121,15 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public void run() {
+        //Check whether there are remaining dynamic deployments that use the device template
+        boolean isDeviceTemplateInUse = !this.dynamicDeploymentRepository
+                .findByDeviceTemplate_Id(this.deviceTemplate.getId()).isEmpty();
+
+        //Abort if not forced and candidate devices of the device template are not in use
+        if ((!this.force) && (!isDeviceTemplateInUse)) {
+            return;
+        }
+
         //Write log
         addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
 

@@ -134,7 +134,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
                 submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true, new DiscoveryLog(MBP, "Update candidate devices")));
             } else {
                 //No such dynamic deployments exist, so deletion of candidate devices and unsubscription is safe
-                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, new DiscoveryLog(MBP, "Delete candidate devices")));
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLog(MBP, "Delete candidate devices")));
             }
 
             /*
@@ -294,27 +294,19 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
         /*
         Due to synchronized, we know that no deployment of the operator exists anymore, since the activation intention
-        is set to false and no tasks are in its queue. Therefore, a deletion at this point is safe. Furthermore,
-        we do not need to check the candidate devices, since the previous tasks for the deactivation of the dynamic
-        deployment have already dealt with this.
+        is set to false and no tasks are in its queue. Therefore, a deletion at this point is safe.
          */
 
         //Delete the dynamic deployment from its repository
         this.dynamicDeploymentRepository.deleteById(dynamicDeploymentId);
-    }
 
-    /**
-     * Submits a task that is responsible for deleting the candidate devices that are stored for a given
-     * {@link DeviceTemplate} and for cancelling the subscriptions that are created at the discovery repositories.
-     *
-     * @param deviceTemplate The {@link DeviceTemplate} to delete the candidate devices for and cancel subscriptions
-     */
-    public synchronized void deleteCandidateDevicesAndSubscriptions(DeviceTemplate deviceTemplate) {
-        //Null checks
-        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
+        //Check whether dynamic deployments remain that use the same device template
+        if (!this.dynamicDeploymentRepository.findByDeviceTemplate_Id(dynamicDeployment.getDeviceTemplate().getId()).isEmpty()) {
+            return;
+        }
 
-        //Submit task for deleting the candidate devices and cancelling possible subscriptions
-        submitTask(new DeleteCandidateDevicesTask(deviceTemplate, new DiscoveryLog(USER, "Delete candidate devices")));
+        //Submit task for deleting the candidate devices and cancelling the subscriptions
+        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), new DiscoveryLog(USER, "Delete candidate devices")));
 
         //Trigger the execution of tasks
         executeTasks();
