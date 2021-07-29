@@ -123,4 +123,24 @@ public class DiscoveryService {
             throw new MBPException(HttpStatus.PRECONDITION_FAILED, "The dynamic deployment is already deactivated.");
         }
     }
+
+    /**
+     * Deletes a given {@link DynamicDeployment} safely. This includes the check of pre-conditions as well as
+     * the undeployment of possibly deployed operators.
+     *
+     * @param dynamicDeployment The dynamic deployment to delete
+     */
+    public void deleteDynamicDeployment(DynamicDeployment dynamicDeployment) {
+        //Null check
+        if (dynamicDeployment == null) {
+            throw new IllegalArgumentException("The dynamic deployment must not be null.");
+        }
+
+        //Let the discovery engine perform the deletion and catch possible errors
+        try {
+            this.discoveryEngine.deleteDynamicDeployment(dynamicDeployment.getId());
+        } catch (Exception e) {
+            throw new MBPException(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
 }

@@ -28,8 +28,8 @@ public class MergeCandidateDevicesTask implements CandidateDevicesTask {
     //The updated candidate devices as received from the discovery repository
     private CandidateDevicesCollection updatedCandidateDevices;
 
-    //The log entry to extend for further log messages
-    private DiscoveryLog logEntry;
+    //The discovery log to extend for further log messages
+    private DiscoveryLog discoveryLog;
 
     /*
     Injected fields
@@ -43,15 +43,15 @@ public class MergeCandidateDevicesTask implements CandidateDevicesTask {
      * @param deviceTemplate          The device template whose candidate devices are affected
      * @param repositoryName          The name of the repository that issued the notification
      * @param updatedCandidateDevices The updated candidate devices as received from the discovery repository
-     * @param logEntry                The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog                The {@link DiscoveryLog} to use for logging within this task
      */
     public MergeCandidateDevicesTask(DeviceTemplate deviceTemplate, String repositoryName,
-                                     CandidateDevicesCollection updatedCandidateDevices, DiscoveryLog logEntry) {
+                                     CandidateDevicesCollection updatedCandidateDevices, DiscoveryLog discoveryLog) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setRepositoryName(repositoryName);
         setUpdatedCandidateDevices(updatedCandidateDevices);
-        setLogEntry(logEntry);
+        setDiscoveryLog(discoveryLog);
 
         //Inject components
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
@@ -111,16 +111,16 @@ public class MergeCandidateDevicesTask implements CandidateDevicesTask {
      */
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
-        if (this.logEntry == null) return;
+        if (this.discoveryLog == null) return;
 
         //Update start timestamp when this is the first log message
-        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
+        if (discoveryLog.isEmpty()) discoveryLog.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
 
-        //Add the message to the log entry of this task
-        logEntry.addMessage(logMessage);
+        //Add the message to the discovery log of this task
+        discoveryLog.addMessage(logMessage);
     }
 
     /**
@@ -195,17 +195,17 @@ public class MergeCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public DiscoveryLog getDiscoveryLog() {
-        return logEntry;
+        return discoveryLog;
     }
 
     /**
      * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
+     * @param discoveryLog The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLog logEntry) {
-        this.logEntry = logEntry;
+    private void setDiscoveryLog(DiscoveryLog discoveryLog) {
+        this.discoveryLog = discoveryLog;
     }
 
     /**

@@ -186,7 +186,6 @@ public class DynamicDeployment extends UserEntity {
         return this;
     }
 
-
     /**
      * Returns the last state of the dynamic deployment.
      *

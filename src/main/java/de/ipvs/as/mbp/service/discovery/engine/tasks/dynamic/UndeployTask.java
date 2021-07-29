@@ -32,8 +32,8 @@ public class UndeployTask implements DynamicDeploymentTask {
     //The original version of the dynamic deployment that is supposed to be deployed
     private DynamicDeployment originalDynamicDeployment;
 
-    //The log entry to extend for further log messages
-    private DiscoveryLog logEntry;
+    //The discovery log to extend for further log messages
+    private DiscoveryLog discoveryLog;
 
     /*
     Injected fields
@@ -46,12 +46,12 @@ public class UndeployTask implements DynamicDeploymentTask {
      * Creates a new {@link UndeployTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLog}.
      *
      * @param dynamicDeployment The dynamic deployment to use
-     * @param logEntry          The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog      The {@link DiscoveryLog} to use for logging within this task
      */
-    public UndeployTask(DynamicDeployment dynamicDeployment, DiscoveryLog logEntry) {
+    public UndeployTask(DynamicDeployment dynamicDeployment, DiscoveryLog discoveryLog) {
         //Set fields
         setDynamicDeployment(dynamicDeployment);
-        setLogEntry(logEntry);
+        setDiscoveryLog(discoveryLog);
 
         //Inject components
         this.discoveryDeploymentService = DynamicBeanProvider.get(DiscoveryDeploymentService.class);
@@ -112,17 +112,17 @@ public class UndeployTask implements DynamicDeploymentTask {
      */
     @Override
     public DiscoveryLog getDiscoveryLog() {
-        return this.logEntry;
+        return this.discoveryLog;
     }
 
     /**
      * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
+     * @param discoveryLog The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLog logEntry) {
-        this.logEntry = logEntry;
+    private void setDiscoveryLog(DiscoveryLog discoveryLog) {
+        this.discoveryLog = discoveryLog;
     }
 
     /**
@@ -163,16 +163,16 @@ public class UndeployTask implements DynamicDeploymentTask {
      */
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
-        if (this.logEntry == null) return;
+        if (this.discoveryLog == null) return;
 
         //Update start timestamp when this is the first log message
-        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
+        if (discoveryLog.isEmpty()) discoveryLog.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
 
-        //Add the message to the log entry of this task
-        logEntry.addMessage(logMessage);
+        //Add the message to the discovery log of this task
+        discoveryLog.addMessage(logMessage);
     }
 
     /**
@@ -232,12 +232,12 @@ public class UndeployTask implements DynamicDeploymentTask {
     }
 
     /**
-     * Returns whether this task was created on behalf of an user.
+     * Returns whether this task may replace another, previously created task in the task queue.
      *
-     * @return True, if the task was created on behalf of an user; false otherwise
+     * @return True, if the task may replace another task; false otherwise
      */
     @Override
-    public boolean isUserCreated() {
+    public boolean mayReplace() {
         return true;
     }
 

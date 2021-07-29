@@ -28,8 +28,8 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     //Whether to force the deletion of candidate devices and the unsubscription
     private boolean force = false;
 
-    //The log entry to extend for further log messages
-    private DiscoveryLog logEntry;
+    //The discovery log to extend for further log messages
+    private DiscoveryLog discoveryLog;
 
     /*
     Injected fields
@@ -43,10 +43,10 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      * {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLog logEntry) {
-        this(deviceTemplate, false, logEntry);
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLog discoveryLog) {
+        this(deviceTemplate, false, discoveryLog);
     }
 
     /**
@@ -56,13 +56,13 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      * @param deviceTemplate The device template to use
      * @param force          True, if the deletion of candidate devices and the unsubscription should be forced and thus
      *                       done without checking whether the corresponding device template is currently in use
-     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force, DiscoveryLog logEntry) {
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, boolean force, DiscoveryLog discoveryLog) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setForce(force);
-        setLogEntry(logEntry);
+        setDiscoveryLog(discoveryLog);
 
         //Inject components
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
@@ -85,6 +85,9 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         if ((!force) && isDeviceTemplateInUse) {
             return;
         }
+
+        //Abort if candidate devices do not exist
+        if (!this.candidateDevicesRepository.existsById(getDeviceTemplateId())) return; //Line not really necessary
 
         //Write log
         addLogMessage(String.format("Started task for device template \"%s\".", deviceTemplate.getName()));
@@ -130,16 +133,16 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      */
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
-        if (this.logEntry == null) return;
+        if (this.discoveryLog == null) return;
 
         //Update start timestamp when this is the first log message
-        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
+        if (discoveryLog.isEmpty()) discoveryLog.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
 
-        //Add the message to the log entry of this task
-        logEntry.addMessage(logMessage);
+        //Add the message to the discovery log of this task
+        discoveryLog.addMessage(logMessage);
     }
 
     /**
@@ -196,17 +199,17 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public DiscoveryLog getDiscoveryLog() {
-        return logEntry;
+        return discoveryLog;
     }
 
     /**
      * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
+     * @param discoveryLog The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLog logEntry) {
-        this.logEntry = logEntry;
+    private void setDiscoveryLog(DiscoveryLog discoveryLog) {
+        this.discoveryLog = discoveryLog;
     }
 
     /**

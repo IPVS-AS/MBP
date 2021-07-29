@@ -27,6 +27,10 @@ import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -69,6 +73,9 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
     @Autowired
     private DeviceTemplateRepository deviceTemplateRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     //Map (device template ID --> Queue) of task queues for candidate devices tasks
     private final Map<String, Queue<TaskWrapper<CandidateDevicesTask>>> candidateDevicesTasks;
@@ -185,7 +192,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
      * @param dynamicDeploymentId The ID of the dynamic deployment to check
      * @return True, if operations are in progress; false otherwise
      */
-    public boolean isDynamicDeploymentInProgress(String dynamicDeploymentId) {
+    public synchronized boolean isDynamicDeploymentInProgress(String dynamicDeploymentId) {
         //Sanity check
         if ((dynamicDeploymentId == null) || dynamicDeploymentId.isEmpty()) {
             return false;
@@ -262,6 +269,41 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         executeTasks();
 
         return true;
+    }
+
+    /**
+     * Deletes a certain {@link DynamicDeployment}, given by its ID, safely. This way, it is ensured that no deployment
+     * remains on a former device. Before the deletion is actually executed, pre-conditions like no remaining tasks
+     * and no activating intention are checked for the pertaining {@link DynamicDeployment}. If they are violated,
+     * a corresponding {@link IllegalStateException} will be thrown.
+     *
+     * @param dynamicDeploymentId The ID of the {@link DynamicDeployment} to delete
+     */
+    public synchronized void deleteDynamicDeployment(String dynamicDeploymentId) {
+        //Check whether operations are in progress for this dynamic deployment
+        if (isDynamicDeploymentInProgress(dynamicDeploymentId))
+            throw new IllegalStateException("Cannot delete, because operations for the dynamic deployment are currently in progress.");
+
+        //Retrieve dynamic deployment from its repository
+        DynamicDeployment dynamicDeployment = this.dynamicDeploymentRepository.findById(dynamicDeploymentId).orElse(null);
+
+        //Check if dynamic deployment was found and if it is already been flagged for deletion
+        if (dynamicDeployment == null)
+            throw new IllegalStateException("The dynamic deployment does not exist.");
+
+        //Check activating intention
+        if (dynamicDeployment.isActivatingIntended())
+            throw new IllegalStateException("The dynamic deployment must be disabled before it can be deleted.");
+
+        /*
+        Due to synchronized, we know that no deployment of the operator exists anymore, since the activation intention
+        is set to false and no tasks are in its queue. Therefore, a deletion at this point is safe. Furthermore,
+        we do not need to check the candidate devices, since the previous tasks for the deactivation of the dynamic
+        deployment have already dealt with this.
+         */
+
+        //Delete the dynamic deployment from its repository
+        this.dynamicDeploymentRepository.deleteById(dynamicDeploymentId);
     }
 
     /**
@@ -364,7 +406,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             if (taskWrapper.isStarted()) continue;
 
             //Check if queued task and new one are redundant
-            if (task.isUserCreated()) {
+            if (task.mayReplace()) {
                 //New task is created by user, so replace current one
                 queueIterator.remove();
                 break;
@@ -558,35 +600,32 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     /**
      * Retrieves and returns a {@link DynamicDeployment} of a given ID from its repository and updates its activation
      * intention to a given target value. Thereby, it is checked whether the intention of the {@link DynamicDeployment}
-     * has already been updated previously to the target value. If this is the case, null will be returned instead of
-     * the object. This way, it is ensured that the thread that wants to update the activation intention of the
-     * {@link DynamicDeployment} and succeeds in doing so receives exclusive access to the {@link DynamicDeployment}
-     * for the scope of its operation, thus avoiding the duplicated execution of operations with the same intention.
+     * has already been updated previously to the target value and whether the deletion flag is set. If one of both is
+     * the case, null will be returned instead of the object. This way, it is ensured that the thread that wants to
+     * update the activation intention of the {@link DynamicDeployment} and succeeds in doing so receives exclusive
+     * access to the {@link DynamicDeployment} for the scope of its operation, thus avoiding the duplicated execution
+     * of operations with the same intention or operations on entities that are supposed to be deleted.
      *
      * @param dynamicDeploymentId The ID of the dynamic deployment to retrieve
-     * @param enablingIntention   The target intention to set where true means active and false inactive
+     * @param activatingIntention The target intention to set where true means active and false inactive
      * @return The {@link DynamicDeployment} or null if access could not be granted
      */
-    private synchronized DynamicDeployment requestDynamicDeploymentExclusively(String dynamicDeploymentId, boolean enablingIntention) {
-        //Read dynamic deployment from repository
-        Optional<DynamicDeployment> dynamicDeployment = this.dynamicDeploymentRepository.findById(dynamicDeploymentId);
+    private synchronized DynamicDeployment requestDynamicDeploymentExclusively(String dynamicDeploymentId, boolean activatingIntention) {
+        //Retrieve dynamic deployment from repository
+        DynamicDeployment dynamicDeployment = this.dynamicDeploymentRepository.findById(dynamicDeploymentId).orElse(null);
 
         //Check if dynamic deployment was found
-        if (!dynamicDeployment.isPresent()) {
+        if (dynamicDeployment == null) {
             throw new IllegalArgumentException("The dynamic deployment with the given ID does not exist.");
         }
 
         //Check if target status is already present
-        if (dynamicDeployment.get().isActivatingIntended() == enablingIntention) {
-            //Target status is already present, so do not continue
-            return null;
-        }
+        if (dynamicDeployment.isActivatingIntended() == activatingIntention) return null;
 
-        //Set the target status
-        dynamicDeployment.get().setActivatingIntended(enablingIntention);
-
-        //Write updated deployment to repository and return it
-        return this.dynamicDeploymentRepository.save(dynamicDeployment.get());
+        //Write the target status
+        mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(dynamicDeploymentId)),
+                new Update().set("activatingIntended", activatingIntention), DynamicDeployment.class);
+        return dynamicDeployment.setActivatingIntended(activatingIntention);
     }
 
     /**

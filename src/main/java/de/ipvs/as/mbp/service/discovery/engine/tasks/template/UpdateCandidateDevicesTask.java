@@ -38,8 +38,8 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     //The subscriber to use for subscriptions
     private CandidateDevicesSubscriber subscriber = null;
 
-    //The log entry to extend for further log messages
-    private DiscoveryLog logEntry;
+    //The discovery log to extend for further log messages
+    private DiscoveryLog discoveryLog;
 
     /*
     Injected fields
@@ -54,11 +54,11 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      *
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
-     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      DiscoveryLog logEntry) {
-        this(deviceTemplate, requestTopics, null, false, logEntry);
+                                      DiscoveryLog discoveryLog) {
+        this(deviceTemplate, requestTopics, null, false, discoveryLog);
     }
 
     /**
@@ -69,11 +69,11 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
-     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      boolean force, DiscoveryLog logEntry) {
-        this(deviceTemplate, requestTopics, null, force, logEntry);
+                                      boolean force, DiscoveryLog discoveryLog) {
+        this(deviceTemplate, requestTopics, null, force, discoveryLog);
     }
 
     /**
@@ -83,11 +83,11 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      * @param deviceTemplate The device template to use
      * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
-     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      CandidateDevicesSubscriber subscriber, DiscoveryLog logEntry) {
-        this(deviceTemplate, requestTopics, subscriber, false, logEntry);
+                                      CandidateDevicesSubscriber subscriber, DiscoveryLog discoveryLog) {
+        this(deviceTemplate, requestTopics, subscriber, false, discoveryLog);
     }
 
     /**
@@ -99,16 +99,16 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
-     * @param logEntry       The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog       The {@link DiscoveryLog} to use for logging within this task
      */
     public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLog logEntry) {
+                                      CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLog discoveryLog) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
         setRequestTopics(requestTopics);
         setSubscriber(subscriber);
         setForce(force);
-        setLogEntry(logEntry);
+        setDiscoveryLog(discoveryLog);
 
         //Inject components
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
@@ -178,16 +178,16 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      */
     private void addLogMessage(DiscoveryLogMessageType type, String message) {
         //Check if log messages are supposed to be collected
-        if (this.logEntry == null) return;
+        if (this.discoveryLog == null) return;
 
         //Update start timestamp when this is the first log message
-        if (logEntry.isEmpty()) logEntry.updateStartTimestamp();
+        if (discoveryLog.isEmpty()) discoveryLog.updateStartTimestamp();
 
         //Create new log message
         DiscoveryLogMessage logMessage = new DiscoveryLogMessage(type, message);
 
-        //Add the message to the log entry of this task
-        logEntry.addMessage(logMessage);
+        //Add the message to the discovery log of this task
+        discoveryLog.addMessage(logMessage);
     }
 
     /**
@@ -288,17 +288,17 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
      */
     @Override
     public DiscoveryLog getDiscoveryLog() {
-        return logEntry;
+        return discoveryLog;
     }
 
     /**
      * Sets the {@link DiscoveryLog} that is supposed to be used within this task in order to collect
      * {@link DiscoveryLogMessage}s for logging purposes. If set to null, logging is not formed.
      *
-     * @param logEntry The {@link DiscoveryLog} or null, if no logging is supposed to be performed
+     * @param discoveryLog The {@link DiscoveryLog} or null, if no logging is supposed to be performed
      */
-    private void setLogEntry(DiscoveryLog logEntry) {
-        this.logEntry = logEntry;
+    private void setDiscoveryLog(DiscoveryLog discoveryLog) {
+        this.discoveryLog = discoveryLog;
     }
 
     /**

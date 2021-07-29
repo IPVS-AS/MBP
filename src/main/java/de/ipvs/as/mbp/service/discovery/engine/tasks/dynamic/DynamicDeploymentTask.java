@@ -35,9 +35,9 @@ public interface DynamicDeploymentTask extends DiscoveryTask {
     boolean dependsOnCandidateDevices();
 
     /**
-     * Returns whether this task was created on behalf of an user.
+     * Returns whether this task may replace another, previously created task in the task queue.
      *
-     * @return True, if the task was created on behalf of an user; false otherwise
+     * @return True, if the task may replace another task; false otherwise
      */
-    boolean isUserCreated();
+    boolean mayReplace();
 }

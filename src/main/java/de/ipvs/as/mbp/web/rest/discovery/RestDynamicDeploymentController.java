@@ -73,12 +73,11 @@ public class RestDynamicDeploymentController {
         //Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Retrieve the corresponding dynamic deployments (includes access-control)
+        //Retrieve the corresponding dynamic deployments and filter for those that are not flagged for deletion
         List<DynamicDeployment> dynamicDeployments = userEntityService.getPageWithAccessControlCheck(dynamicDeploymentRepository, ACAccessType.READ, accessRequest, pageable);
 
         //Create self link
         Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
-
         return ResponseEntity.ok(userEntityService.entitiesToPagedModel(dynamicDeployments, selfLink, pageable));
     }
 
@@ -138,8 +137,13 @@ public class RestDynamicDeploymentController {
         //Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Delete the dynamic deployment
-        userEntityService.deleteWithAccessControlCheck(dynamicDeploymentRepository, id, accessRequest);
+        //Retrieve the dynamic deployment with access control check
+        DynamicDeployment dynamicDeployment = userEntityService.getForIdWithAccessControlCheck(dynamicDeploymentRepository, id, ACAccessType.DEPLOY, accessRequest);
+
+        //Use the discovery service in order to delete the dynamic deployment
+        discoveryService.deleteDynamicDeployment(dynamicDeployment);
+
+        //No exceptions, thus successful
         return ResponseEntity.noContent().build();
     }
 
