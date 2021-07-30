@@ -70,7 +70,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
      * Creates a new {@link DeployByRankingTask} from a given {@link DynamicDeployment} and a {@link DiscoveryLog}.
      *
      * @param dynamicDeployment The dynamic deployment to use
-     * @param discoveryLog          The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog      The {@link DiscoveryLog} to use for logging within this task
      */
     public DeployByRankingTask(DynamicDeployment dynamicDeployment, DiscoveryLog discoveryLog) {
         //Delegate call
@@ -83,7 +83,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
      *
      * @param dynamicDeployment The dynamic deployment to use
      * @param isUserCreated     True, if the task was created on behalf of an user; false otherwise
-     * @param discoveryLog          The {@link DiscoveryLog} to use for logging within this task
+     * @param discoveryLog      The {@link DiscoveryLog} to use for logging within this task
      */
     public DeployByRankingTask(DynamicDeployment dynamicDeployment, boolean isUserCreated, DiscoveryLog discoveryLog) {
         //Set fields
@@ -144,10 +144,10 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
             if (isDeployed) {
                 addLogMessage(UNDESIRABLE, "Ranking is empty, undeploying from previously used device.");
                 this.discoveryDeploymentService.undeploy(dynamicDeployment);
-            }else{
+            } else {
                 addLogMessage(UNDESIRABLE, "Ranking is empty, no deployment possible.");
             }
-                
+
             //Update last device details and status
             updateDynamicDeployment(dynamicDeployment.getId(), null, DynamicDeploymentState.NO_CANDIDATE);
             return;
@@ -163,8 +163,11 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
         double minScoreExclusive = isDeployed ? ranking.getScoreByMacAddress(oldMacAddress) : -1;
 
         //Write log
-        if (minScoreExclusive >= 0)
+        if (minScoreExclusive >= 0) {
             addLogMessage(String.format("Currently used device has now a score of [%f].", minScoreExclusive));
+        } else if (isDeployed) {
+            addLogMessage(String.format("Formerly used device %s is no longer available.", oldMacAddress));
+        }
 
         //Iterate through the ranking
         for (ScoredCandidateDevice candidateDevice : ranking) {
@@ -192,12 +195,13 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
 
                 //Success; if former deployment existed, undeploy from former device
                 if (isDeployed) {
-                    addLogMessage("Undeploying from formerly used device.");
+                    addLogMessage("Undeploying operator from formerly used device.");
                     this.discoveryDeploymentService.undeploy(dynamicDeployment);
                 }
 
                 //Update the dynamic deployment accordingly and set the state
                 updateDynamicDeployment(dynamicDeployment.getId(), new DynamicDeploymentDeviceDetails(candidateDevice), DynamicDeploymentState.DEPLOYED);
+                addLogMessage(SUCCESS, "Undeployed the operator from its former device.");
                 return;
             }
 

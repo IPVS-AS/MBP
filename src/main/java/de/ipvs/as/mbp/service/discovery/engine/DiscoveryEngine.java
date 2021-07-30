@@ -334,6 +334,9 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         //Iterate over all dynamic deployments that use the affected device template
         this.dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplate.getId())
                 .forEach(d -> submitTask(new DeployByRankingTask(d, new DiscoveryLog(DISCOVERY_REPOSITORY, "Re-evaluate deployment"))));
+
+        //Trigger the execution of tasks
+        executeTasks();
     }
 
     /**
