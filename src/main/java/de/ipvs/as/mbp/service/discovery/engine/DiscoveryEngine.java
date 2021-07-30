@@ -129,12 +129,11 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
              */
             //Check if any of the found dynamic deployments are intended to be activated
             if (dynamicDeployments.stream().anyMatch(DynamicDeployment::isActivatingIntended)) {
-                //Such dynamic deployments exist, so get request topics, update the candidate devices and subscribe
-                List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
-                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, requestTopics, this, true, new DiscoveryLog(MBP, "Update candidate devices")));
+                //Such dynamic deployments exist, so update the candidate devices and subscribe
+                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, getRequestTopicForDeviceTemplate(deviceTemplate), this, true, new DiscoveryLog(MBP, "Update candidate devices")));
             } else {
                 //No such dynamic deployments exist, so deletion of candidate devices and unsubscription is safe
-                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLog(MBP, "Delete candidate devices")));
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, getRequestTopicForDeviceTemplate(deviceTemplate), true, new DiscoveryLog(MBP, "Delete candidate devices")));
             }
 
             /*
@@ -306,7 +305,8 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
 
         //Submit task for deleting the candidate devices and cancelling the subscriptions
-        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), new DiscoveryLog(USER, "Delete candidate devices")));
+        List<RequestTopic> requestTopics = getRequestTopicForDeviceTemplate(dynamicDeployment.getDeviceTemplate());
+        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, false, new DiscoveryLog(USER, "Delete candidate devices")));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -634,6 +634,21 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(dynamicDeploymentId)),
                 new Update().set("activatingIntended", activatingIntention), DynamicDeployment.class);
         return dynamicDeployment.setActivatingIntended(activatingIntention);
+    }
+
+    /**
+     * Returns the list of {@link RequestTopic}s that are associated with a given {@link DeviceTemplate}.
+     *
+     * @param deviceTemplate The device template for which the request topics are supposed to be retrieved
+     * @return The resulting list of {@link RequestTopic}s
+     */
+    //TODO
+    private List<RequestTopic> getRequestTopicForDeviceTemplate(DeviceTemplate deviceTemplate) {
+        //Null check
+        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
+
+        //Retrieve the corresponding request topics
+        return requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
     }
 
     /**

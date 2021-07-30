@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @Service
 public class DiscoveryGateway {
 
-    //Map (device template ID --> subscription) of subscriptions for candidate devices on behalf of devices templates
+    //Map (device template ID --> subscription) of subscriptions for candidate devices on behalf of device templates
     private final Map<String, CandidateDevicesSubscription> candidateDeviceSubscriptions;
 
     //Map (device template owner ID --> return topic) of return topics to use for receiving notifications
@@ -181,7 +181,7 @@ public class DiscoveryGateway {
         User deviceTemplateOwner = deviceTemplate.getOwner();
 
         //Create subscription object
-        CandidateDevicesSubscription subscriptionObject = new CandidateDevicesSubscription(deviceTemplate, requestTopics, subscriber);
+        CandidateDevicesSubscription subscriptionObject = new CandidateDevicesSubscription(deviceTemplate, subscriber);
 
         //Check if there are already subscriptions for this owner
         if (subscriptionReturnTopics.containsKey(deviceTemplateOwner.getId())) {
@@ -205,26 +205,37 @@ public class DiscoveryGateway {
         //Create and return corresponding repository subscription details object
         return new RepositorySubscriptionDetails()
                 .setReturnTopic(returnTopic) //Set generated return topic
-                .setReferenceId(deviceTemplate.getId()) ;//Use device template ID as reference
+                .setReferenceId(deviceTemplate.getId());//Use device template ID as reference
     }
 
     /**
-     * Cancels the subscription for a given device template. As a result, the originally registered subscriber
+     * Cancels the subscription for a given device template by publishing a corresponding request message under a
+     * collection of given {@link RequestTopic}s. As a result, the originally registered subscriber
      * will not become notified anymore when the collection of suitable candidate devices changes over time
      * at a certain repository for the given {@link DeviceTemplate}.
      *
      * @param deviceTemplate The device template for which the subscription is supposed to be cancelled
+     * @param requestTopics  The request topics under which the cancel request is supposed to be published
      */
-    public void cancelSubscription(DeviceTemplate deviceTemplate) {
+    public void cancelSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity checks
-        if (deviceTemplate == null) {
-            throw new IllegalArgumentException("The device template must not be null.");
-        } else if (!this.candidateDeviceSubscriptions.containsKey(deviceTemplate.getId())) {
+        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
+
+        //Create message for cancelling the subscription
+        CancelSubscriptionMessage messageBody = new CancelSubscriptionMessage(deviceTemplate.getId());
+        CommandMessage<CancelSubscriptionMessage> cancelSubscriptionMessage = new CommandMessage<>(messageBody);
+
+        //Put topics together for publishing the cancel message
+        List<String> cancelTopics = requestTopics.stream()
+                .map(t -> t.getFullTopic() + "/" + messageBody.getTopicSuffix()).collect(Collectors.toList());
+
+        //Create cancel subscription topics and publish the cancel message
+        this.pubSubService.publish(cancelTopics, cancelSubscriptionMessage);
+
+        //Check whether the subscription was registered in the map
+        if (!this.candidateDeviceSubscriptions.containsKey(deviceTemplate.getId())) {
             return;
         }
-
-        //Remove subscription from map, but remember the old subscription object
-        CandidateDevicesSubscription subscriptionObject = this.candidateDeviceSubscriptions.remove(deviceTemplate.getId());
 
         //Get owner ID of the device template
         String ownerId = deviceTemplate.getOwner().getId();
@@ -234,17 +245,6 @@ public class DiscoveryGateway {
             //There are other subscriptions for this owner, so do nothing
             return;
         }
-
-        //Create message for cancelling the subscription
-        CancelSubscriptionMessage messageBody = new CancelSubscriptionMessage(deviceTemplate.getId());
-        CommandMessage<CancelSubscriptionMessage> cancelSubscriptionMessage = new CommandMessage<>(messageBody);
-
-        //Put topics together for publishing the cancel message
-        List<String> cancelTopics = subscriptionObject.getRequestTopics()
-                .stream().map(t -> t.getFullTopic() + "/" + messageBody.getTopicSuffix()).collect(Collectors.toList());
-
-        //Create cancel subscription topics and publish the cancel message
-        this.pubSubService.publish(cancelTopics, cancelSubscriptionMessage);
 
         //No subscriptions remain for this owner, so entirely unsubscribe from the topic
         this.pubSubService.unsubscribe(this.subscriptionReturnTopics.get(ownerId), this.subscriptionNotificationListener);
