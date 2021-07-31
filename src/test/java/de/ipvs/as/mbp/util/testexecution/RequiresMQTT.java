@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.util;
+package de.ipvs.as.mbp.util.testexecution;
 
 import java.lang.annotation.*;
 

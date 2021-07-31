@@ -8,7 +8,7 @@ import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.user.UserService;
-import de.ipvs.as.mbp.base.BaseIntegrationTest;
+import de.ipvs.as.mbp.base.BaseBackendTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class RestDeviceControllerTest extends BaseIntegrationTest {
+public class RestDeviceControllerTest extends BaseBackendTest {
 
     @Autowired
     private DeviceRepository deviceRepository;

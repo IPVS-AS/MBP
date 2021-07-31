@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.util.IntegrationTestConfiguration;
+import de.ipvs.as.mbp.util.testexecution.MBPTestExtension;
 import de.ipvs.as.mbp.util.MongoDbContainer;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @AutoConfigureWebMvc
 @ExtendWith(MockitoExtension.class)
+@ExtendWith(MBPTestExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public abstract class BaseIntegrationTest {
 

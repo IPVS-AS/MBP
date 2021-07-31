@@ -5,7 +5,7 @@ import javax.servlet.http.Cookie;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.service.user.UserSessionService;
-import de.ipvs.as.mbp.base.BaseIntegrationTest;
+import de.ipvs.as.mbp.base.BaseBackendTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class RestUserControllerTest  extends BaseIntegrationTest {
+public class RestUserControllerTest extends BaseBackendTest {
 
     @Autowired
     private UserRepository userRepository;
@@ -97,5 +97,4 @@ public class RestUserControllerTest  extends BaseIntegrationTest {
     void changePassword_returnOk() throws Exception {
 
     }
-
 }

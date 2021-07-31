@@ -9,8 +9,8 @@ import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.util.IoTDeviceContainer;
-import de.ipvs.as.mbp.util.RequiresMQTT;
-import de.ipvs.as.mbp.util.RequiresMQTTExtension;
+import de.ipvs.as.mbp.util.testexecution.IoTDeviceTest;
+import de.ipvs.as.mbp.util.testexecution.RequiresMQTTExtension;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@IoTDeviceTest
 @ExtendWith({RequiresMQTTExtension.class})
 public abstract class BaseIoTTest extends BaseIntegrationTest {
 

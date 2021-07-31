@@ -8,7 +8,7 @@ import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.base.BaseIoTTest;
 import de.ipvs.as.mbp.util.CommandOutput;
 import de.ipvs.as.mbp.util.IoTDeviceContainer;
-import de.ipvs.as.mbp.util.RequiresMQTT;
+import de.ipvs.as.mbp.util.testexecution.RequiresMQTT;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 

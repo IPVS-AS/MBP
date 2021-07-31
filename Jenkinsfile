@@ -3,6 +3,9 @@ pipeline {
     tools {
         maven 'Maven'
     }
+    environment {
+        TEST_RUNTIME="ci"
+    }
     stages {
         stage ('Initialize') {
             steps {
@@ -22,13 +25,19 @@ pipeline {
         stage ('Test') {
             parallel {
                stage('Backend') {
+                   environment {
+                        TEST_MODE="backend"
+                   }
                    steps {
-                       sh 'mvn -B verify'
+                       sh 'mvn -B clean verify'
                    }
                }
                stage('Device tests') {
+                   environment {
+                        TEST_MODE="iotdevice"
+                   }
                    steps {
-                       sh 'mvn -B verify'
+                       sh 'mvn -B clean verify'
                    }
                }
                stage('Frontend') {
