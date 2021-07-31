@@ -55,6 +55,9 @@ public class TestEnvironmentUtils {
 
         public static EnvironmentType getTestEnvironmentType() {
             String envValue = System.getenv(TEST_MODE_ENVIRONMENT_VARIABLE);
+            if (envValue == null) {
+                return DEVELOPMENT;
+            }
             for (EnvironmentType value : values()) {
                 if (value.envValue.equalsIgnoreCase(envValue)) {
                     return value;
