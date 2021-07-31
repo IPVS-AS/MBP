@@ -3,9 +3,9 @@
  */
 app.controller('DynamicDeploymentListController',
     ['$scope', '$controller', '$timeout', 'dynamicDeploymentList', 'addDynamicDeployment', 'deleteDynamicDeployment',
-        'operatorList', 'deviceTemplateList', 'requestTopicList', 'DiscoveryService', 'NotificationService',
+        'operatorList', 'deviceTemplateList', 'DiscoveryService', 'NotificationService',
         function ($scope, $controller, $timeout, dynamicDeploymentList, addDynamicDeployment, deleteDynamicDeployment,
-                  operatorList, deviceTemplateList, requestTopicList, DiscoveryService, NotificationService) {
+                  operatorList, deviceTemplateList, DiscoveryService, NotificationService) {
 
             let vm = this;
 
@@ -161,7 +161,6 @@ app.controller('DynamicDeploymentListController',
                 }),
                 operatorList: operatorList,
                 deviceTemplateList: deviceTemplateList,
-                requestTopicList: requestTopicList,
                 toggleActivationIntention: toggleActivationIntention,
                 reloadDeploymentState: reloadDeploymentState
             });

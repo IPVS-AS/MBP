@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
+import java.util.Objects;
 
 /**
  * Objects of this class represent topics to which discovery requests can be sent. Each topic specifies a timeout
@@ -16,7 +17,7 @@ import javax.persistence.GeneratedValue;
  * replies after which the sending is considered as finished as well.
  */
 @Document
-@MBPEntity(createValidator = RequestTopicCreateValidator.class)
+@MBPEntity(createValidator = RequestTopicCreateValidator.class, deleteValidator = RequestTopicDeleteValidator.class)
 @ApiModel(description = "Model for discovery request topics")
 public class RequestTopic extends UserEntity {
     private static final String TOPIC_PATTERN = "{userId}/discovery/{suffix}";
@@ -136,5 +137,29 @@ public class RequestTopic extends UserEntity {
         return TOPIC_PATTERN
                 .replaceAll("\\{userId}", this.getOwner().getId())
                 .replaceAll("\\{suffix}", this.suffix);
+    }
+
+    /**
+     * Returns whether a given {@link Object} is equal to the {@link RequestTopic} by comparing the IDs.
+     *
+     * @param o The object to compare against the {@link RequestTopic}
+     * @return True, if the given object equals the {@link RequestTopic}; false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RequestTopic)) return false;
+        RequestTopic that = (RequestTopic) o;
+        return Objects.equals(id, that.id);
+    }
+
+    /**
+     * Generates a hash code from the ID of the {@link RequestTopic}.
+     *
+     * @return The resulting hash code
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

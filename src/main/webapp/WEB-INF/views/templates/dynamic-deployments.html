@@ -161,20 +161,6 @@
                                 </div>
                                 <span class="help-block" ng-show="addDynamicDeploymentCtrl.item.errors.deviceTemplate">{{addDynamicDeploymentCtrl.item.errors.deviceTemplate}}</span>
                             </div>
-                            <!-- item.requestTopics group -->
-                            <div class="form-group"
-                                 ng-class="{'has-error' : addDynamicDeploymentCtrl.item.errors.requestTopics }">
-                                <div class="form-line"
-                                     ng-class="{'focused error' : addDynamicDeploymentCtrl.item.errors.requestTopics }">
-                                    <select class="form-control selectpicker" title="Request topics *"
-                                            data-header="Request topics *"
-                                            ng-options="topic.id as (topic.suffix) for topic in ctrl.requestTopicList"
-                                            ng-model="addDynamicDeploymentCtrl.item.requestTopics" multiple>
-                                    </select>
-                                </div>
-                                <span class="help-block"
-                                      ng-show="addDynamicDeploymentCtrl.item.errors.requestTopics">{{addDynamicDeploymentCtrl.item.errors.requestTopics}}</span>
-                            </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">

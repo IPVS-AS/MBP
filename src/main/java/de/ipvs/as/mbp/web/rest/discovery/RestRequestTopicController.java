@@ -7,6 +7,7 @@ import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
+import de.ipvs.as.mbp.service.discovery.DiscoveryService;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ public class RestRequestTopicController {
 
     @Autowired
     private RequestTopicRepository requestTopicRepository;
+
+    @Autowired
+    private DiscoveryService discoveryService;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -77,8 +81,12 @@ public class RestRequestTopicController {
         // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Delete the request topic
-        userEntityService.deleteWithAccessControlCheck(requestTopicRepository, id, accessRequest);
+        //Retrieve the request topic with access control check
+        RequestTopic requestTopic = userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, id, ACAccessType.DELETE, accessRequest);
+
+        //Delete the request topic using the discovery service
+        this.discoveryService.deleteRequestTopic(requestTopic);
+
         return ResponseEntity.noContent().build();
     }
 }

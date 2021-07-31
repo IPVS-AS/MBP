@@ -17,18 +17,27 @@ class CandidateDevicesSubscription {
     //The device template for which the subscription is created
     private DeviceTemplate deviceTemplate;
 
+    //Request topics that were used for creating the subscription
+    private Collection<RequestTopic> requestTopics;
+
     //The subscriber to notify about changes in the collection candidate devices for a device template
     private CandidateDevicesSubscriber subscriber;
 
+
+    //The point in time at which the subscription was created
+    private Instant creationTimestamp = Instant.now();
+
     /**
-     * Creates a new candidate devices subscription object from a given {@link DeviceTemplate} and a
-     * {@link CandidateDevicesSubscriber}.
+     * Creates a new candidate devices subscription object from a given {@link DeviceTemplate}, a {@link Collection}
+     * of {@link RequestTopic}s and a {@link CandidateDevicesSubscriber}.
      *
      * @param deviceTemplate The device template to use
+     * @param requestTopics  The request topics that were originally used for creating the subscription
      * @param subscriber     The subscriber to use
      */
-    protected CandidateDevicesSubscription(DeviceTemplate deviceTemplate, CandidateDevicesSubscriber subscriber) {
+    protected CandidateDevicesSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
         setDeviceTemplate(deviceTemplate);
+        setRequestTopics(requestTopics);
         setSubscriber(subscriber);
     }
 
@@ -58,6 +67,31 @@ class CandidateDevicesSubscription {
     }
 
     /**
+     * Returns the {@link RequestTopic}s that were originally used to create the subscription.
+     *
+     * @return The request topics
+     */
+    public Collection<RequestTopic> getRequestTopics() {
+        return requestTopics;
+    }
+
+    /**
+     * Sets the {@link RequestTopic}s that were originally used to create the subscription.
+     *
+     * @param requestTopics The request topics to set
+     * @return The candidate devices subscription
+     */
+    public CandidateDevicesSubscription setRequestTopics(Collection<RequestTopic> requestTopics) {
+        //Null check
+        if ((requestTopics == null) || requestTopics.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("The request topics must not be null or empty.");
+        }
+
+        this.requestTopics = requestTopics;
+        return this;
+    }
+
+    /**
      * Returns the {@link CandidateDevicesSubscriber} of the subscription that is supposed to be notified about changes.
      *
      * @return The subscriber
@@ -74,6 +108,25 @@ class CandidateDevicesSubscription {
      */
     public CandidateDevicesSubscription setSubscriber(CandidateDevicesSubscriber subscriber) {
         this.subscriber = subscriber;
+        return this;
+    }
+
+    /**
+     * Returns the creation timestamp.
+     *
+     * @return The creation timestamp
+     */
+    public Instant getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    /**
+     * Updates the creation timestamp
+     *
+     * @return The candidate devices subscription
+     */
+    public CandidateDevicesSubscription updateCreationTimestamp() {
+        this.creationTimestamp = Instant.now();
         return this;
     }
 

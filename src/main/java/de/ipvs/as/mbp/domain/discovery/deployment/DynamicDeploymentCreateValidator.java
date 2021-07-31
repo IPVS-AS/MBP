@@ -42,13 +42,6 @@ public class DynamicDeploymentCreateValidator implements ICreateValidator<Dynami
             exception.addInvalidField("deviceTemplate", "A device template must be selected.");
         }
 
-        //Check request topics
-        if ((dynamicDeployment.getRequestTopics() == null) || dynamicDeployment.getRequestTopics().isEmpty()) {
-            exception.addInvalidField("requestTopics", "At least one request topic must be selected.");
-        } else if (dynamicDeployment.getRequestTopics().stream().anyMatch(Objects::isNull)) {
-            exception.addInvalidField("requestTopics", "At least one request topic is invalid.");
-        }
-
         //Throw exception if there are invalid fields
         if (exception.hasInvalidFields()) {
             throw exception;

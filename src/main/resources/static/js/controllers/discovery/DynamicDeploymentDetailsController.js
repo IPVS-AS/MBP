@@ -31,10 +31,6 @@ app.controller('DynamicDeploymentDetailsController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                //TODO
-                console.log("Logs:");
-                console.log(discoveryLogs);
-
                 //Initialize value log stats
                 initValueLogStats();
 
@@ -51,6 +47,11 @@ app.controller('DynamicDeploymentDetailsController',
                 //Cancel interval on route change
                 $scope.$on('$destroy', () => {
                     $interval.cancel(interval);
+                });
+
+                //Initialize UI elements
+                $(document).ready(() => {
+                    $('[data-toggle="popover"]').popover();
                 });
             })();
 
@@ -252,6 +253,23 @@ app.controller('DynamicDeploymentDetailsController',
                 }).then((result) => {
                     //Check if the user confirmed the deletion
                     if (result.value) executeDeletion();
+                });
+            }
+
+            /**
+             * [Public]
+             * Performs a server request in order to refresh the candidate devices that are stored for the device
+             * template underlying this dynamic deployment. Thereby, also the subscriptions at the discovery
+             * repositories for asynchronous notifications about changes are renewed.
+             */
+            function refreshCandidateDevices() {
+                DiscoveryService.refreshCandidateDevices(DEPLOYMENT_ID).then(() => {
+                    //Update discovery logs
+                    updateDiscoveryLogs();
+                    //Notify the user
+                    NotificationService.notify("Update for candidate devices is in progress.", "success");
+                }, () => {
+                    NotificationService.notify("Could not update the candidate devices.", "error");
                 });
             }
 
@@ -522,7 +540,8 @@ app.controller('DynamicDeploymentDetailsController',
                 onDisplayUnitChange: onDisplayUnitChange,
                 deleteValueLogs: deleteValueLogs,
                 updateDiscoveryLogs: updateDiscoveryLogs,
-                deleteDiscoveryLogs: deleteDiscoveryLogs
+                deleteDiscoveryLogs: deleteDiscoveryLogs,
+                refreshCandidateDevices: refreshCandidateDevices
             });
         }
     ]

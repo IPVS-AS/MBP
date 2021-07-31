@@ -38,14 +38,6 @@
                         <td>{{ctrl.dynamicDeployment.deviceTemplate.name}}</td>
                     </tr>
                     <tr>
-                        <th>Request topics:</th>
-                        <td>
-                            <div ng-repeat="topic in ctrl.dynamicDeployment.requestTopics">
-                                <code>{{topic.suffix}}</code>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
                         <th>State:</th>
                         <td>
                             <div class="clickable" ng-click="ctrl.reloadDeploymentDetails()">
@@ -99,6 +91,16 @@
                                 style="color: white;">
                             <i class="material-icons">pause_circle_outline</i>
                             <span>Deactivate deployment</span>
+                        </button>
+                    </span>
+                    <span ng-show="ctrl.dynamicDeployment.activatingIntended">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.refreshCandidateDevices()"
+                                style="color: white;" data-toggle="popover" data-placement="top"
+                                data-trigger="hover" data-html="true"
+                                title="Refresh candidate devices and subscriptions"
+                                data-content="Refreshes all candidate devices that are stored for the device template of the dynamic deployment by retrieving them from the discovery repositories again. Thereby, also the subscriptions at these repositories are renewed, such that e.g. discovery repositories that are available under recently created request topics can be considered as well.">
+                            <i class="material-icons">refresh</i>
+                            <span>Refresh candidates devices</span>
                         </button>
                     </span>
                 </div>

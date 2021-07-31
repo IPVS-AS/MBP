@@ -1,15 +1,15 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.MBPException;
-import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
-import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
+import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,16 +29,13 @@ public class DiscoveryService {
     Auto-wired components
      */
     @Autowired
-    private DeviceTemplateRepository deviceTemplateRepository;
-
-    @Autowired
-    private DynamicDeploymentRepository dynamicDeploymentRepository;
-
-    @Autowired
     private DiscoveryEngine discoveryEngine;
 
     @Autowired
     private DiscoveryGateway discoveryGateway;
+
+    @Autowired
+    private CandidateDevicesProcessor candidateDevicesProcessor;
 
     /**
      * Creates and initializes the discovery service.
@@ -66,10 +63,12 @@ public class DiscoveryService {
             throw new IllegalArgumentException("The request topics must not be null or empty.");
         }
 
-        //Use the discovery engine to retrieve the ranking of device descriptions
-        return discoveryEngine.getRankedDeviceCandidates(deviceTemplate, requestTopics);
-    }
+        //Use the gateway to find all candidate devices that match the device template
+        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
 
+        //Use the processor to filter, aggregate, score and rank the candidate devices
+        return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
+    }
 
     /**
      * Checks the availability of discovery repositories for a given {@link RequestTopic} and returns
@@ -146,6 +145,27 @@ public class DiscoveryService {
         //Let the discovery engine perform the deletion and catch possible errors
         try {
             this.discoveryEngine.deleteDynamicDeployment(dynamicDeployment.getId());
+        } catch (Exception e) {
+            throw new MBPException(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
+    /**
+     * Deletes a certain {@link RequestTopic}, given by its ID, safely. For this, it is ensured that no
+     * update of candidate devices is currently in progress that could accidently  re-create the subscriptions
+     * at the discovery repositories.
+     *
+     * @param requestTopic The request topic that is supposed to be deleted
+     */
+    public void deleteRequestTopic(RequestTopic requestTopic) {
+        //Null check
+        if (requestTopic == null) {
+            throw new IllegalArgumentException("The request topic must not be null.");
+        }
+
+        //Let the discovery engine perform the deletion and catch possible errors
+        try {
+            this.discoveryEngine.deleteRequestTopic(requestTopic.getId());
         } catch (Exception e) {
             throw new MBPException(HttpStatus.CONFLICT, e.getMessage());
         }

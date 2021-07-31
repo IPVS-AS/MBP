@@ -21,10 +21,6 @@ public class DynamicDeploymentDTO {
     @JsonProperty("deviceTemplate")
     private String deviceTemplateId;
 
-    //Ids of the request topics to use
-    @JsonProperty("requestTopics")
-    private List<String> requestTopicIds = new ArrayList<>();
-
     /**
      * Creates a new, empty DTO for a {@link DynamicDeployment}.
      */
@@ -57,15 +53,5 @@ public class DynamicDeploymentDTO {
      */
     public String getDeviceTemplateId() {
         return deviceTemplateId;
-    }
-
-    /**
-     * Returns the IDs of the request topics that are supposed to be used for retrieving suitable candidate devices
-     * for the dynamic deployment.
-     *
-     * @return The list of request topic IDs
-     */
-    public List<String> getRequestTopicIds() {
-        return requestTopicIds;
     }
 }

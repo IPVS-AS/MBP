@@ -1,11 +1,9 @@
 package de.ipvs.as.mbp.service.discovery.engine;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
-import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
@@ -23,7 +21,6 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDev
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 import de.ipvs.as.mbp.service.discovery.log.DiscoveryLogService;
-import de.ipvs.as.mbp.service.discovery.processing.CandidateDevicesProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -57,22 +54,19 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     Auto-wired components
      */
     @Autowired
-    private DiscoveryGateway discoveryGateway;
-
-    @Autowired
-    private CandidateDevicesProcessor candidateDevicesProcessor;
-
-    @Autowired
     private DiscoveryLogService discoveryLoggingService;
 
     @Autowired
-    private RequestTopicRepository requestTopicRepository;
+    private DiscoveryGateway discoveryGateway;
 
     @Autowired
     private DynamicDeploymentRepository dynamicDeploymentRepository;
 
     @Autowired
     private DeviceTemplateRepository deviceTemplateRepository;
+
+    @Autowired
+    private RequestTopicRepository requestTopicRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -130,10 +124,10 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             //Check if any of the found dynamic deployments are intended to be activated
             if (dynamicDeployments.stream().anyMatch(DynamicDeployment::isActivatingIntended)) {
                 //Such dynamic deployments exist, so update the candidate devices and subscribe
-                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, getRequestTopicForDeviceTemplate(deviceTemplate), this, true, new DiscoveryLog(MBP, "Update candidate devices")));
+                submitTask(new UpdateCandidateDevicesTask(deviceTemplate, this, true, new DiscoveryLog(MBP, "Update candidate devices")));
             } else {
                 //No such dynamic deployments exist, so deletion of candidate devices and unsubscription is safe
-                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, getRequestTopicForDeviceTemplate(deviceTemplate), true, new DiscoveryLog(MBP, "Delete candidate devices")));
+                submitTask(new DeleteCandidateDevicesTask(deviceTemplate, true, new DiscoveryLog(MBP, "Delete candidate devices")));
             }
 
             /*
@@ -156,32 +150,6 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
         //Trigger the execution of tasks
         executeTasks();
-    }
-
-    /**
-     * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
-     * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
-     * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are processed, scored with respect to to the {@link DeviceTemplate} and transformed to a ranking,
-     * which is subsequently returned as {@link CandidateDevicesRanking}.
-     *
-     * @param deviceTemplate The device template to find suitable candidate devices for
-     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @return The resulting {@link CandidateDevicesRanking}
-     */
-    public CandidateDevicesRanking getRankedDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
-        //Sanity checks
-        if (deviceTemplate == null) {
-            throw new IllegalArgumentException("The device template must not be null.");
-        } else if ((requestTopics == null) || requestTopics.isEmpty() || (requestTopics.stream().anyMatch(Objects::isNull))) {
-            throw new IllegalArgumentException("The request topics must not be null or empty.");
-        }
-
-        //Use the gateway to find all candidate devices that match the device template
-        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
-
-        //Use the processor to filter, aggregate, score and rank the candidate devices
-        return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
     }
 
     /**
@@ -227,11 +195,8 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
             return false;
         }
 
-        //Get all request topics of the user
-        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(dynamicDeployment.getOwner().getId(), null);
-
         //Submit task for retrieving candidate devices (will abort if not needed due to force=false)
-        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, this, false, new DiscoveryLog(USER, "Update candidate devices")));
+        submitTask(new UpdateCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), this, false, new DiscoveryLog(USER, "Update candidate devices")));
 
         //Submit task for deploying the dynamic deployment
         submitTask(new DeployByRankingTask(dynamicDeployment, true, new DiscoveryLog(USER, "Activate deployment")));
@@ -305,8 +270,65 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         }
 
         //Submit task for deleting the candidate devices and cancelling the subscriptions
-        List<RequestTopic> requestTopics = getRequestTopicForDeviceTemplate(dynamicDeployment.getDeviceTemplate());
-        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), requestTopics, false, new DiscoveryLog(USER, "Delete candidate devices")));
+        submitTask(new DeleteCandidateDevicesTask(dynamicDeployment.getDeviceTemplate(), false, new DiscoveryLog(USER, "Delete candidate devices")));
+
+        //Trigger the execution of tasks
+        executeTasks();
+    }
+
+    /**
+     * Deletes a certain {@link RequestTopic}, given by its ID, safely. For this, it is ensured that no
+     * {@link UpdateCandidateDevicesTask}s are currently in the task queues that could make use of
+     * the {@link RequestTopic} to delete and thus re-create the subscriptions at the discovery repositories
+     * by accident.
+     *
+     * @param requestTopicId The ID of the request topic that is supposed to be deleted
+     */
+    public synchronized void deleteRequestTopic(String requestTopicId) {
+        //Read request topic from repository
+        RequestTopic requestTopic = this.requestTopicRepository.findById(requestTopicId).orElse(null);
+
+        //Check if request topic could be found
+        if (requestTopic == null) throw new IllegalStateException("The request topic does not exist.");
+
+        //Retrieve the device templates of the same user
+        List<DeviceTemplate> affectedDeviceTemplates = this.deviceTemplateRepository.findByOwner(requestTopic.getOwner().getId(), null);
+
+        //Ensure that no update task is in progress for any of those device templates
+        if (affectedDeviceTemplates.stream().map(d -> this.candidateDevicesTasks.containsKey(d.getId()) ? this.candidateDevicesTasks.get(d.getId()).peek() : null).anyMatch(t -> (t != null) && (t.getTask() instanceof UpdateCandidateDevicesTask))) {
+            throw new IllegalStateException("Cannot delete, because update operations are in progress for at least one of the device templates that use this request topic.");
+        }
+
+        /*
+        At this point it is clear that no update tasks are in execution for the affected device templates. Due to
+        synchronized, also no further update tasks will be queued or executed during the remainder of this method.
+        For this reason, the request topic can be safely deleted from the repository, since all update tasks that will
+        be executed in the future will read the request topics fresh from the repository and thus already use
+        the updated set of request topics. This way, the accidential re-creation of subscriptions at the discovery
+        repositories is avoided.
+         */
+
+        //Delete the request topic from the repository
+        this.requestTopicRepository.deleteById(requestTopicId);
+
+        //Cancel existing subscriptions for this request topic
+        discoveryGateway.cancelSubscriptionsForRequestTopic(affectedDeviceTemplates, requestTopic);
+    }
+
+
+    /**
+     * Submits a task for updating the candidate devices that are stored as {@link CandidateDevicesResult} for a
+     * given {@link DeviceTemplate}. Furthermore, also the subscriptions at the discovery repositories are re-newed
+     * for the {@link DeviceTemplate}. All modifications are forced and thus do not abort on failing pre-conditions.
+     *
+     * @param deviceTemplate The device template for which the
+     */
+    public void updateCandidateDevices(DeviceTemplate deviceTemplate) {
+        //Null check
+        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
+
+        //Submit task for updating the candidate devices
+        submitTask(new UpdateCandidateDevicesTask(deviceTemplate, true, new DiscoveryLog(USER, "Update candidate devices")));
 
         //Trigger the execution of tasks
         executeTasks();
@@ -322,7 +344,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
      * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
      */
     @Override
-    public synchronized void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
+    public void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
         //Sanity checks
         if ((deviceTemplate == null) || (repositoryName == null) || (repositoryName.isEmpty()) || (updatedCandidateDevices == null)) {
             return;
@@ -401,7 +423,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         /* Optimization:
         ---------------------
         The following block tries to optimize the queue by removing redundant tasks. This approach keeps the effective
-        queue size by a maximum of 2, including the currently running task and the next one.
+        queue size at a maximum of 2, including the currently running task and the next one.
          */
 
         //Iterate over the queue using an iterator
@@ -634,21 +656,6 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         mongoTemplate.updateFirst(Query.query(Criteria.where("id").is(dynamicDeploymentId)),
                 new Update().set("activatingIntended", activatingIntention), DynamicDeployment.class);
         return dynamicDeployment.setActivatingIntended(activatingIntention);
-    }
-
-    /**
-     * Returns the list of {@link RequestTopic}s that are associated with a given {@link DeviceTemplate}.
-     *
-     * @param deviceTemplate The device template for which the request topics are supposed to be retrieved
-     * @return The resulting list of {@link RequestTopic}s
-     */
-    //TODO
-    private List<RequestTopic> getRequestTopicForDeviceTemplate(DeviceTemplate deviceTemplate) {
-        //Null check
-        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
-
-        //Retrieve the corresponding request topics
-        return requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
     }
 
     /**

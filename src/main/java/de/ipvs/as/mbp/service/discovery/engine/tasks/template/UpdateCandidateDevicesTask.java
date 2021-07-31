@@ -10,11 +10,11 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
+import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
-import java.util.Collection;
-import java.util.Objects;
+import java.util.List;
 
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.SUCCESS;
@@ -29,9 +29,6 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     //The device template to update the candidate devices for
     private DeviceTemplate deviceTemplate;
 
-    //The request topics to use for retrieving the candidate devices
-    private Collection<RequestTopic> requestTopics;
-
     //Whether the candidate devices should always be updated or only if not available
     private boolean force = false;
 
@@ -44,73 +41,66 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
     /*
     Injected fields
      */
+    private final RequestTopicRepository requestTopicRepository;
     private final CandidateDevicesRepository candidateDevicesRepository;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final DiscoveryGateway discoveryGateway;
 
     /**
-     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a collection of
-     * {@link RequestTopic}s and a {@link DiscoveryLog}.
+     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate} and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
-    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      DiscoveryLog discoveryLog) {
-        this(deviceTemplate, requestTopics, null, false, discoveryLog);
+    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, DiscoveryLog discoveryLog) {
+        this(deviceTemplate, null, false, discoveryLog);
     }
 
     /**
-     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a collection
-     * of {@link RequestTopic}s, a force flag and a {@link DiscoveryLog}.
+     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a force flag and
+     * a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
      * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
-    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
+    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate,
                                       boolean force, DiscoveryLog discoveryLog) {
-        this(deviceTemplate, requestTopics, null, force, discoveryLog);
+        this(deviceTemplate, null, force, discoveryLog);
     }
 
     /**
-     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate},a collection
-     * of {@link RequestTopic}s, a {@link CandidateDevicesSubscriber} and a {@link DiscoveryLog}.
+     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate},
+     * a {@link CandidateDevicesSubscriber} and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
      * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
-    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      CandidateDevicesSubscriber subscriber, DiscoveryLog discoveryLog) {
-        this(deviceTemplate, requestTopics, subscriber, false, discoveryLog);
+    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, CandidateDevicesSubscriber subscriber, DiscoveryLog discoveryLog) {
+        this(deviceTemplate, subscriber, false, discoveryLog);
     }
 
     /**
-     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate}, a collection
-     * of {@link RequestTopic}s, a {@link CandidateDevicesSubscriber}, a force flag and a {@link DiscoveryLog}.
+     * Creates a new {@link UpdateCandidateDevicesTask} from a given {@link DeviceTemplate},
+     * a {@link CandidateDevicesSubscriber}, a force flag and a {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param requestTopics  The request topics to use for retrieving the candidate devices
      * @param subscriber     The subscriber to use or null if no subscription is supposed to be created
      * @param force          True, if the update of candidate device is forced; false if it is only done when no
      *                       candidate device information is available for the device template
      * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
-    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics,
-                                      CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLog discoveryLog) {
+    public UpdateCandidateDevicesTask(DeviceTemplate deviceTemplate, CandidateDevicesSubscriber subscriber, boolean force, DiscoveryLog discoveryLog) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
-        setRequestTopics(requestTopics);
         setSubscriber(subscriber);
         setForce(force);
         setDiscoveryLog(discoveryLog);
 
         //Inject components
+        this.requestTopicRepository = DynamicBeanProvider.get(RequestTopicRepository.class);
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
         this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
@@ -146,8 +136,9 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
         //Write log
         addLogMessage("Requesting candidate devices from discovery repositories and creating subscriptions.");
 
-        //Not available or forced, thus retrieve the candidate devices
-        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, this.requestTopics, this.subscriber);
+        //Not available or forced, thus retrieve the candidate devices using the request topics of the owner
+        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
+        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, requestTopics, this.subscriber);
 
         //Write log
         addLogMessage(String.format("Received %s.", candidateDevices.toHumanReadableDescription()));
@@ -213,31 +204,6 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
         }
 
         this.deviceTemplate = deviceTemplate;
-        return this;
-    }
-
-    /**
-     * Returns the request topics under which the candidate devices requests are supposed to be published.
-     *
-     * @return The request topics
-     */
-    public Collection<RequestTopic> getRequestTopics() {
-        return requestTopics;
-    }
-
-    /**
-     * Sets the request topics under which the candidate devices requests are supposed to be published.
-     *
-     * @param requestTopics The request topics to set
-     * @return The task
-     */
-    public UpdateCandidateDevicesTask setRequestTopics(Collection<RequestTopic> requestTopics) {
-        //Null check
-        if ((requestTopics == null) || requestTopics.stream().anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("The request topics must not be null.");
-        }
-
-        this.requestTopics = requestTopics;
         return this;
     }
 

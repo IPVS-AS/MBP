@@ -42,10 +42,6 @@ public class DynamicDeployment extends UserEntity {
     @DBRef
     private DeviceTemplate deviceTemplate;
 
-    //The request topics to use for sending requests to discovery repositories
-    @DBRef
-    private List<RequestTopic> requestTopics;
-
     //The user's last intention regarding activating/deactivating the dynamic deployment
     private boolean activatingIntended = false;
 
@@ -142,29 +138,6 @@ public class DynamicDeployment extends UserEntity {
         this.deviceTemplate = deviceTemplate;
         return this;
     }
-
-    /**
-     * Returns the list of {@link RequestTopic}s that are supposed to be used for retrieving the descriptions of
-     * suitable candidate device from the discovery repositories.
-     *
-     * @return The list of request topics
-     */
-    public List<RequestTopic> getRequestTopics() {
-        return requestTopics;
-    }
-
-    /**
-     * Sets the collection of {@link RequestTopic}s that are supposed to be used for retrieving the descriptions of
-     * suitable candidate device from the discovery repositories.
-     *
-     * @param requestTopics The collection of request topics
-     * @return The dynamic deployment
-     */
-    public DynamicDeployment setRequestTopics(Collection<RequestTopic> requestTopics) {
-        this.requestTopics = new ArrayList<>(requestTopics);
-        return this;
-    }
-
 
     /**
      * Returns whether the dynamic deployment is currently intended to be active by the user.

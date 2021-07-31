@@ -105,20 +105,11 @@ public class RestDynamicDeploymentController {
         //Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Create list of request topics
-        List<RequestTopic> requestTopics = new ArrayList<>();
-
-        //Populate the list using the request topic IDs of the DTO
-        for (String requestTopicId : requestDTO.getRequestTopicIds()) {
-            requestTopics.add(userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, requestTopicId, ACAccessType.READ, accessRequest));
-        }
-
         //Transform DTO to dynamic deployment
         DynamicDeployment dynamicDeployment = new DynamicDeployment()
                 .setName(requestDTO.getName())
                 .setOperator(requestDTO.getOperatorId() == null ? null : userEntityService.getForIdWithAccessControlCheck(operatorRepository, requestDTO.getOperatorId(), ACAccessType.READ, accessRequest))
-                .setDeviceTemplate(requestDTO.getDeviceTemplateId() == null ? null : userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, requestDTO.getDeviceTemplateId(), ACAccessType.READ, accessRequest))
-                .setRequestTopics(requestTopics);
+                .setDeviceTemplate(requestDTO.getDeviceTemplateId() == null ? null : userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, requestDTO.getDeviceTemplateId(), ACAccessType.READ, accessRequest));
 
         //Write dynamic deployment to repository
         DynamicDeployment createdDynamicDeployment = userEntityService.create(dynamicDeploymentRepository, dynamicDeployment);

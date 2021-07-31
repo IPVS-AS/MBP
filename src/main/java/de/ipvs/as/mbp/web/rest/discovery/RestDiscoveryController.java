@@ -112,4 +112,12 @@ public class RestDiscoveryController {
         //Return result map
         return new ResponseEntity<>(repositoryData, HttpStatus.OK);
     }
+
+    @PostMapping("/refreshCandidateDevices")
+    @ApiOperation(value = "", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "The device template is invalid!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
+    public ResponseEntity<Void> refreshCandidateDevices(){
+        //TODO
+        return null;
+    }
 }

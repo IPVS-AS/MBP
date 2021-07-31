@@ -10,9 +10,11 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.repository.discovery.CandidateDevicesRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
+import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
@@ -29,9 +31,6 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     //The device template to update the candidate devices for
     private DeviceTemplate deviceTemplate;
 
-    //The request topics to use for cancelling the subscriptions
-    private Collection<RequestTopic> requestTopics;
-
     //Whether to force the deletion of candidate devices and the unsubscription
     private boolean force = false;
 
@@ -41,6 +40,7 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
     /*
     Injected fields
      */
+    private final RequestTopicRepository requestTopicRepository;
     private final DiscoveryGateway discoveryGateway;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
     private final CandidateDevicesRepository candidateDevicesRepository;
@@ -50,20 +50,18 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
      * {@link DiscoveryLog}.
      *
      * @param deviceTemplate The device template to use
-     * @param requestTopics  The collection of {@link RequestTopic}s under which the requests for cancelling the
-     *                       subscriptions are supposed to be published
      * @param force          True, if the deletion of candidate devices and the unsubscription should be forced and thus
      *                       done without checking whether the corresponding device template is currently in use
      * @param discoveryLog   The {@link DiscoveryLog} to use for logging within this task
      */
-    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, boolean force, DiscoveryLog discoveryLog) {
+    public DeleteCandidateDevicesTask(DeviceTemplate deviceTemplate,  boolean force, DiscoveryLog discoveryLog) {
         //Set fields
         setDeviceTemplate(deviceTemplate);
-        setRequestTopics(requestTopics);
         setForce(force);
         setDiscoveryLog(discoveryLog);
 
         //Inject components
+        this.requestTopicRepository = DynamicBeanProvider.get(RequestTopicRepository.class);
         this.discoveryGateway = DynamicBeanProvider.get(DiscoveryGateway.class);
         this.dynamicDeploymentRepository = DynamicBeanProvider.get(DynamicDeploymentRepository.class);
         this.candidateDevicesRepository = DynamicBeanProvider.get(CandidateDevicesRepository.class);
@@ -88,9 +86,6 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
             return;
         }
 
-        //Abort if candidate devices do not exist
-        if (!this.candidateDevicesRepository.existsById(getDeviceTemplateId())) return; //Line not really necessary
-
         //Write log
         addLogMessage("Deleting candidate devices.");
 
@@ -98,7 +93,7 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         this.candidateDevicesRepository.deleteById(getDeviceTemplateId());
 
         //Check whether a subscription exists
-        if (!this.discoveryGateway.isSubscribed(deviceTemplate)) {
+        if ((!force) && (!this.discoveryGateway.isSubscribed(deviceTemplate))) {
             //Write log
             addLogMessage(SUCCESS, "Completed successfully.");
             return;
@@ -108,7 +103,8 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         addLogMessage("Cancelling existing subscription at the discovery repositories.");
 
         //Send message to discovery repositories in order to cancel the subscriptions
-        this.discoveryGateway.cancelSubscription(deviceTemplate, this.requestTopics);
+        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
+        this.discoveryGateway.cancelSubscription(deviceTemplate, requestTopics);
 
         //Write log
         addLogMessage(SUCCESS, "Completed successfully.");
@@ -168,33 +164,6 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         }
 
         this.deviceTemplate = deviceTemplate;
-        return this;
-    }
-
-
-    /**
-     * Returns the collection of {@link RequestTopic}s under which the requests for cancelling the
-     * subscriptions at the discovery repositories are supposed to be published.
-     *
-     * @return The request topics
-     */
-    public Collection<RequestTopic> getRequestTopics() {
-        return requestTopics;
-    }
-
-    /**
-     * Sets the collection of {@link RequestTopic}s under which the requests for cancelling the
-     * subscriptions at the discovery repositories are supposed to be published.
-     *
-     * @param requestTopics The {@link RequestTopic}s to set
-     * @return The task
-     */
-    public DeleteCandidateDevicesTask setRequestTopics(Collection<RequestTopic> requestTopics) {
-        //Null checks
-        if ((requestTopics == null) || requestTopics.stream().anyMatch(Objects::isNull))
-            throw new IllegalArgumentException("The request topics must not be null.");
-
-        this.requestTopics = requestTopics;
         return this;
     }
 

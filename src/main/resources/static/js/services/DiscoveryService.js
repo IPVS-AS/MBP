@@ -13,6 +13,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
         const URL_SUFFIX_ACTIVATE_DEPLOYMENT = '/activate';
         const URL_SUFFIX_DEACTIVATE_DEPLOYMENT = '/deactivate';
         const URL_SUFFIX_DISCOVERY_LOGS = '/logs';
+        const URL_SUFFIX_REFRESH_CANDIDATE_DEVICES = '/refreshCandidateDevices'
 
         //Category name
         const URL_CATEGORY_NAME = 'discovery/dynamic-deployment';
@@ -154,6 +155,19 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
             return HttpService.deleteRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + dynamicDeploymentId + URL_SUFFIX_DISCOVERY_LOGS);
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to refresh the candidate devices that are stored for a certain device
+         * template, given by its ID. Thereby, also the subscriptions at the discover repositories for asynchronous
+         * notifications about changes are renewed.
+         *
+         * @param deviceTemplateId The ID of the device template
+         * @returns @returns {*|void} The promise of the resulting request
+         */
+        function refreshCandidateDevices(deviceTemplateId) {
+            return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + deviceTemplateId + URL_SUFFIX_REFRESH_CANDIDATE_DEVICES);
+        }
+
         //Expose public functions
         return {
             testDeviceTemplate: testDeviceTemplate,
@@ -165,6 +179,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
             getValueLogs: getValueLogs,
             deleteValueLogs: deleteValueLogs,
             getDiscoveryLogs: getDiscoveryLogs,
-            deleteDiscoveryLogs: deleteDiscoveryLogs
+            deleteDiscoveryLogs: deleteDiscoveryLogs,
+            refreshCandidateDevices: refreshCandidateDevices
         };
     }]);
