@@ -21,32 +21,60 @@ pipeline {
                 sh 'mvn -DskipTests -B clean install' 
             }
         }
-        
-        stage ('Test') {
-            parallel {
-               stage('Backend') {
-                   environment {
-                        TEST_MODE="backend"
-                   }
-                   steps {
-                       sh 'mvn -B clean verify'
-                   }
-               }
-               stage('Device tests') {
-                   environment {
-                        TEST_MODE="iotdevice"
-                   }
-                   steps {
-                       sh 'mvn -B clean verify'
-                   }
-               }
-               stage('Frontend') {
-                   steps {
-                       println('IMPLEMENT ME')
-                   }
-               }
-            }   
+        stage ('Test with Mosquitto') {
+            stages {
+                stage ('Launch Mosquitto') {
+                    steps {
+                        sh 'docker run -d --rm -p 1883:1883 -p 9001:9001 --name mqtt-jenkins eclipse-mosquitto:1.6.14'
+                    }
+                }
+                stage ('Test') {
+                    options {
+                        timeout(time: 1, unit: 'HOURS')
+                    }
+
+                    parallel {
+                        stage('Backend') {
+                            environment {
+                                TEST_MODE="backend"
+                            }
+                            steps {
+                                sh 'mvn -B clean verify'
+                            }
+                            post {
+                                always {
+                                    junit(testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true)
+                                }
+                            }
+                        }
+                        stage('Device tests') {
+                            environment {
+                                TEST_MODE="iotdevice"
+                            }
+                            steps {
+                                sh 'mvn -B clean verify'
+                            }
+                            post {
+                                always {
+                                    junit(testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true)
+                                }
+                            }
+                        }
+                        stage('Frontend') {
+                            steps {
+                                println('IMPLEMENT ME')
+                            }
+                        }
+                    }
+                    post {
+                        always {
+                            sh 'docker stop mqtt-jenkins'
+                        }
+                    }
+                }
+            }
         }
+
         
         /*
         stage('Static Analysis') {

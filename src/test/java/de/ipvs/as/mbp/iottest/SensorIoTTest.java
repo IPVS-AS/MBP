@@ -177,6 +177,6 @@ public class SensorIoTTest extends BaseIoTTest {
         Thread.sleep(15000);
 
         // Validate that data has been collected
-        Thread.sleep(3600_000);
+        // Thread.sleep(3600_000);
     }
 }
