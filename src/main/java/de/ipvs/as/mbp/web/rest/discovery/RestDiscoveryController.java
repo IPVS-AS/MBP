@@ -11,6 +11,7 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateTestDTO;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
+import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.DiscoveryService;
 import de.ipvs.as.mbp.service.user.UserEntityService;
@@ -40,6 +41,9 @@ public class RestDiscoveryController {
     private RequestTopicRepository requestTopicRepository;
 
     @Autowired
+    private DeviceTemplateRepository deviceTemplateRepository;
+
+    @Autowired
     private UserEntityService userEntityService;
 
     @Autowired
@@ -52,11 +56,11 @@ public class RestDiscoveryController {
      * criteria of the device template. The resulting {@link CandidateDevicesRanking} is subsequently returned as
      * response. This way, the query results of a device template can be tested before the template is actually created.
      *
-     * @param accessRequestHeader   Access request headers
+     * @param accessRequestHeader   Access request header
      * @param deviceTemplateTestDTO A DTO containing the device template to test and the set of request topic IDs
      * @return A response containing the resulting {@link CandidateDevicesRanking}
      * @throws EntityNotFoundException    In case a request topic or user could not be found
-     * @throws MissingPermissionException In case of insufficient permissions to access one of the request topics
+     * @throws MissingPermissionException In case of insufficient permissions for accessing the request topics
      */
     @PostMapping("/testDeviceTemplate")
     @ApiOperation(value = "Retrieves device descriptions that match the requirements of a given device template and processes them to a ranking.", produces = "application/hal+json")
@@ -93,11 +97,11 @@ public class RestDiscoveryController {
      * Retrieves information about the repositories that are available for a given request topic. This way,
      * it can be tested whether a registered request topics works as intended by the user.
      *
-     * @param accessRequestHeader Access request headers
+     * @param accessRequestHeader Access request header
      * @param topicId             The ID of the request topic to test
      * @return A response entity containing a map (repository name --> device count) with the repository information
      * @throws EntityNotFoundException    In case the request topic or user could not be found
-     * @throws MissingPermissionException In case of insufficient permissions to access the request topic
+     * @throws MissingPermissionException In case of insufficient permissions for accessing the request topic
      */
     @GetMapping("/getRepositories/{topic-id}")
     @ApiOperation(value = "Retrieves information about the repositories that are available for a given request topic.", produces = "application/hal+json")
@@ -113,11 +117,32 @@ public class RestDiscoveryController {
         return new ResponseEntity<>(repositoryData, HttpStatus.OK);
     }
 
-    @PostMapping("/refreshCandidateDevices")
-    @ApiOperation(value = "", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "The device template is invalid!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
-    public ResponseEntity<Void> refreshCandidateDevices(){
-        //TODO
-        return null;
+    /**
+     * Updates the candidate devices and the corresponding subscriptions at the discovery repositories for a certain
+     * {@link DeviceTemplate}, given by its ID.
+     *
+     * @param accessRequestHeader Access request header
+     * @param deviceTemplateId    The ID of the pertaining device template
+     * @return An empty response
+     * @throws EntityNotFoundException    In case the device template topic or user could not be found
+     * @throws MissingPermissionException In case of insufficient permissions for accessing the device template
+     */
+    @PostMapping("/device-templates/{deviceTemplateId}/refreshCandidateDevices")
+    @ApiOperation(value = "Updates the candidate devices and the corresponding subscriptions at the discovery repositories for a certain device template.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to access the device template!"),
+            @ApiResponse(code = 404, message = "Device template or requesting user not found!")})
+    public ResponseEntity<Void> refreshCandidateDevices(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+                                                        @PathVariable(value = "deviceTemplateId") @ApiParam(value = "ID of the device template", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceTemplateId) throws MissingPermissionException, EntityNotFoundException {
+        //Get access request
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Retrieve device template with access control check
+        DeviceTemplate deviceTemplate = userEntityService.getForIdWithAccessControlCheck(deviceTemplateRepository, deviceTemplateId, ACAccessType.READ, accessRequest);
+
+        //Refresh candidate devices and subscriptions for the device template
+        discoveryService.refreshCandidateDevicesAndSubscriptions(deviceTemplate);
+
+        return ResponseEntity.ok().build();
     }
 }

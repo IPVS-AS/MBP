@@ -5,6 +5,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
     function (ENDPOINT_URI, HttpService, ComponentService) {
         //Base URL for discovery and dynamic deployments
         const URL_DISCOVERY = ENDPOINT_URI + '/discovery/';
+        const URL_DEVICE_TEMPLATES = URL_DISCOVERY + 'device-templates';
         const URL_DYNAMIC_DEPLOYMENTS = URL_DISCOVERY + 'dynamic-deployments';
 
         //URL suffixes for the various requests
@@ -157,15 +158,14 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', 'ComponentServic
 
         /**
          * [Public]
-         * Performs a server request in order to refresh the candidate devices that are stored for a certain device
-         * template, given by its ID. Thereby, also the subscriptions at the discover repositories for asynchronous
-         * notifications about changes are renewed.
+         * Performs a server request in order to update the candidate devices and the corresponding subscriptions at
+         * the discovery repositories for a certain device template, given by its ID.
          *
-         * @param deviceTemplateId The ID of the device template
+         * @param deviceTemplateId The ID of the pertaining device template
          * @returns @returns {*|void} The promise of the resulting request
          */
         function refreshCandidateDevices(deviceTemplateId) {
-            return HttpService.postRequest(URL_DYNAMIC_DEPLOYMENTS + '/' + deviceTemplateId + URL_SUFFIX_REFRESH_CANDIDATE_DEVICES);
+            return HttpService.postRequest(URL_DEVICE_TEMPLATES + '/' + deviceTemplateId + URL_SUFFIX_REFRESH_CANDIDATE_DEVICES);
         }
 
         //Expose public functions

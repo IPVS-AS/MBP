@@ -318,12 +318,12 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
     /**
      * Submits a task for updating the candidate devices that are stored as {@link CandidateDevicesResult} for a
-     * given {@link DeviceTemplate}. Furthermore, also the subscriptions at the discovery repositories are re-newed
-     * for the {@link DeviceTemplate}. All modifications are forced and thus do not abort on failing pre-conditions.
+     * given {@link DeviceTemplate} and also the corresponding subscriptions at the discovery repositories.
+     * All modifications are forced and thus do not abort on failing pre-conditions.
      *
-     * @param deviceTemplate The device template for which the
+     * @param deviceTemplate The device template
      */
-    public void updateCandidateDevices(DeviceTemplate deviceTemplate) {
+    public void refreshCandidateDevicesAndSubscriptions(DeviceTemplate deviceTemplate) {
         //Null check
         if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
 

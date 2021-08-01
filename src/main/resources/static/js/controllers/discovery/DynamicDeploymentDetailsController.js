@@ -14,7 +14,6 @@ app.controller('DynamicDeploymentDetailsController',
 
             //Relevant DOM elements
             const ELEMENT_DISCOVERY_LOGS_TABLE = $("#discovery-logs-table");
-            const ELEMENT_STACKTRACE_MODAL = $("#showStackTraceModal")
 
             //Properties of the current dynamic deployment
             const DEPLOYMENT_ID = $routeParams.id;
@@ -263,11 +262,11 @@ app.controller('DynamicDeploymentDetailsController',
              * repositories for asynchronous notifications about changes are renewed.
              */
             function refreshCandidateDevices() {
-                DiscoveryService.refreshCandidateDevices(DEPLOYMENT_ID).then(() => {
+                DiscoveryService.refreshCandidateDevices(dynamicDeploymentDetails.deviceTemplate.id).then(() => {
                     //Update discovery logs
                     updateDiscoveryLogs();
                     //Notify the user
-                    NotificationService.notify("Update for candidate devices is in progress.", "success");
+                    NotificationService.notify("Update for candidate devices in progress.", "success");
                 }, () => {
                     NotificationService.notify("Could not update the candidate devices.", "error");
                 });

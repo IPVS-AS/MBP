@@ -170,4 +170,18 @@ public class DiscoveryService {
             throw new MBPException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
+
+    /**
+     * Updates the candidate devices and the corresponding subscriptions at the discovery repositories for a gien
+     * {@link DeviceTemplate}.
+     *
+     * @param deviceTemplate The pertaining device template
+     */
+    public void refreshCandidateDevicesAndSubscriptions(DeviceTemplate deviceTemplate) {
+        //Null check
+        if (deviceTemplate == null) throw new IllegalArgumentException("The device template must not be null.");
+
+        //Let the discovery engine update the candidate devices
+        this.discoveryEngine.refreshCandidateDevicesAndSubscriptions(deviceTemplate);
+    }
 }

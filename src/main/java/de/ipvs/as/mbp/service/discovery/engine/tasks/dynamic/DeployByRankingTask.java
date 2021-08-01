@@ -197,11 +197,11 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
                 if (isDeployed) {
                     addLogMessage("Undeploying operator from formerly used device.");
                     this.discoveryDeploymentService.undeploy(dynamicDeployment);
+                    addLogMessage(SUCCESS, "Undeployed the operator from its former device.");
                 }
 
                 //Update the dynamic deployment accordingly and set the state
                 updateDynamicDeployment(dynamicDeployment.getId(), new DynamicDeploymentDeviceDetails(candidateDevice), DynamicDeploymentState.DEPLOYED);
-                addLogMessage(SUCCESS, "Undeployed the operator from its former device.");
                 return;
             }
 
