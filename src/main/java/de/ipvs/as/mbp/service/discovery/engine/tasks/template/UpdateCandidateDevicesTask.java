@@ -14,6 +14,7 @@ import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
+import java.util.Collections;
 import java.util.List;
 
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
@@ -138,7 +139,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
         //Not available or forced, thus retrieve the candidate devices using the request topics of the owner
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
-        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, requestTopics, this.subscriber);
+        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getCandidateDevicesWithSubscription(Collections.singletonList(this.deviceTemplate), requestTopics, this.subscriber).get(this.deviceTemplate.getId());
 
         //Write log
         addLogMessage(String.format("Received %s.", candidateDevices.toHumanReadableDescription()));

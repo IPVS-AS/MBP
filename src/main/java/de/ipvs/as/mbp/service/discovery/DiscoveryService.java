@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -64,7 +65,7 @@ public class DiscoveryService {
         }
 
         //Use the gateway to find all candidate devices that match the device template
-        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
+        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(Collections.singletonList(deviceTemplate), requestTopics).get(deviceTemplate.getId());
 
         //Use the processor to filter, aggregate, score and rank the candidate devices
         return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);
