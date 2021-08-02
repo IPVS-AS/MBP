@@ -139,7 +139,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
         //Not available or forced, thus retrieve the candidate devices using the request topics of the owner
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
-        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getCandidateDevicesWithSubscription(Collections.singletonList(this.deviceTemplate), requestTopics, this.subscriber).get(this.deviceTemplate.getId());
+        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getCandidateDevicesWithSubscription(this.deviceTemplate, requestTopics, this.subscriber);
 
         //Write log
         addLogMessage(String.format("Received %s.", candidateDevices.toHumanReadableDescription()));

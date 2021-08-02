@@ -7,7 +7,6 @@ import de.ipvs.as.mbp.domain.discovery.collections.revision.CandidateDevicesRevi
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.messages.cancel.CancelSubscriptionsMessage;
-import de.ipvs.as.mbp.domain.discovery.messages.query.CandidateDevicesQuery;
 import de.ipvs.as.mbp.domain.discovery.messages.query.CandidateDevicesReply;
 import de.ipvs.as.mbp.domain.discovery.messages.query.CandidateDevicesRequest;
 import de.ipvs.as.mbp.domain.discovery.messages.test.RepositoryTestReply;
@@ -67,74 +66,65 @@ public class DiscoveryGateway {
     }
 
     /**
-     * //TODO rework
-     * Requests {@link DeviceDescription}s of suitable candidate devices which match a given {@link DeviceTemplate}
+     * Requests {@link DeviceDescription}s of suitable candidate devices, matching a given {@link DeviceTemplate},
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
-     * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as {@link CandidateDevicesContainer}, holding one {@link CandidateDevicesCollection}
-     * per repository. No subscription is created at the repositories as part of this request.
+     * The retrieved {@link DeviceDescription}s of the candidate devices are subsequently returned as
+     * {@link CandidateDevicesContainer} by this method, holding one {@link CandidateDevicesCollection}
+     * per discovery repository. No subscription is created at the discovery repositories as part of this request.
      *
-     * @param deviceTemplate The device template to find suitable candidate devices for
-     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @return The resulting list of {@link CandidateDevicesCollection}s
+     * @param deviceTemplate The {@link DeviceTemplate} for which suitable candidate devices are supposed
+     *                       to be retrieved
+     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request message to the
+     *                       discovery repositories
+     * @return The resulting {@link CandidateDevicesContainer}
      */
-    public Map<String, CandidateDevicesContainer> getDeviceCandidates(Collection<DeviceTemplate> deviceTemplates, Collection<RequestTopic> requestTopics) {
+    public CandidateDevicesContainer getDeviceCandidates(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Delegate call to overloaded method
-        return getCandidateDevicesWithSubscription(deviceTemplates, requestTopics, null);
+        return getCandidateDevicesWithSubscription(deviceTemplate, requestTopics, null);
     }
 
     /**
-     * //TODO rework
-     * Requests {@link DeviceDescription}s of suitable candidate devices matching a given {@link DeviceTemplate}
+     * Requests {@link DeviceDescription}s of suitable candidate devices, matching a given {@link DeviceTemplate},
      * from the discovery repositories that are available under a given collection of {@link RequestTopic}s.
-     * The {@link DeviceDescription}s of the candidate devices that are received from the discovery repositories
-     * in response are returned as {@link CandidateDevicesContainer}, holding one {@link CandidateDevicesCollection}
-     * per repository. In addition, an asynchronous subscription can be created at the repositories such that the
-     * MBP can become notified when the collection of suitable candidate devices changed over time at a certain
-     * repository for the given {@link DeviceTemplate}.
+     * The retrieved {@link DeviceDescription}s of the candidate devices are subsequently returned as
+     * {@link CandidateDevicesContainer} by this method, holding one {@link CandidateDevicesCollection} per discovery
+     * repository. In addition, an asynchronous subscription can be created at the discovery repositories such that the
+     * MBP becomes notified when the collection of suitable candidate devices changes over time for the given
+     * {@link DeviceTemplate}.
      *
-     * @param deviceTemplates The device template to find suitable candidate devices for
-     * @param requestTopics   The collection of {@link RequestTopic}s to use for sending the request to the repositories
-     * @param subscriber      The subscriber to notify about changes in the collection of suitable candidate devices.
-     *                        Set to null, if no subscription is supposed to be created
-     * @return The resulting list of {@link CandidateDevicesCollection}s
+     * @param deviceTemplate The {@link DeviceTemplate} for which suitable candidate devices are supposed
+     *                       to be retrieved
+     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request message to the
+     *                       discovery repositories
+     * @param subscriber     The {@link CandidateDevicesSubscriber} to notify about changes in the collection of
+     *                       suitable candidate devices. If null, no subscription will be created.
+     * @return The resulting {@link CandidateDevicesContainer}
      */
-    public Map<String, CandidateDevicesContainer> getCandidateDevicesWithSubscription(Collection<DeviceTemplate> deviceTemplates, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
-        //Null checks
-        if ((deviceTemplates == null) || deviceTemplates.stream().anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("The device templates must not be null.");
+    public CandidateDevicesContainer getCandidateDevicesWithSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
+        //Null check
+        if (deviceTemplate == null) {
+            throw new IllegalArgumentException("The device template must not be null.");
         }
 
-        //Stream through the device templates and create corresponding queries
-        Set<CandidateDevicesQuery> queries = deviceTemplates.stream()
-                .map(d -> new CandidateDevicesQuery(d.getId(), d.getRequirements(), d.getScoringCriteria(),
-                        createSubscription(d, requestTopics, subscriber)))
-                .collect(Collectors.toSet());
-
-        //Create the request message body
-        CandidateDevicesRequest requestBody = new CandidateDevicesRequest(queries);
+        //Create the body of the corresponding request message
+        CandidateDevicesRequest requestBody = new CandidateDevicesRequest(deviceTemplate.getId(),
+                deviceTemplate.getRequirements(), deviceTemplate.getScoringCriteria(),
+                createSubscription(deviceTemplate, requestTopics, subscriber));
 
         //Execute the request
         List<ReplyMessage<CandidateDevicesReply>> replies = sendRepositoryRequest(requestTopics, requestBody, new TypeReference<ReplyMessage<CandidateDevicesReply>>() {
         });
 
-        //Create map (reference ID --> candidate devices) for storing the reply contents
-        Map<String, CandidateDevicesContainer> candidateDevices = deviceTemplates.stream()
-                .collect(Collectors.toMap(DeviceTemplate::getId, d -> new CandidateDevicesContainer().setDeviceTemplateId(d.getId())));
+        //Create new candidate devices container
+        CandidateDevicesContainer container = new CandidateDevicesContainer();
 
-        //Iterate over all received replies and stream through all contained revisions
-        replies.forEach(m -> m.getMessageBody().getCandidateDevicesRevisions().forEach(r -> {
-            //Create new candidate devices collection using the sender name as repository name
-            CandidateDevicesCollection collection = new CandidateDevicesCollection(m.getSenderName());
-            //Populate the collection by applying the operations of the revision
-            r.applyOperations(collection);
-            //Add collection to candidate devices containers
-            r.getReferenceIds().stream().filter(candidateDevices::containsKey).map(candidateDevices::get)
-                    .forEach(c -> c.addCandidateDevices(collection));
-        }));
+        //Iterate over all received replies and create candidate device collections from the device descriptions
+        List<CandidateDevicesCollection> collections = replies.stream()
+                .map(m -> new CandidateDevicesCollection(m.getSenderName()).addCandidateDevices(m.getMessageBody().getFirstDeviceDescriptions()))
+                .collect(Collectors.toList());
 
-        //Return map of candidate devices
-        return candidateDevices;
+        //Create and return a candidate devices container of the received collections
+        return new CandidateDevicesContainer(deviceTemplate.getId(), collections);
     }
 
     /**
@@ -170,19 +160,20 @@ public class DiscoveryGateway {
      * {@link Collection} of {@link RequestTopic}s and a {@link CandidateDevicesSubscriber} that is supposed to
      * receive the notifications originating from the subscription. In addition, this method generates and returns
      * a notification topic under which the notification messages by the discovery repository are expected to be
-     * published.
+     * published. If no {@link CandidateDevicesSubscriber} is provided, it is assumed that no subscription
+     * is supposed to be created.
      *
      * @param deviceTemplate The {@link DeviceTemplate} for which the subscription is created
      * @param requestTopics  The collection of request topics under which the subscription request is published
      * @param subscriber     The subscriber to notify about notification messages resulting from the subscription
-     * @return The resulting notification topic
+     * @return The resulting notification topic or null if no {@link CandidateDevicesSubscriber} is provided
      */
     private String createSubscription(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics, CandidateDevicesSubscriber subscriber) {
         //Sanity check
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
         } else if (subscriber == null) {
-            throw new IllegalArgumentException("The subscriber must not be null.");
+            return null;
         }
 
         //Get owner of the device template

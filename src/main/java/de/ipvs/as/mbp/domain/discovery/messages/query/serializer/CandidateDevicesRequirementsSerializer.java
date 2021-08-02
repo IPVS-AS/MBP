@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Serializer for {@link DeviceRequirement}s of {@link CandidateDevicesRequest}s.
  */
-public class DeviceQueryRequirementsSerializer extends JsonSerializer<List<DeviceRequirement>> {
+public class CandidateDevicesRequirementsSerializer extends JsonSerializer<List<DeviceRequirement>> {
 
     /**
      * Method that can be called to ask implementation to serialize

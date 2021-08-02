@@ -1,90 +1,169 @@
 package de.ipvs.as.mbp.domain.discovery.messages.query;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
+import de.ipvs.as.mbp.domain.discovery.messages.query.serializer.CandidateDevicesRequirementsSerializer;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
- * Template for request messages that are supposed to request collections of suitable candidate devices, matching
- * certain {@link DeviceTemplate}s, from the discovery repositories. For this, each request message consist out of
- * a set of {@link CandidateDevicesQuery}s, each specifying {@link DeviceRequirement}s and optional
- * {@link ScoringCriterion}s that were derived from such a {@link DeviceTemplate}. Based on these, the discovery
- * repositories that receive the request message are expected to determine matching candidate devices for each
- * {@link CandidateDevicesQuery} and send their descriptions back as {@link CandidateDevicesReply}.
- * Furthermore, each {@link CandidateDevicesQuery} can specify whether a subscription is supposed to be created
- * for this query at the discovery repositories, such that the MBP becomes asynchronously notified when
- * the collection of suitable candidate devices changes over time for the pertaining {@link DeviceTemplate}.
+ * Template for request messages that represent queries for suitable candidate devices with respect to a certain
+ * {@link DeviceTemplate}, which are issued against the discovery repositories. For this, the request message contains
+ * {@link DeviceRequirement}s and optional {@link ScoringCriterion}s that could be derived from the
+ * {@link DeviceTemplate} and describe the desired properties of the candidate devices. Furthermore, the request
+ * message may specify  whether a subscription is supposed to be created for this request at the discovery repositories,
+ * such that the MBP becomes asynchronously notified when the collection of suitable candidate devices changes over
+ * time for the  pertaining {@link DeviceTemplate}.
  */
 @DomainMessageTemplate(value = "query", topicSuffix = "query")
 public class CandidateDevicesRequest extends DomainMessageBody {
+    //The ID of the pertaining device template, serving as identifier for results within replies
+    private String referenceId;
 
-    //The set of candidate devices queries, one per device template
-    private Set<CandidateDevicesQuery> queries;
+    //List of requirements serving as conditions within the query
+    @JsonSerialize(using = CandidateDevicesRequirementsSerializer.class)
+    private List<DeviceRequirement> requirements;
+
+    //Optional list of scoring criteria for ranking the devices
+    private List<ScoringCriterion> scoringCriteria;
+
+    //Topic under which notifications are expected to be published (null = no subscription)
+    private String notificationTopic = null;
+
 
     /**
-     * Creates a new, empty {@link CandidateDevicesRequest} message.
+     * Creates a new {@link CandidateDevicesRequest} from a given reference ID, a list of {@link DeviceRequirement}s
+     * and a list of {@link ScoringCriterion}s, without the intention to register a subscription at the discovery
+     * repositories.
+     *
+     * @param referenceId     The reference ID to use
+     * @param requirements    The list of {@link DeviceRequirement}s to use
+     * @param scoringCriteria The list of {@link ScoringCriterion}s to use
      */
-    public CandidateDevicesRequest() {
-        //Initialize data structures
-        this.queries = new HashSet<>();
+    public CandidateDevicesRequest(String referenceId, List<DeviceRequirement> requirements, List<ScoringCriterion> scoringCriteria) {
+        //Delegate call
+        this(referenceId, requirements, scoringCriteria, null);
+    }
+
+    /**
+     * Creates a new {@link CandidateDevicesRequest} from a given reference ID, a notification topic,
+     * a list of {@link DeviceRequirement}s and a list of {@link ScoringCriterion}s. Furthermore, the request message
+     * intends to register a subscription at the discovery repositories, such that these repositories publish
+     * asynchronous notification messages under the provided notification topic, informing about about changes
+     * regarding the collection of suitable candidate devices.
+     *
+     * @param referenceId       The reference ID to use
+     * @param requirements      The list of {@link DeviceRequirement}s to use
+     * @param scoringCriteria   The list of {@link ScoringCriterion}s to use
+     * @param notificationTopic The notification topic to use
+     */
+    public CandidateDevicesRequest(String referenceId, List<DeviceRequirement> requirements, List<ScoringCriterion> scoringCriteria, String notificationTopic) {
+        //Set fields
+        setReferenceId(referenceId);
+        setRequirements(requirements);
+        setScoringCriteria(scoringCriteria);
+        setNotificationTopic(notificationTopic);
     }
 
 
     /**
-     * Creates a new {@link CandidateDevicesRequest} message from a given collection of {@link CandidateDevicesQuery}s.
+     * Returns the reference ID of the {@link CandidateDevicesRequest}, serving as identifier for query results within
+     * reply messages.
      *
-     * @param queries The collection of {@link CandidateDevicesQuery}s to set
+     * @return The reference ID
      */
-    public CandidateDevicesRequest(Collection<CandidateDevicesQuery> queries) {
-        setQueries(queries);
-    }
-
-
-    /**
-     * Returns the {@link CandidateDevicesQuery}s that are contained in the request message.
-     *
-     * @return The {@link CandidateDevicesQuery}s
-     */
-    public Set<CandidateDevicesQuery> getQueries() {
-        return queries;
+    public String getReferenceId() {
+        return referenceId;
     }
 
     /**
-     * Sets the the {@link CandidateDevicesQuery}s that are contained in the request message.
+     * Sets the reference ID of the {@link CandidateDevicesRequest}, serving as identifier for query results within
+     * reply messages.
      *
-     * @param queries The collection of {@link CandidateDevicesQuery}s to set
-     * @return The request message
+     * @param referenceId The reference ID to set
      */
-    public CandidateDevicesRequest setQueries(Collection<CandidateDevicesQuery> queries) {
-        //Null check
-        if ((queries == null) || queries.stream().anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("The queries must not be null.");
+    public void setReferenceId(String referenceId) {
+        //Sanity check
+        if ((referenceId == null) || referenceId.isEmpty()) {
+            throw new IllegalArgumentException("The reference ID must not be null or empty.");
         }
 
-        //Set queries
-        this.queries = new HashSet<>(queries);
-        return this;
+        this.referenceId = referenceId;
     }
 
     /**
-     * Adds a given {@link CandidateDevicesQuery} to the request message.
+     * Returns the topic under which the asynchronous notifications as result to the subscription at the discovery
+     * repository are expected to be published.
      *
-     * @param query The {@link CandidateDevicesQuery} to add
-     * @return The request message
+     * @return The notification topic or null, if no subscription is registered
      */
-    public CandidateDevicesRequest addQuery(CandidateDevicesQuery query) {
-        //Null check
-        if (query == null) throw new IllegalArgumentException("The query must not be null.");
+    public String getNotificationTopic() {
+        return notificationTopic;
+    }
 
-        //Add the query
-        this.queries.add(query);
-        return this;
+    /**
+     * Sets the topic under which the asynchronous notifications as result to the subscription at the discovery
+     * repository are expected to be published.
+     *
+     * @param notificationTopic The notification topic to set or null, if no subscription is registered
+     */
+    public void setNotificationTopic(String notificationTopic) {
+        //Sanity check
+        if (notificationTopic.isEmpty())
+            throw new IllegalArgumentException("The notification topic must not be empty.");
+
+
+        this.notificationTopic = notificationTopic;
+    }
+
+    /**
+     * Returns the {@link DeviceRequirement}s of the {@link CandidateDevicesRequest}.
+     *
+     * @return The list of {@link DeviceRequirement}s
+     */
+    public List<DeviceRequirement> getRequirements() {
+        return requirements;
+    }
+
+    /**
+     * Sets the {@link DeviceRequirement}s of the {@link CandidateDevicesRequest}.
+     *
+     * @param requirements The list of {@link DeviceRequirement}s to set
+     */
+    public void setRequirements(List<DeviceRequirement> requirements) {
+        //Null checks
+        if ((requirements == null) || requirements.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("The requirements must not be null.");
+        }
+
+        this.requirements = requirements;
+    }
+
+    /**
+     * Returns the {@link ScoringCriterion}s of the {@link CandidateDevicesRequest}.
+     *
+     * @return The list of {@link ScoringCriterion}s
+     */
+    public List<ScoringCriterion> getScoringCriteria() {
+        return scoringCriteria;
+    }
+
+    /**
+     * Sets the {@link ScoringCriterion}s of the {@link CandidateDevicesRequest}.
+     *
+     * @param scoringCriteria The list of {@link ScoringCriterion}s to set
+     */
+    public void setScoringCriteria(List<ScoringCriterion> scoringCriteria) {
+        //Null checks
+        if ((scoringCriteria == null) || scoringCriteria.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("The scoring criteria must not be null.");
+        }
+
+        this.scoringCriteria = scoringCriteria;
     }
 }

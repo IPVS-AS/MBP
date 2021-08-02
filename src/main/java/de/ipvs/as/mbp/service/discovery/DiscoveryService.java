@@ -65,7 +65,7 @@ public class DiscoveryService {
         }
 
         //Use the gateway to find all candidate devices that match the device template
-        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(Collections.singletonList(deviceTemplate), requestTopics).get(deviceTemplate.getId());
+        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
 
         //Use the processor to filter, aggregate, score and rank the candidate devices
         return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);

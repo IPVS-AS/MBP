@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.domain.discovery.messages.query;
 
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.revision.CandidateDevicesRevision;
 import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.ReplaceOperation;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
@@ -65,13 +64,13 @@ public class CandidateDevicesReply extends DomainMessageBody {
 
     /**
      * Inspects one of the provided {@link CandidateDevicesRevision}s, looks for its first {@link ReplaceOperation} and
-     * returns the associated {@link DeviceDescription}s as {@link CandidateDevicesCollection}. This is especially
-     * useful when the {@link CandidateDevicesReply} was sent as synchronous response to a request and is expected
+     * returns the associated {@link DeviceDescription}s. This is especially useful when the
+     * {@link CandidateDevicesReply} was sent as synchronous response to a request and is expected
      * to contain the {@link DeviceDescription}s of all matching candidate devices of the discovery repository.
      *
-     * @return The resulting {@link CandidateDevicesCollection} containing all {@link DeviceDescription}s
+     * @return The resulting {@link DeviceDescription}s
      */
-    public CandidateDevicesCollection getFirstDeviceDescriptions() {
+    public Set<DeviceDescription> getFirstDeviceDescriptions() {
         //Sanity check
         if (this.candidateDevicesRevisions.isEmpty()) return null;
 
@@ -87,8 +86,7 @@ public class CandidateDevicesReply extends DomainMessageBody {
         //Check if replace operation could be found
         if (replaceOperation == null) return null;
 
-        //Create collection object and add first device template ID and device descriptions
-        return new CandidateDevicesCollection(revision.getReferenceIds().iterator().next())
-                .addCandidateDevices(replaceOperation.getDeviceDescriptions());
+        //Return the device descriptions of the first replace operation
+        return replaceOperation.getDeviceDescriptions();
     }
 }
