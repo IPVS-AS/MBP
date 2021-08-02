@@ -13,7 +13,7 @@ import de.ipvs.as.mbp.service.discovery.processing.CandidateDeviceScorer;
  * Objects of this class represent term scoring criteria for devices.
  */
 @JsonIgnoreProperties
-public class TermScoringCriterion extends ScoringCriterion {
+public class TermScoringCriterion implements ScoringCriterion {
     //Type name of this scoring criterion
     private static final String TYPE_NAME = "term";
 
@@ -134,9 +134,9 @@ public class TermScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Returns the name of the scoring criteria.
+     * Returns the type name of the scoring criterion.
      *
-     * @return The name
+     * @return The type name
      */
     @JsonProperty("type")
     @Override

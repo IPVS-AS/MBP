@@ -18,15 +18,15 @@ import java.util.stream.Stream;
  * certain {@link DeviceTemplate}. While the pertaining {@link DeviceTemplate} is the same for all the
  * {@link CandidateDevicesCollection}s of the container, they represent the candidate devices of different discovery
  * repositories. As a result, overlaps between the {@link DeviceDescription}s of different
- * {@link CandidateDevicesCollection}s within the same {@link CandidateDevicesResult} are possible, when
+ * {@link CandidateDevicesCollection}s within the same {@link CandidateDevicesContainer} are possible, when
  * multiple discovery repositories contain device descriptions of the same devices.
  * Objects of this class provide methods that allow to retrieve, add, remove or replace
  * {@link CandidateDevicesCollection}s for certain discovery repositories, identified by their name.
  */
 @Document(collection = "candidateDevices")
-public class CandidateDevicesResult {
+public class CandidateDevicesContainer {
 
-    //The ID of the device template for which the candidate devices were retrieve
+    //The ID of the device template for which the candidate devices were retrieved
     @Id
     private String deviceTemplateId;
 
@@ -36,7 +36,7 @@ public class CandidateDevicesResult {
     /**
      * Creates a new, empty candidate devices result container.
      */
-    public CandidateDevicesResult() {
+    public CandidateDevicesContainer() {
         //Initialize data structures
         this.candidateDevices = new HashMap<>();
     }
@@ -48,7 +48,7 @@ public class CandidateDevicesResult {
      * @param deviceTemplateId The ID of the {@link DeviceTemplate} for which the candidate devices were retrieved
      * @param candidateDevices The {@link CandidateDevicesCollection}s of the candidate devices to add
      */
-    public CandidateDevicesResult(String deviceTemplateId, Collection<CandidateDevicesCollection> candidateDevices) {
+    public CandidateDevicesContainer(String deviceTemplateId, Collection<CandidateDevicesCollection> candidateDevices) {
         //Set fields
         setDeviceTemplateId(deviceTemplateId);
         setCandidateDevices(candidateDevices);
@@ -81,7 +81,7 @@ public class CandidateDevicesResult {
     }
 
     /**
-     * Returns whether the {@link CandidateDevicesResult} contains any candidate devices.
+     * Returns whether the {@link CandidateDevicesContainer} contains any candidate devices.
      *
      * @return True, if candidate devices are available; false otherwise
      */
@@ -99,6 +99,21 @@ public class CandidateDevicesResult {
     public CandidateDevicesCollection get(String repositoryName) {
         //Retrieve corresponding candidate devices from map
         return this.candidateDevices.get(repositoryName);
+    }
+
+    /**
+     * Returns whether the {@link CandidateDevicesContainer} contains a {@link CandidateDevicesCollection} for a
+     * certain discovery repository, given by its name.
+     *
+     * @param repositoryName The name of the discovery repository to check
+     * @return True, if a {@link CandidateDevicesCollection} is available for this repository; false otherwise
+     */
+    public boolean contains(String repositoryName) {
+        //Sanity check
+        if ((repositoryName == null) || repositoryName.isEmpty()) return false;
+
+        //Check whether there is a matching entry in the map
+        return this.candidateDevices.containsKey(repositoryName);
     }
 
     /**
@@ -183,7 +198,7 @@ public class CandidateDevicesResult {
     }
 
     /**
-     * Returns a human-readable string representation of the {@link CandidateDevicesResult} by summarizing its key
+     * Returns a human-readable string representation of the {@link CandidateDevicesContainer} by summarizing its key
      * properties.
      *
      * @return The human-readable description
@@ -211,7 +226,7 @@ public class CandidateDevicesResult {
      * @param deviceTemplateId The device template ID to set
      * @return The result container
      */
-    public CandidateDevicesResult setDeviceTemplateId(String deviceTemplateId) {
+    public CandidateDevicesContainer setDeviceTemplateId(String deviceTemplateId) {
         this.deviceTemplateId = deviceTemplateId;
         return this;
     }

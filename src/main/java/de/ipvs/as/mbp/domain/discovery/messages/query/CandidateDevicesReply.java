@@ -1,53 +1,94 @@
 package de.ipvs.as.mbp.domain.discovery.messages.query;
 
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
+import de.ipvs.as.mbp.domain.discovery.collections.revision.CandidateDevicesRevision;
+import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.ReplaceOperation;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
-import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
- * Reply message that is supposed to be received in response to {@link CandidateDevicesRequest} messages. It contains
- * the {@link DeviceDescription}s of all suitable candidate devices that could be determined at the repository
- * for the corresponding {@link DeviceTemplate} that was used for deriving the requirements and scoring criteria
- * of the the preceding request. This message may be either received in a synchronous manner as direct response to
- * {@link CandidateDevicesRequest}s or as asynchronous notification about changes in the collection
- * of candidate devices as part of a subscription. In the latter case, a reference ID is provided matching the
- * reference ID of the {@link RepositorySubscriptionDetails} object that was part of the original
- * {@link CandidateDevicesRequest}.
+ * Reply message that is expected to be received in response to {@link CandidateDevicesRequest} messages or as part
+ * of an asynchronous notification as resulting from a subscription that has been previously registered at a discovery
+ * repository. The reply message contains a set of {@link CandidateDevicesRevision}s, each describing the
+ * operations that need to be executed on the candidate devices of one discovery repositories that are stored for one
+ * or multiple @link DeviceTemplate}s of the same user in order to keep them up-to-date.
  */
-@DomainMessageTemplate(value = "device_query_reply")
+@DomainMessageTemplate(value = "query_reply")
 public class CandidateDevicesReply extends DomainMessageBody {
-    //Reference ID matching the one that was provided in the subscription details (if needed)
-    private String referenceId;
-
-    //List of device descriptions of the suitable candidate devices
-    private List<DeviceDescription> deviceDescriptions;
+    //Set of revisions for the candidate devices of the pertaining device templates
+    private Set<CandidateDevicesRevision> candidateDevicesRevisions;
 
     /**
      * Creates a new candidate devices reply.
      */
     public CandidateDevicesReply() {
-
+        //Initialize data structures
+        this.candidateDevicesRevisions = new HashSet<>();
     }
 
     /**
-     * Returns the reference ID or null, if none is provided.
+     * Returns whether the reply contains any {@link CandidateDevicesRevision}s.
      *
-     * @return The reference ID
+     * @return True, if the reply contains {@link CandidateDevicesRevision}s; false otherwise
      */
-    public String getReferenceId() {
-        return referenceId;
+    public boolean isEmpty() {
+        return this.candidateDevicesRevisions.isEmpty();
     }
 
     /**
-     * Returns the list of {@link DeviceDescription}s for the suitable candidate devices that were determined
-     * at a repository.
+     * Returns the set of {@link CandidateDevicesRevision}s that is part of this reply.
      *
-     * @return The list of device descriptions
+     * @return The {@link CandidateDevicesRevision}s
      */
-    public List<DeviceDescription> getDeviceDescriptions() {
-        return deviceDescriptions;
+    public Set<CandidateDevicesRevision> getCandidateDevicesRevisions() {
+        return candidateDevicesRevisions;
+    }
+
+    /**
+     * Sets the set of {@link CandidateDevicesRevision}s that is part of this reply.
+     *
+     * @param candidateDevicesRevisions The {@link CandidateDevicesRevision}s to set
+     */
+    public void setCandidateDevicesRevisions(Set<CandidateDevicesRevision> candidateDevicesRevisions) {
+        //Null checks
+        if ((candidateDevicesRevisions == null) || (candidateDevicesRevisions.stream().anyMatch(Objects::isNull))) {
+            throw new IllegalArgumentException("The candidate devices revisions must not be null.");
+        }
+
+        this.candidateDevicesRevisions = candidateDevicesRevisions;
+    }
+
+    /**
+     * Inspects one of the provided {@link CandidateDevicesRevision}s, looks for its first {@link ReplaceOperation} and
+     * returns the associated {@link DeviceDescription}s as {@link CandidateDevicesCollection}. This is especially
+     * useful when the {@link CandidateDevicesReply} was sent as synchronous response to a request and is expected
+     * to contain the {@link DeviceDescription}s of all matching candidate devices of the discovery repository.
+     *
+     * @return The resulting {@link CandidateDevicesCollection} containing all {@link DeviceDescription}s
+     */
+    public CandidateDevicesCollection getFirstDeviceDescriptions() {
+        //Sanity check
+        if (this.candidateDevicesRevisions.isEmpty()) return null;
+
+        //Get first revision
+        CandidateDevicesRevision revision = this.candidateDevicesRevisions.iterator().next();
+
+        //Find first replace operation
+        ReplaceOperation replaceOperation = revision.getOperations().stream()
+                .filter(o -> o instanceof ReplaceOperation)
+                .map(o -> (ReplaceOperation) o)
+                .findFirst().orElse(null);
+
+        //Check if replace operation could be found
+        if (replaceOperation == null) return null;
+
+        //Create collection object and add first device template ID and device descriptions
+        return new CandidateDevicesCollection(revision.getReferenceIds().iterator().next())
+                .addCandidateDevices(replaceOperation.getDeviceDescriptions());
     }
 }

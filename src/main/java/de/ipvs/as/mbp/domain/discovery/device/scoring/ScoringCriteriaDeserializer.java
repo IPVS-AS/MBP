@@ -28,8 +28,8 @@ public class ScoringCriteriaDeserializer extends StdDeserializer<List<ScoringCri
 
         //Iterate over all scoring criteria classes
         for (Class<? extends ScoringCriterion> criteriaClass : scoringCriteriaClasses) {
-            //Skip abstract classes
-            if (Modifier.isAbstract(criteriaClass.getModifiers())) continue;
+            //Skip abstract classes and interfaces
+            if (Modifier.isAbstract(criteriaClass.getModifiers()) || criteriaClass.isInterface()) continue;
 
             try {
                 //Create new instance of class

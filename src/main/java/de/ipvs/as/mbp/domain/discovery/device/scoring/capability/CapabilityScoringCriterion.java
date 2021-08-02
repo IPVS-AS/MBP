@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 /**
  * Abstract base class for capability-based scoring criteria.
  */
-public abstract class CapabilityScoringCriterion extends ScoringCriterion {
+public abstract class CapabilityScoringCriterion implements ScoringCriterion {
     //Name of the capability
     protected String capabilityName;
 

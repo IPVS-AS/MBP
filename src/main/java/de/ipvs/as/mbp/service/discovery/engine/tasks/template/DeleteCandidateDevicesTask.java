@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesContainer;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
@@ -13,17 +13,15 @@ import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.INFO;
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.SUCCESS;
 
 /**
- * This task is responsible for checking whether the {@link CandidateDevicesResult} that is stored for a
+ * This task is responsible for checking whether the {@link CandidateDevicesContainer} that is stored for a
  * certain {@link DeviceTemplate} is currently used by any of the existing {@link DynamicDeployment}s. If this is not
- * the case, this task takes care of deleting the {@link CandidateDevicesResult} and
+ * the case, this task takes care of deleting the {@link CandidateDevicesContainer} and
  * cancelling the subscriptions for asynchronous notifications at the individual discovery repositories.
  */
 public class DeleteCandidateDevicesTask implements CandidateDevicesTask {

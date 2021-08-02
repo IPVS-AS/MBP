@@ -25,7 +25,7 @@ import java.util.stream.StreamSupport;
  * Objects of this class represent description scoring criteria for devices.
  */
 @JsonIgnoreProperties
-public class DescriptionScoringCriterion extends ScoringCriterion {
+public class DescriptionScoringCriterion implements ScoringCriterion {
     //Type name of this scoring criterion
     private static final String TYPE_NAME = "description";
 
@@ -101,9 +101,9 @@ public class DescriptionScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Returns the name of the scoring criteria.
+     * Returns the type name of the scoring criterion.
      *
-     * @return The name
+     * @return The type name
      */
     @JsonProperty("type")
     @Override

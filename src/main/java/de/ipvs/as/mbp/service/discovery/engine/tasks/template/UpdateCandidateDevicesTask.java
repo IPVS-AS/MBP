@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.discovery.engine.tasks.template;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesContainer;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage;
@@ -20,7 +20,7 @@ import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage
 import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessageType.SUCCESS;
 
 /**
- * This task is responsible for updating the candidate devices that are stored as {@link CandidateDevicesResult} in the
+ * This task is responsible for updating the candidate devices that are stored as {@link CandidateDevicesContainer} in the
  * {@link CandidateDevicesRepository} for a certain {@link DeviceTemplate} by requesting the most recent
  * candidate devices from the discovery repositories. Optionally, a subscription can be created at the repositories.
  */
@@ -138,7 +138,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
 
         //Not available or forced, thus retrieve the candidate devices using the request topics of the owner
         List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
-        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, requestTopics, this.subscriber);
+        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidatesWithSubscription(this.deviceTemplate, requestTopics, this.subscriber);
 
         //Write log
         addLogMessage(String.format("Received %s.", candidateDevices.toHumanReadableDescription()));

@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesContainer;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -64,7 +64,7 @@ public class DiscoveryService {
         }
 
         //Use the gateway to find all candidate devices that match the device template
-        CandidateDevicesResult candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
+        CandidateDevicesContainer candidateDevices = this.discoveryGateway.getDeviceCandidates(deviceTemplate, requestTopics);
 
         //Use the processor to filter, aggregate, score and rank the candidate devices
         return candidateDevicesProcessor.process(candidateDevices, deviceTemplate);

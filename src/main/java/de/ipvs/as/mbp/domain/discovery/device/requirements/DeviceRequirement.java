@@ -6,22 +6,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Abstract base class for device requirements.
+ * Generic interface for device requirements.
  */
-public abstract class DeviceRequirement {
+public interface DeviceRequirement {
     /**
-     * Creates a new device requirement.
-     */
-    public DeviceRequirement() {
-
-    }
-
-    /**
-     * Returns the name of the requirement.
+     * Returns the type name of the requirement.
      *
-     * @return The name
+     * @return The type name
      */
-    public abstract String getTypeName();
+    String getTypeName();
 
     /**
      * Validates the device requirement by extending the provided exception with information about invalid fields.
@@ -29,7 +22,7 @@ public abstract class DeviceRequirement {
      * @param exception   The exception to extend as part of the validation
      * @param fieldPrefix Prefix that is supposed to be added to the fields that are validated
      */
-    public abstract void validate(EntityValidationException exception, String fieldPrefix);
+    void validate(EntityValidationException exception, String fieldPrefix);
 
     /**
      * Transforms the device requirement to a {@link JSONObject} that can be used as requirement within a device
@@ -42,5 +35,5 @@ public abstract class DeviceRequirement {
      * @throws JSONException In case a non-resolvable issue occurred during the transformation
      */
     @JsonIgnore
-    public abstract JSONObject toQueryRequirement(JSONObject jsonObject) throws JSONException;
+    JSONObject toQueryRequirement(JSONObject jsonObject) throws JSONException;
 }

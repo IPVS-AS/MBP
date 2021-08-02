@@ -1,10 +1,11 @@
-package de.ipvs.as.mbp.domain.discovery.device.requirements;
+package de.ipvs.as.mbp.domain.discovery.collections.revision;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperation;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
 import org.reflections.Reflections;
@@ -14,47 +15,47 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
- * Deserializer for arrays of {@link DeviceRequirement}s, provided as JSON.
+ * Deserializer for arrays of {@link RevisionOperation}s, provided as JSON.
  */
-public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequirement>> {
+public class RevisionOperationsDeserializer extends StdDeserializer<List<RevisionOperation>> {
 
-    private static final String REQUIREMENTS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.device.requirements";
-    private final static Map<String, Class<? extends DeviceRequirement>> REQUIREMENT_TYPES = new HashMap<>();
+    private static final String OPERATIONS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.collections.revision.operations";
+    private final static Map<String, Class<? extends RevisionOperation>> OPERATION_TYPES = new HashMap<>();
 
     static {
-        //Get all available requirement classes
-        Reflections reflections = new Reflections(REQUIREMENTS_PACKAGE);
-        Set<Class<? extends DeviceRequirement>> requirementClasses = reflections.getSubTypesOf(DeviceRequirement.class);
+        //Get all available operation classes
+        Reflections reflections = new Reflections(OPERATIONS_PACKAGE);
+        Set<Class<? extends RevisionOperation>> operationClasses = reflections.getSubTypesOf(RevisionOperation.class);
 
-        //Iterate over all requirement classes
-        for (Class<? extends DeviceRequirement> reqClass : requirementClasses) {
+        //Iterate over all operation classes
+        for (Class<? extends RevisionOperation> operationClass : operationClasses) {
             //Skip abstract classes and interfaces
-            if (Modifier.isAbstract(reqClass.getModifiers()) || reqClass.isInterface()) continue;
+            if (Modifier.isAbstract(operationClass.getModifiers()) || operationClass.isInterface()) continue;
 
             try {
                 //Create new instance of class
-                DeviceRequirement requirement = reqClass.getDeclaredConstructor().newInstance();
+                RevisionOperation operation = operationClass.getDeclaredConstructor().newInstance();
 
-                //Get and remember the name of this requirement type
-                REQUIREMENT_TYPES.put(requirement.getTypeName().toLowerCase(), reqClass);
+                //Get and remember the name of this operation type
+                OPERATION_TYPES.put(operation.getTypeName().toLowerCase(), operationClass);
             } catch (Exception ignore) {
             }
         }
     }
 
     /**
-     * Creates the requirements deserializer without any parameters. Required for bean instantiation.
+     * Creates the operations deserializer without any parameters. Required for bean instantiation.
      */
-    public RequirementsDeserializer() {
+    public RevisionOperationsDeserializer() {
         this(null);
     }
 
     /**
-     * Creates a new requirements deserializer for a given class.
+     * Creates a new operations deserializer for a given class.
      *
      * @param vc The class to use
      */
-    protected RequirementsDeserializer(Class<?> vc) {
+    protected RevisionOperationsDeserializer(Class<?> vc) {
         super(vc);
     }
 
@@ -108,7 +109,7 @@ public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequire
      * @return Deserialized value
      */
     @Override
-    public List<DeviceRequirement> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public List<RevisionOperation> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         //Retrieve root node
         JsonNode rootNode = jsonParser.getCodec().readTree(jsonParser);
 
@@ -118,33 +119,33 @@ public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequire
         }
 
         //Create result list
-        List<DeviceRequirement> requirementsList = new ArrayList<>();
+        List<RevisionOperation> operationsList = new ArrayList<>();
 
-        //Iterate over the array of requirements
+        //Iterate over the array of operations
         for (JsonNode node : rootNode) {
             //Check if type field is present
             if ((!node.has("type")) || (!node.get("type").isTextual())) {
                 continue;
             }
 
-            //Get requirement type
+            //Get operation type
             String type = node.get("type").asText("").toLowerCase();
 
-            //Check if a requirement with this type exists
-            if (!REQUIREMENT_TYPES.containsKey(type)) {
+            //Check if a operation with this type exists
+            if (!OPERATION_TYPES.containsKey(type)) {
                 continue;
             }
 
-            //Deserialize requirement for its corresponding class
-            DeviceRequirement requirement = Json.MAPPER.treeToValue(node, REQUIREMENT_TYPES.get(type));
+            //Deserialize operation for its corresponding class
+            RevisionOperation operation = Json.MAPPER.treeToValue(node, OPERATION_TYPES.get(type));
 
-            //Check if requirement is valid and add it to list
-            if (requirement != null) {
-                requirementsList.add(requirement);
+            //Check if operation is valid and add it to list
+            if (operation != null) {
+                operationsList.add(operation);
             }
         }
 
-        //Return resulting requirements list
-        return requirementsList;
+        //Return resulting operations list
+        return operationsList;
     }
 }

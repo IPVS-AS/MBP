@@ -13,7 +13,7 @@ import org.json.JSONObject;
  * Objects of this class represent name requirements for devices.
  */
 @JsonIgnoreProperties
-public class NameRequirement extends DeviceRequirement {
+public class NameRequirement implements DeviceRequirement {
     //Type name of this requirement
     private static final String TYPE_NAME = "name";
 
@@ -80,9 +80,9 @@ public class NameRequirement extends DeviceRequirement {
     }
 
     /**
-     * Returns the name of the requirement.
+     * Returns the type name of the requirement.
      *
-     * @return The name
+     * @return The type name
      */
     @JsonProperty("type")
     @Override

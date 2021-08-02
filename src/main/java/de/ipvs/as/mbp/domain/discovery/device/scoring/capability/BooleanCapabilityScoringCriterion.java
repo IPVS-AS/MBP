@@ -96,9 +96,9 @@ public class BooleanCapabilityScoringCriterion extends CapabilityScoringCriterio
     }
 
     /**
-     * Returns the name of the requirement.
+     * Returns the type name of the scoring criterion.
      *
-     * @return The name
+     * @return The type name
      */
     @JsonProperty("type")
     @Override

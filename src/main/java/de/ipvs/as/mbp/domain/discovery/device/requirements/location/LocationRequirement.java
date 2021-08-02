@@ -18,7 +18,7 @@ import java.util.Optional;
  * Objects of this class represent location requirements for devices.
  */
 @JsonIgnoreProperties
-public class LocationRequirement extends DeviceRequirement {
+public class LocationRequirement implements DeviceRequirement {
     //Type name of this requirement
     private static final String TYPE_NAME = "location";
 
@@ -145,9 +145,9 @@ public class LocationRequirement extends DeviceRequirement {
     }
 
     /**
-     * Returns the name of the requirement.
+     * Returns the type name of the requirement.
      *
-     * @return The name
+     * @return The type name
      */
     @JsonProperty("type")
     @Override

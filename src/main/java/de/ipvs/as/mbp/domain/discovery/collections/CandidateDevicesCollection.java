@@ -6,22 +6,22 @@ import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * Objects of this class represent collections of candidate devices, represented by their {@link DeviceDescription}s,
+ * Objects of this class represent collections of candidate devices, described by their {@link DeviceDescription}s,
  * that that were received from a certain repository with an unique name.
  */
-public class CandidateDevicesCollection  {
+public class CandidateDevicesCollection {
     //Name of the repository from which the collection origins
     private String repositoryName;
 
     //Descriptions of the individual candidate devices
-    private List<DeviceDescription> candidateDevices;
+    private Set<DeviceDescription> candidateDevices;
 
     /**
      * Creates a new, empty candidate devices collection.
      */
     public CandidateDevicesCollection() {
         //Initialize collection of candidate devices
-        this.candidateDevices = new ArrayList<>();
+        this.candidateDevices = new HashSet<>();
     }
 
     /**
@@ -68,7 +68,7 @@ public class CandidateDevicesCollection  {
      *
      * @return The descriptions of the candidate devices
      */
-    public List<DeviceDescription> getCandidateDevices() {
+    public Set<DeviceDescription> getCandidateDevices() {
         return candidateDevices;
     }
 
@@ -79,14 +79,14 @@ public class CandidateDevicesCollection  {
      * @return The candidate devices collection
      */
     public CandidateDevicesCollection setCandidateDevices(Collection<DeviceDescription> candidateDevices) {
-        this.candidateDevices = new ArrayList<>(candidateDevices);
+        this.candidateDevices = new HashSet<>(candidateDevices);
         return this;
     }
 
     /**
      * Adds multiple candidate devices, given as {@link DeviceDescription}s, to the collection.
      *
-     * @param candidateDevices The descriptions of the candidate devicesto add
+     * @param candidateDevices The descriptions of the candidate devices to add
      * @return The candidate devices collection
      */
     public CandidateDevicesCollection addCandidateDevices(Collection<DeviceDescription> candidateDevices) {
@@ -94,7 +94,6 @@ public class CandidateDevicesCollection  {
         this.candidateDevices.addAll(candidateDevices);
         return this;
     }
-
 
     /**
      * Returns the number of elements in this set (its cardinality).  If this

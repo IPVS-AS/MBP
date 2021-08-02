@@ -21,7 +21,7 @@ import java.util.Optional;
  * Objects of this class represent proximity scoring criteria for devices.
  */
 @JsonIgnoreProperties
-public class ProximityScoringCriterion extends ScoringCriterion {
+public class ProximityScoringCriterion implements ScoringCriterion {
     //Type name of this scoring criterion
     private static final String TYPE_NAME = "proximity";
 
@@ -133,9 +133,9 @@ public class ProximityScoringCriterion extends ScoringCriterion {
     }
 
     /**
-     * Returns the name of the scoring criteria.
+     * Returns the type name of the scoring criterion.
      *
-     * @return The name
+     * @return The type name
      */
     @JsonProperty("type")
     @Override

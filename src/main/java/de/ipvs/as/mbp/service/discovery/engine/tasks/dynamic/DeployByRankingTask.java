@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesContainer;
 import de.ipvs.as.mbp.domain.discovery.collections.ScoredCandidateDevice;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDeviceDetails;
@@ -25,7 +25,7 @@ import static de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLogMessage
 
 /**
  * The purpose of this task is to deploy a given {@link DynamicDeployment} with respect to the ranking which
- * can be computed from the candidate devices in the {@link CandidateDevicesResult} that is associated
+ * can be computed from the candidate devices in the {@link CandidateDevicesContainer} that is associated
  * with the {@link DeviceTemplate} underlying the {@link DynamicDeployment}. Thereby, the operator of the
  * {@link DynamicDeployment} is supposed to be deployed to the target device of the ranking that can be considered
  * as most appropriate. If necessary, this task also takes care of suspending possibly existing former deployments
@@ -107,7 +107,7 @@ public class DeployByRankingTask implements DynamicDeploymentTask {
     public void run() {
         //Read dynamic deployment and candidate devices from their repositories
         DynamicDeployment dynamicDeployment = dynamicDeploymentRepository.findById(this.originalDynamicDeployment.getId()).orElse(null);
-        CandidateDevicesResult candidateDevices = candidateDevicesRepository.findById(getDeviceTemplateId()).orElse(null);
+        CandidateDevicesContainer candidateDevices = candidateDevicesRepository.findById(getDeviceTemplateId()).orElse(null);
 
         //Sanity checks
         if ((dynamicDeployment == null) || (candidateDevices == null)) {

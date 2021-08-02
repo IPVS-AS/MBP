@@ -21,7 +21,7 @@ import java.util.List;
  * created on the repositories. By using them, the MBP can become notified when the collection of suitable candidate
  * devices for the {@link DeviceTemplate} changes over time at the corresponding repository.
  */
-@DomainMessageTemplate(value = "device_query", topicSuffix = "query")
+@DomainMessageTemplate(value = "query", topicSuffix = "query")
 public class CandidateDevicesRequest extends DomainMessageBody {
     //List of requirements that serve as conditions within the query
     @JsonSerialize(using = DeviceQueryRequirementsSerializer.class)

@@ -5,22 +5,15 @@ import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.discovery.processing.CandidateDeviceScorer;
 
 /**
- * Abstract base class for scoring criteria for devices.
+ * Generic interface for scoring criteria for devices.
  */
-public abstract class ScoringCriterion {
+public interface ScoringCriterion {
     /**
-     * Creates a new scoring criterion.
-     */
-    public ScoringCriterion() {
-
-    }
-
-    /**
-     * Returns the name of the scoring criteria.
+     * Returns the type name of the scoring criterion.
      *
-     * @return The name
+     * @return The type name
      */
-    public abstract String getTypeName();
+    String getTypeName();
 
     /**
      * Validates the device scoring criterion by extending the provided exception with information about invalid fields.
@@ -28,7 +21,7 @@ public abstract class ScoringCriterion {
      * @param exception   The exception to extend as part of the validation
      * @param fieldPrefix Prefix that is supposed to be added to the fields that are validated
      */
-    public abstract void validate(EntityValidationException exception, String fieldPrefix);
+    void validate(EntityValidationException exception, String fieldPrefix);
 
     /**
      * Applies the scoring criterion to a given {@link DeviceDescription} and returns the resulting scoring increment
@@ -44,5 +37,5 @@ public abstract class ScoringCriterion {
      * @return The score increment/decrement that results from the application of this scoring criterion to the given
      * device description
      */
-    public abstract double getScoreIncrement(DeviceDescription deviceDescription, CandidateDeviceScorer scorer);
+    double getScoreIncrement(DeviceDescription deviceDescription, CandidateDeviceScorer scorer);
 }

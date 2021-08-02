@@ -1,7 +1,9 @@
 package de.ipvs.as.mbp.service.discovery.engine;
 
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
-import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesResult;
+import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesContainer;
+import de.ipvs.as.mbp.domain.discovery.collections.revision.CandidateDevicesRevision;
+import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperation;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -16,7 +18,7 @@ import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.DynamicDeploymentTa
 import de.ipvs.as.mbp.service.discovery.engine.tasks.dynamic.UndeployTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.CandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.DeleteCandidateDevicesTask;
-import de.ipvs.as.mbp.service.discovery.engine.tasks.template.MergeCandidateDevicesTask;
+import de.ipvs.as.mbp.service.discovery.engine.tasks.template.ReviseCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.engine.tasks.template.UpdateCandidateDevicesTask;
 import de.ipvs.as.mbp.service.discovery.gateway.CandidateDevicesSubscriber;
 import de.ipvs.as.mbp.service.discovery.gateway.DiscoveryGateway;
@@ -317,7 +319,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
 
 
     /**
-     * Submits a task for updating the candidate devices that are stored as {@link CandidateDevicesResult} for a
+     * Submits a task for updating the candidate devices that are stored as {@link CandidateDevicesContainer} for a
      * given {@link DeviceTemplate} and also the corresponding subscriptions at the discovery repositories.
      * All modifications are forced and thus do not abort on failing pre-conditions.
      *
@@ -335,26 +337,27 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
     }
 
     /**
-     * Called in case a notification was received from a repository as result of a subscription,
-     * indicating that the collection of suitable candidate devices, which can be determined on behalf of a
-     * certain {@link DeviceTemplate}, changed over time.
+     * Called in case a notification was received from a discovery repository as result of a subscription,
+     * indicating that the corresponding {@link CandidateDevicesCollection} of a certain {@link DeviceTemplate}
+     * changed over time. Thereby, a {@link CandidateDevicesRevision} is provided, containing the
+     * {@link RevisionOperation}s that can be executed on the {@link CandidateDevicesCollection} in order to update
+     * it again.
      *
-     * @param deviceTemplate          The device template whose candidate devices are affected
-     * @param repositoryName          The name of the repository that issued the notification
-     * @param updatedCandidateDevices The updated collection of candidate devices as {@link CandidateDevicesCollection}
+     * @param deviceTemplateId The ID of the {@link DeviceTemplate} whose candidate devices are affected
+     * @param repositoryName   The name of the repository that issued the notification
+     * @param revision         The {@link CandidateDevicesRevision} that allows to update the candidate devices again
      */
     @Override
-    public void onDeviceTemplateResultChanged(DeviceTemplate deviceTemplate, String repositoryName, CandidateDevicesCollection updatedCandidateDevices) {
+    public synchronized void onCandidateDevicesChanged(String deviceTemplateId, String repositoryName, CandidateDevicesRevision revision) {
         //Sanity checks
-        if ((deviceTemplate == null) || (repositoryName == null) || (repositoryName.isEmpty()) || (updatedCandidateDevices == null)) {
-            return;
-        }
+        if ((deviceTemplateId == null) || (deviceTemplateId.isEmpty()) ||
+                (repositoryName == null) || (repositoryName.isEmpty()) || (revision == null)) return;
 
-        //Create task for merging the updated candidate devices with the existing ones
-        submitTask(new MergeCandidateDevicesTask(deviceTemplate, repositoryName, updatedCandidateDevices, new DiscoveryLog(DISCOVERY_REPOSITORY, "Merge candidate devices")));
+        //Create task for revising the candidate devices
+        submitTask(new ReviseCandidateDevicesTask(deviceTemplateId, repositoryName, revision, new DiscoveryLog(DISCOVERY_REPOSITORY, "Revise candidate devices")));
 
         //Iterate over all dynamic deployments that use the affected device template
-        this.dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplate.getId())
+        this.dynamicDeploymentRepository.findByDeviceTemplate_Id(deviceTemplateId)
                 .forEach(d -> submitTask(new DeployByRankingTask(d, new DiscoveryLog(DISCOVERY_REPOSITORY, "Re-evaluate deployment"))));
 
         //Trigger the execution of tasks
