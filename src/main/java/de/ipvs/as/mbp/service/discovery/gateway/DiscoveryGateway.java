@@ -115,9 +115,6 @@ public class DiscoveryGateway {
         List<ReplyMessage<CandidateDevicesReply>> replies = sendRepositoryRequest(requestTopics, requestBody, new TypeReference<ReplyMessage<CandidateDevicesReply>>() {
         });
 
-        //Create new candidate devices container
-        CandidateDevicesContainer container = new CandidateDevicesContainer();
-
         //Iterate over all received replies and create candidate device collections from the device descriptions
         List<CandidateDevicesCollection> collections = replies.stream()
                 .map(m -> new CandidateDevicesCollection(m.getSenderName()).addCandidateDevices(m.getMessageBody().getFirstDeviceDescriptions()))
@@ -316,7 +313,7 @@ public class DiscoveryGateway {
     private void dispatchSubscriptionNotifications(ReplyMessage<CandidateDevicesReply> message, String topic, String topicFilter) {
         //Unpack the received message
         String senderName = message.getSenderName();
-        Set<CandidateDevicesRevision> revisions = message.getMessageBody().getCandidateDevicesRevisions();
+        Set<CandidateDevicesRevision> revisions = message.getMessageBody().getRevisions();
 
         //Iterate over the received revisions
         revisions.forEach(revision -> {

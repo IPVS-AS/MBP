@@ -20,14 +20,14 @@ import java.util.Set;
 @DomainMessageTemplate(value = "query_reply")
 public class CandidateDevicesReply extends DomainMessageBody {
     //Set of revisions for the candidate devices of the pertaining device templates
-    private Set<CandidateDevicesRevision> candidateDevicesRevisions;
+    private Set<CandidateDevicesRevision> revisions;
 
     /**
      * Creates a new candidate devices reply.
      */
     public CandidateDevicesReply() {
         //Initialize data structures
-        this.candidateDevicesRevisions = new HashSet<>();
+        this.revisions = new HashSet<>();
     }
 
     /**
@@ -36,7 +36,7 @@ public class CandidateDevicesReply extends DomainMessageBody {
      * @return True, if the reply contains {@link CandidateDevicesRevision}s; false otherwise
      */
     public boolean isEmpty() {
-        return this.candidateDevicesRevisions.isEmpty();
+        return this.revisions.isEmpty();
     }
 
     /**
@@ -44,22 +44,22 @@ public class CandidateDevicesReply extends DomainMessageBody {
      *
      * @return The {@link CandidateDevicesRevision}s
      */
-    public Set<CandidateDevicesRevision> getCandidateDevicesRevisions() {
-        return candidateDevicesRevisions;
+    public Set<CandidateDevicesRevision> getRevisions() {
+        return revisions;
     }
 
     /**
      * Sets the set of {@link CandidateDevicesRevision}s that is part of this reply.
      *
-     * @param candidateDevicesRevisions The {@link CandidateDevicesRevision}s to set
+     * @param revisions The {@link CandidateDevicesRevision}s to set
      */
-    public void setCandidateDevicesRevisions(Set<CandidateDevicesRevision> candidateDevicesRevisions) {
+    public void setRevisions(Set<CandidateDevicesRevision> revisions) {
         //Null checks
-        if ((candidateDevicesRevisions == null) || (candidateDevicesRevisions.stream().anyMatch(Objects::isNull))) {
+        if ((revisions == null) || (revisions.stream().anyMatch(Objects::isNull))) {
             throw new IllegalArgumentException("The candidate devices revisions must not be null.");
         }
 
-        this.candidateDevicesRevisions = candidateDevicesRevisions;
+        this.revisions = revisions;
     }
 
     /**
@@ -72,10 +72,10 @@ public class CandidateDevicesReply extends DomainMessageBody {
      */
     public Set<DeviceDescription> getFirstDeviceDescriptions() {
         //Sanity check
-        if (this.candidateDevicesRevisions.isEmpty()) return null;
+        if (this.revisions.isEmpty()) return null;
 
         //Get first revision
-        CandidateDevicesRevision revision = this.candidateDevicesRevisions.iterator().next();
+        CandidateDevicesRevision revision = this.revisions.iterator().next();
 
         //Find first replace operation
         ReplaceOperation replaceOperation = revision.getOperations().stream()

@@ -114,7 +114,7 @@ public class CandidateDevicesRequest extends DomainMessageBody {
      */
     public void setNotificationTopic(String notificationTopic) {
         //Sanity check
-        if (notificationTopic.isEmpty())
+        if ((notificationTopic != null) && notificationTopic.isEmpty())
             throw new IllegalArgumentException("The notification topic must not be empty.");
 
 
