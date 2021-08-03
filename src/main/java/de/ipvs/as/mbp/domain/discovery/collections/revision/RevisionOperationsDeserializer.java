@@ -25,7 +25,7 @@ public class RevisionOperationsDeserializer extends StdDeserializer<List<Revisio
 
     static {
         //Get all available operation classes
-        Reflections reflections = new Reflections(OPERATIONS_PACKAGE, new SubTypesScanner());
+        Reflections reflections = new Reflections(OPERATIONS_PACKAGE);
         Set<Class<? extends RevisionOperation>> operationClasses = reflections.getSubTypesOf(RevisionOperation.class);
 
         //Iterate over all operation classes
