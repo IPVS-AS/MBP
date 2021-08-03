@@ -27,7 +27,7 @@ public class ReplaceOperation implements RevisionOperation {
     /**
      * Creates a new, empty {@link ReplaceOperation}.
      */
-    public ReplaceOperation(){
+    public ReplaceOperation() {
 
     }
 
@@ -105,6 +105,7 @@ public class ReplaceOperation implements RevisionOperation {
      */
     @Override
     public String toHumanReadableDescription() {
-        return String.format("Replace with %d candidate devices", this.deviceDescriptions.size());
+        return String.format("Replace with %d candidate device" + (this.deviceDescriptions.size() == 1 ? "" : "s"),
+                this.deviceDescriptions.size());
     }
 }

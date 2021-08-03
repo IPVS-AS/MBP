@@ -105,6 +105,7 @@ public class UpsertOperation implements RevisionOperation {
      */
     @Override
     public String toHumanReadableDescription() {
-        return String.format("Upsert %d candidate devices", this.deviceDescriptions.size());
+        return String.format("Upsert %d candidate device" + (this.deviceDescriptions.size() == 1 ? "" : "s"),
+                this.deviceDescriptions.size());
     }
 }

@@ -82,7 +82,7 @@ public class ReviseCandidateDevicesTask implements CandidateDevicesTask {
                         (candidateDevices.getCandidateDevicesCount() == 1 ? "device" : "devices") + " from %d " +
                         (candidateDevices.getCollectionsCount() == 1 ? "repository." : "repositories."),
                 candidateDevices.getCandidateDevicesCount(), candidateDevices.getCollectionsCount()));
-        addLogMessage(String.format("Received revision from repository \"%s\":\n%s", this.repositoryName,
+        addLogMessage(String.format("Revision from repository \"%s\":\n%s", this.repositoryName,
                 this.revision.toHumanReadableDescription()));
 
         //Check whether the candidate devices contain already a collection for this discovery repository
@@ -101,7 +101,7 @@ public class ReviseCandidateDevicesTask implements CandidateDevicesTask {
         }
 
         //Write log
-        addLogMessage(String.format("Candidate devices consist out of %d unique " +
+        addLogMessage(String.format("Candidate devices now consist out of %d unique " +
                         (candidateDevices.getCandidateDevicesCount() == 1 ? "device" : "devices") + " from %d " +
                         (candidateDevices.getCollectionsCount() == 1 ? "repository." : "repositories."),
                 candidateDevices.getCandidateDevicesCount(), candidateDevices.getCollectionsCount()));

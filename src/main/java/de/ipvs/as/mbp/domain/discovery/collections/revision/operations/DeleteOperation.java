@@ -28,7 +28,7 @@ public class DeleteOperation implements RevisionOperation {
     /**
      * Creates a new, empty {@link DeleteOperation}.
      */
-    public DeleteOperation(){
+    public DeleteOperation() {
 
     }
 
@@ -104,6 +104,7 @@ public class DeleteOperation implements RevisionOperation {
      */
     @Override
     public String toHumanReadableDescription() {
-        return String.format("Delete %d candidate devices", this.macAddresses.size());
+        return String.format("Delete %d candidate device" + (this.macAddresses.size() == 1 ? "" : "s"),
+                this.macAddresses.size());
     }
 }
