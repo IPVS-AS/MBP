@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.domain.discovery.collections.revision;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperation;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -17,6 +18,7 @@ public class CandidateDevicesRevision {
     private Set<String> referenceIds;
 
     //The list of operations to execute on the candidate devices
+    @JsonDeserialize(using = RevisionOperationsDeserializer.class)
     private List<RevisionOperation> operations;
 
     /**
