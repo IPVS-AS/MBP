@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.collections.revision.operations;
+package de.ipvs.as.mbp.domain.discovery.collections.revision;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,6 +9,7 @@ import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionO
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
 import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -24,7 +25,7 @@ public class RevisionOperationsDeserializer extends StdDeserializer<List<Revisio
 
     static {
         //Get all available operation classes
-        Reflections reflections = new Reflections(OPERATIONS_PACKAGE);
+        Reflections reflections = new Reflections(OPERATIONS_PACKAGE, new SubTypesScanner());
         Set<Class<? extends RevisionOperation>> operationClasses = reflections.getSubTypesOf(RevisionOperation.class);
 
         //Iterate over all operation classes
