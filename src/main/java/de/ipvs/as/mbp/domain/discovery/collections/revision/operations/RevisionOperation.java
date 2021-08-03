@@ -7,7 +7,7 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
  * Generic interface for operations that are supposed to be executed on a {@link CandidateDevicesCollection} that
  * was received from a discovery repository on behalf of a certain {@link DeviceTemplate}.
  */
-public abstract class RevisionOperation {
+public interface RevisionOperation {
     /**
      * Returns the type name of the operation.
      *

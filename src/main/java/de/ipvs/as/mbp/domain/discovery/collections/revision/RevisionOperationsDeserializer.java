@@ -8,8 +8,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperation;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
+import org.reflections8.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
