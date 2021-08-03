@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -72,7 +73,7 @@ public class CandidateDevicesReply extends DomainMessageBody {
      */
     public Set<DeviceDescription> getFirstDeviceDescriptions() {
         //Sanity check
-        if (this.revisions.isEmpty()) return null;
+        if (this.revisions.isEmpty()) return Collections.emptySet();
 
         //Get first revision
         CandidateDevicesRevision revision = this.revisions.iterator().next();
@@ -84,7 +85,7 @@ public class CandidateDevicesReply extends DomainMessageBody {
                 .findFirst().orElse(null);
 
         //Check if replace operation could be found
-        if (replaceOperation == null) return null;
+        if (replaceOperation == null) return Collections.emptySet();
 
         //Return the device descriptions of the first replace operation
         return replaceOperation.getDeviceDescriptions();

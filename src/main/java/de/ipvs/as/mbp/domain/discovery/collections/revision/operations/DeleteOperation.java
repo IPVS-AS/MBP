@@ -26,6 +26,13 @@ public class DeleteOperation implements RevisionOperation {
     private Set<String> macAddresses;
 
     /**
+     * Creates a new, empty {@link DeleteOperation}.
+     */
+    public DeleteOperation(){
+
+    }
+
+    /**
      * Creates a new {@link DeleteOperation} from a given set of MAC addresses, referencing the candidate devices
      * whose {@link DeviceDescription}s are supposed to be removed.
      *

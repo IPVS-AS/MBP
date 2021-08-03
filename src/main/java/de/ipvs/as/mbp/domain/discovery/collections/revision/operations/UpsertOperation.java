@@ -26,6 +26,13 @@ public class UpsertOperation implements RevisionOperation {
     private Set<DeviceDescription> deviceDescriptions;
 
     /**
+     * Creates a new, empty {@link UpsertOperation}.
+     */
+    public UpsertOperation() {
+
+    }
+
+    /**
      * Creates a new {@link UpsertOperation} from a given set of {@link DeviceDescription}s to upsert.
      *
      * @param deviceDescriptions The set of {@link DeviceDescription}s to upsert

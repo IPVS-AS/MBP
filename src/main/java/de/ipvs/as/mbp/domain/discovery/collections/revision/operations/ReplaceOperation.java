@@ -25,6 +25,13 @@ public class ReplaceOperation implements RevisionOperation {
     private Set<DeviceDescription> deviceDescriptions;
 
     /**
+     * Creates a new, empty {@link ReplaceOperation}.
+     */
+    public ReplaceOperation(){
+
+    }
+
+    /**
      * Creates a new {@link ReplaceOperation} from a given set of {@link DeviceDescription}s that is supposed
      * to replace the existing candidate devices as a whole.
      *
