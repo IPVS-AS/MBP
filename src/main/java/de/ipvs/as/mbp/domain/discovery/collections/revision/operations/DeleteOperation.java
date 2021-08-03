@@ -18,7 +18,7 @@ import java.util.Set;
  * to be removed from the collection.
  */
 @JsonIgnoreProperties
-public class DeleteOperation implements RevisionOperation {
+public class DeleteOperation extends RevisionOperation {
     //Type name of this operation
     private static final String TYPE_NAME = "delete";
 

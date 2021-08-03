@@ -17,7 +17,7 @@ import java.util.Set;
  * candidate devices that have been previously added to the {@link CandidateDevicesCollection}s as a whole.
  */
 @JsonIgnoreProperties
-public class ReplaceOperation implements RevisionOperation {
+public class ReplaceOperation extends RevisionOperation {
     //Type name of this operation
     private static final String TYPE_NAME = "replace";
 

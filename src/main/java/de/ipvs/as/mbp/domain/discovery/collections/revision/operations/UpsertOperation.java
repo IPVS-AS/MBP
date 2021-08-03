@@ -18,7 +18,7 @@ import java.util.Set;
  * candidate devices to the collection.
  */
 @JsonIgnoreProperties
-public class UpsertOperation implements RevisionOperation {
+public class UpsertOperation extends RevisionOperation {
     //Type name of this operation
     private static final String TYPE_NAME = "upsert";
 

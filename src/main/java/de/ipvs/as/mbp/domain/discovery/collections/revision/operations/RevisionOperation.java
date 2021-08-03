@@ -7,13 +7,13 @@ import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
  * Generic interface for operations that are supposed to be executed on a {@link CandidateDevicesCollection} that
  * was received from a discovery repository on behalf of a certain {@link DeviceTemplate}.
  */
-public interface RevisionOperation {
+public abstract class RevisionOperation {
     /**
      * Returns the type name of the operation.
      *
      * @return The type name
      */
-    String getTypeName();
+    public abstract String getTypeName();
 
     /**
      * Applies the operation to a given {@link CandidateDevicesCollection} that was received from a discovery repository
@@ -21,12 +21,12 @@ public interface RevisionOperation {
      *
      * @param collection The {@link CandidateDevicesCollection} to which the operation is supposed to be applied
      */
-    void apply(CandidateDevicesCollection collection);
+    public abstract void apply(CandidateDevicesCollection collection);
 
     /**
      * Returns a human-readable string representation of the {@link RevisionOperation}.
      *
      * @return The human-readable description
      */
-    String toHumanReadableDescription();
+    public abstract String toHumanReadableDescription();
 }
