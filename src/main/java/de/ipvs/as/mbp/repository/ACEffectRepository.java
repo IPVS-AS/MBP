@@ -20,8 +20,10 @@ public interface ACEffectRepository extends MongoRepository<ACAbstractEffect, St
 	
 	@Query("{ 'ownerId' : :#{#ownerId} }")
 	List<ACAbstractEffect> findAllByOwner(@Param("ownerId") String ownerId, Pageable pageable);
+
+	List<ACAbstractEffect> findByOwnerId(String ownerId);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)
-	boolean existsByName(@Param("name") String name); 
+	boolean existsByName(@Param("name") String name);
 	
 }
