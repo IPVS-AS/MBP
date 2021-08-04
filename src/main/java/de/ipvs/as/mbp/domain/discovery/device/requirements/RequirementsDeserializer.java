@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
+import de.ipvs.as.mbp.util.ReflectionUtils;
 import org.reflections.Reflections;
 
 import java.io.IOException;
@@ -18,13 +19,11 @@ import java.util.*;
  */
 public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequirement>> {
 
-    private static final String REQUIREMENTS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.device.requirements";
     private final static Map<String, Class<? extends DeviceRequirement>> REQUIREMENT_TYPES = new HashMap<>();
 
     static {
         //Get all available requirement classes
-        Reflections reflections = new Reflections(REQUIREMENTS_PACKAGE);
-        Set<Class<? extends DeviceRequirement>> requirementClasses = reflections.getSubTypesOf(DeviceRequirement.class);
+        Set<Class<? extends DeviceRequirement>> requirementClasses = ReflectionUtils.getSubTypes(DeviceRequirement.class);
 
         //Iterate over all requirement classes
         for (Class<? extends DeviceRequirement> reqClass : requirementClasses) {
