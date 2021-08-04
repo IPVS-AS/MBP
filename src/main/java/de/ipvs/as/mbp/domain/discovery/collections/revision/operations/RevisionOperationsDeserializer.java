@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.collections.revision;
+package de.ipvs.as.mbp.domain.discovery.collections.revision.operations;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
