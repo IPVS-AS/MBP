@@ -13,7 +13,7 @@ public interface RevisionOperation {
      *
      * @return The type name
      */
-    public abstract String getTypeName();
+    String getTypeName();
 
     /**
      * Applies the operation to a given {@link CandidateDevicesCollection} that was received from a discovery repository
@@ -21,12 +21,12 @@ public interface RevisionOperation {
      *
      * @param collection The {@link CandidateDevicesCollection} to which the operation is supposed to be applied
      */
-    public abstract void apply(CandidateDevicesCollection collection);
+    void apply(CandidateDevicesCollection collection);
 
     /**
      * Returns a human-readable string representation of the {@link RevisionOperation}.
      *
      * @return The human-readable description
      */
-    public abstract String toHumanReadableDescription();
+    String toHumanReadableDescription();
 }
