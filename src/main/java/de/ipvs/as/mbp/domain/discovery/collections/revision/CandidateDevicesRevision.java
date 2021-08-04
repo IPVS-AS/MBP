@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.domain.discovery.collections.revision;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesCollection;
 import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperation;
-import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperationsDeserializer;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 
 import java.util.*;

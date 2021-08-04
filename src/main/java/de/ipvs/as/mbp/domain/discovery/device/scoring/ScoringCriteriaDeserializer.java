@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
-import org.reflections8.Reflections;
+import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
