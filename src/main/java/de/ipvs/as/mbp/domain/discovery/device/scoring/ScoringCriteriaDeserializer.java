@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
-import de.ipvs.as.mbp.util.ReflectionUtils;
 import org.reflections.Reflections;
 
 import java.io.IOException;
@@ -19,11 +18,13 @@ import java.util.*;
  */
 public class ScoringCriteriaDeserializer extends StdDeserializer<List<ScoringCriterion>> {
 
+    private static final String CRITERIA_PACKAGE = "de.ipvs.as.mbp.domain.discovery.device.scoring";
     private final static Map<String, Class<? extends ScoringCriterion>> CRITERIA_TYPES = new HashMap<>();
 
     static {
         //Get all available scoring criteria classes
-        Set<Class<? extends ScoringCriterion>> scoringCriteriaClasses = ReflectionUtils.getSubTypes(ScoringCriterion.class);
+        Reflections reflections = new Reflections(CRITERIA_PACKAGE);
+        Set<Class<? extends ScoringCriterion>> scoringCriteriaClasses = reflections.getSubTypesOf(ScoringCriterion.class);
 
         //Iterate over all scoring criteria classes
         for (Class<? extends ScoringCriterion> criteriaClass : scoringCriteriaClasses) {

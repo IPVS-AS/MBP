@@ -5,14 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.ReplaceOperation;
 import de.ipvs.as.mbp.domain.discovery.collections.revision.operations.RevisionOperation;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Json;
-import de.ipvs.as.mbp.util.ReflectionUtils;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -23,11 +20,13 @@ import java.util.*;
  */
 public class RevisionOperationsDeserializer extends StdDeserializer<List<RevisionOperation>> {
 
+    private static final String OPERATIONS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.collections.revision";
     private final static Map<String, Class<? extends RevisionOperation>> OPERATION_TYPES = new HashMap<>();
 
     static {
         //Get all available operation classes
-        Set<Class<? extends RevisionOperation>> operationClasses = ReflectionUtils.getSubTypes(RevisionOperation.class);
+        Reflections reflections = new Reflections(OPERATIONS_PACKAGE, ReplaceOperation.class.getClassLoader());
+        Set<Class<? extends RevisionOperation>> operationClasses = reflections.getSubTypesOf(RevisionOperation.class);
 
         //Iterate over all operation classes
         for (Class<? extends RevisionOperation> operationClass : operationClasses) {
