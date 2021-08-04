@@ -22,7 +22,7 @@ import java.util.*;
  */
 public class RevisionOperationsDeserializer extends StdDeserializer<List<RevisionOperation>> {
 
-    private static final String OPERATIONS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.collections.revision.operations";
+    private static final String OPERATIONS_PACKAGE = "de.ipvs.as.mbp.domain.discovery.collections.revision";
     private final static Map<String, Class<? extends RevisionOperation>> OPERATION_TYPES = new HashMap<>();
 
     static {
@@ -30,6 +30,7 @@ public class RevisionOperationsDeserializer extends StdDeserializer<List<Revisio
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage(OPERATIONS_PACKAGE))
                 .setScanners(new SubTypesScanner()));
+        Reflections reflections2 = new Reflections(OPERATIONS_PACKAGE);
         Set<Class<? extends RevisionOperation>> operationClasses = reflections.getSubTypesOf(RevisionOperation.class);
 
         //Iterate over all operation classes
