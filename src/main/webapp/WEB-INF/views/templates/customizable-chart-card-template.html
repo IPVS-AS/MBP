@@ -76,8 +76,8 @@
                         <!-- doubleVis Live chart -->
                         <div ng-if="$parent.visItem.visId === 'doubleVis'">
                             <live-chart
-                                    loading-start="$parent.$parent.liveLoadingStart()"
-                                    loading-finish="$parent.$parent.liveLoadingFinish()"
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, true)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, true)"
                                     get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
                                     is-updateable="$parent.$parent.isLiveChartUpdateable()"
                                     unit=""
@@ -88,8 +88,8 @@
                         <!-- geoMap Live chart -->
                         <div ng-if="$parent.visItem.visId === 'geoMap'">
                             <live-geo-map-chart
-                                    loading-start="$parent.$parent.liveLoadingStart()"
-                                    loading-finish="$parent.$parent.liveLoadingFinish()"
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, true)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, true)"
                                     get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
                                     is-updateable="$parent.$parent.isLiveChartUpdateable()"
                                     unit=""
@@ -105,8 +105,8 @@
                         <div ng-if="$parent.visItem.visId === 'doubleVis'">
                             <historical-chart
                                     api="$parent.$parent.historicalChartApi"
-                                    loading-start="$parent.$parent.historicalLoadingStart()"
-                                    loading-finish="$parent.$parent.historicalLoadingFinish()"
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, false)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, false)"
                                     get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
                                     unit=""
                                     json-path="{{$parent.$parent.visItem.visFieldToPathMapping}}"
@@ -117,8 +117,8 @@
                         <div ng-if="$parent.visItem.visId === 'geoMap'">
                             <historical-geo-map-chart
                                     api="$parent.$parent.historicalChartApi"
-                                    loading-start="$parent.$parent.historicalLoadingStart()"
-                                    loading-finish="$parent.$parent.historicalLoadingFinish()"
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, false)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, false)"
                                     get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
                                     unit=""
                                     json-path="{{$parent.$parent.visItem.visFieldToPathMapping}}"

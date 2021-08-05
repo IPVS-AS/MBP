@@ -8,8 +8,6 @@ app.controller('TestingChartController',
             const vm = this;
 
             //Selectors that allow the selection of different ui cards
-            const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
-            const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const COMPONENT_ID = testingDetails.id;
 
@@ -32,10 +30,6 @@ app.controller('TestingChartController',
                 updateDeviceState();
 
                 getPDFList();
-                //Initialize charts
-                initLiveChart();
-                initHistoricalChart();
-
 
                 //Interval for updating states on a regular basis
                 const interval = $interval(function () {
@@ -200,81 +194,6 @@ app.controller('TestingChartController',
                 });
 
             }
-
-            /**
-             * [Private]
-             * Initializes the live chart for displaying the most recent sensor values.
-             */
-            function initLiveChart() {
-                /**
-                 * Function that is called when the chart loads something
-                 */
-                function loadingStart(visInstanceId) {
-                    //Show the waiting screen
-                    $(LIVE_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe({
-                        effect: 'bounce',
-                        text: 'Loading chart...',
-                        bg: 'rgba(255,255,255,0.85)'
-                    });
-                }
-
-                /**
-                 * Function that is called when the chart finished loading
-                 */
-                function loadingFinish(visInstanceId) {
-                    //Hide the waiting screen for the case it was displayed before
-                    $(LIVE_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
-                }
-
-                /**
-                 * Function that checks whether the chart is allowed to update its data.
-                 * @returns {boolean} True, if the chart may update; false otherwise
-                 */
-                function isUpdateable() {
-                    return vm.deploymentState === 'RUNNING';
-                }
-
-                //Expose
-                vm.liveChart = {
-                    loadingStart: loadingStart,
-                    loadingFinish: loadingFinish,
-                    isUpdateable: isUpdateable,
-                };
-            }
-
-            /**
-             * [Private]
-             *
-             * Initializes the historical chart for displaying all sensor values (up to a certain limit).
-             */
-            function initHistoricalChart() {
-                /**
-                 * Function that is called when the chart loads something
-                 */
-                function loadingStart(visInstanceId) {
-                    //Show the waiting screen
-                    $(HISTORICAL_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe({
-                        effect: 'bounce',
-                        text: 'Loading chart...',
-                        bg: 'rgba(255,255,255,0.85)'
-                    });
-                }
-
-                /**
-                 * Function that is called when the chart finished loading
-                 */
-                function loadingFinish(visInstanceId) {
-                    //Hide the waiting screen for the case it was displayed before
-                    $(HISTORICAL_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
-                }
-
-                //Expose
-                vm.historicalChart = {
-                    loadingStart: loadingStart,
-                    loadingFinish: loadingFinish,
-                };
-            }
-
 
             /**
              * [Private]

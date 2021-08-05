@@ -7,6 +7,10 @@
  */
 app.directive('customizableChartCard', ['ComponentService', function (ComponentService) {
 
+    //Selectors that allow the selection of different ui cards
+    const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
+    const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
+
     /**
      * Linking function, glue code
      *
@@ -15,23 +19,6 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
      * @param attrs Attributes of the directive
      */
     var link = function (scope, element, attrs) {
-
-        console.log("INSTANCE ID");
-        console.log(scope.instanceId);
-        console.log(scope.componentData);
-        console.log(scope.liveLoadingStart);
-        console.log(scope.liveLoadingFinish);
-        console.log(scope.historicalLoadingStart);
-        console.log(scope.historicalLoadingFinish);
-        console.log(scope.getLiveData);
-        console.log(scope.getHistoricalData);
-        console.log(scope.isLiveChartUpdateable);
-        console.log(scope.historicalChartApi);
-        console.log(scope.deploymentState);
-
-        console.log("TEST:");
-        console.log(scope.componentData);
-
 
         // All visualizations applicable for this component
         scope.availableVisualizationsMappings = scope.componentData.operator.dataModel.possibleVisMappings;
@@ -124,6 +111,7 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
             });
             return match;
         }
+
         // --------------
 
         scope.visItem = new ActiveVisualization(scope.instanceId, scope.nextChartToAdd);
@@ -184,6 +172,50 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
         }
 
         /**
+         * Function that checks whether the live chart is allowed to update its data.
+         * @returns {boolean} True, if the chart may update; false otherwise
+         */
+        scope.isLiveChartUpdateable = function isUpdateable() {
+            return scope.deploymentState === 'RUNNING';
+        }
+
+        /**
+         * Function that is called when the chart loads something
+         *
+         * @param visInstanceId - the visulization id of the module
+         * @param isLive - whether the chart is a live chart (=true) or a historical chart (=false)
+         */
+        scope.loadingStart = function loadingStart(visInstanceId, isLive) {
+            var selector = HISTORICAL_CHART_CARD_SELECTOR;
+            if (isLive) {
+                selector = LIVE_CHART_CARD_SELECTOR;
+            }
+
+            //Show the waiting screen
+            $(selector.replace(".", "#") + "-" + visInstanceId).waitMe({
+                effect: 'bounce',
+                text: 'Loading chart...',
+                bg: 'rgba(255,255,255,0.85)'
+            });
+        }
+
+        /**
+         * Function that is called when the chart finished loading
+         *
+         * @param visInstanceId - the visulization id of the module
+         * @param isLive - whether the chart is a live chart (=true) or a historical chart (=false)
+         */
+        scope.loadingFinish = function (visInstanceId, isLive) {
+            var selector = HISTORICAL_CHART_CARD_SELECTOR;
+            if (isLive) {
+                selector = LIVE_CHART_CARD_SELECTOR;
+            }
+
+            //Hide the waiting screen for the case it was displayed before
+            $(selector.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
+        }
+
+        /**
          * [private]
          * Activates a tab based on a given data-target
          * @param tab the id prefix of the data-target
@@ -205,9 +237,11 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
         }, function (newValue, oldValue) {
             if (newValue === 'RUNNING') {
                 // Make sure that the tab of the live chart is selected
+                setTabActive('#historical-chart-card'); // Make sure that currently the selected tab is really the historical one
                 setTabActive('#live-chart-card');
             } else {
                 // Make sure that the tab of the historical chart is selected
+                setTabActive('#live-chart-card'); // Make sure that currently the selected tab is really the live one
                 setTabActive('#historical-chart-card');
             }
         });
@@ -222,15 +256,9 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
         scope: {
             componentData: "=componentData",
             instanceId: "@instanceId",
-            //Functions that are called when the chart loads/finishes loading data
-            liveLoadingStart: '&liveLoadingStart',
-            liveLoadingFinish: '&liveLoadingFinish',
-            historicalLoadingStart: '&historicalLoadingStart',
-            historicalLoadingFinish: '&historicalLoadingFinish',
-            //Function that checks whether the chart is allowed to update its data
-            isLiveChartUpdateable: '&isLiveChartUpdateable',
             //Public api for the historical chart that provides functions for controlling the chart
             historicalChartApi: "=historicalChartApi",
+            // The running state of the chart. The live chart is only visible if this is set to "RUNNING"
             deploymentState: "=deploymentState"
         }
     };
