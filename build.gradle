@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'war'
+    id 'org.springframework.boot' version '2.5.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id "com.gorylenko.gradle-git-properties" version "2.3.1"
+}
+
+group = 'de.ipvs.as.mbp'
+version = '2.0-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //Spring
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:2.5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-security:2.5.2'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.5.2'
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
+    //Wro4J
+    implementation 'eu.michael-simons:wro4j-spring-boot-starter:0.9.1'
+
+    //Apache Commons
+    implementation 'commons-validator:commons-validator:1.7'
+
+    //MQTT
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+
+    //SSH
+    implementation 'com.jcabi:jcabi-ssh:1.6.1'
+
+    //Esper CEP engine
+    implementation 'com.espertech:esper:7.1.0'
+
+    //JScience
+    implementation 'org.jscience:jscience:4.3.1'
+
+    //ITextPDF
+    implementation 'com.itextpdf:itext7-core:7.1.16'
+
+    //JFree Chart
+    implementation 'org.jfree:jfreechart:1.5.3'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+

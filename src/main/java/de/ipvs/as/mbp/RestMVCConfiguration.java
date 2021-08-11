@@ -1,3 +1,4 @@
+/*
 package de.ipvs.as.mbp;
 
 import org.springframework.beans.factory.ObjectFactory;
@@ -9,6 +10,7 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguratio
 /**
  * REST MVC configuration for the repositories used in the application.
  */
+/*
 @Configuration
 public class RestMVCConfiguration extends RepositoryRestMvcConfiguration {
 
@@ -16,4 +18,4 @@ public class RestMVCConfiguration extends RepositoryRestMvcConfiguration {
 		super(context, conversionService);
 	}
 	
-}
+}*/

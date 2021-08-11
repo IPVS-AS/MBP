@@ -1,3 +1,4 @@
+/*
 package de.ipvs.as.mbp;
 
 import javax.servlet.Filter;
@@ -36,4 +37,4 @@ public class Initializer
             new FormContentFilter()};
     }
 
-}
+}*/

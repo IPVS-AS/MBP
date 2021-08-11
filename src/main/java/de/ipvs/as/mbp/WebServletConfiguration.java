@@ -1,3 +1,4 @@
+/*
 package de.ipvs.as.mbp;
 
 import de.ipvs.as.mbp.constants.Constants;
@@ -50,17 +51,9 @@ public class WebServletConfiguration extends AbstractSecurityWebApplicationIniti
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        System.out.println("load addResourceHandlers");
-        registry.addResourceHandler("swagger-ui.html")
-                .addResourceLocations("classpath:/META-INF/resources/");
-        if (!registry.hasMappingForPattern("/webjars/**")) {
-            registry.addResourceHandler("/webjars/**").addResourceLocations(
-                    "classpath:/META-INF/resources/webjars/");
-        }
-        if (!registry.hasMappingForPattern("/**")) {
-            registry.addResourceHandler("/**").addResourceLocations(
-                    CLASSPATH_RESOURCE_LOCATIONS);
-        }
+        registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
+        if (!registry.hasMappingForPattern("/**"))
+            registry.addResourceHandler("/**").addResourceLocations(CLASSPATH_RESOURCE_LOCATIONS);
     }
 
     @Override
@@ -95,3 +88,4 @@ public class WebServletConfiguration extends AbstractSecurityWebApplicationIniti
         return resolver;
     }
 }
+*/
