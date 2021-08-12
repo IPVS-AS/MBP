@@ -95,6 +95,19 @@ public class UserEntityService {
     }
 
     /**
+     * Retrieves user entities for an owner from the database.
+     *
+     * @param <E>        the type of the {@link UserEntity}.
+     * @param repository the repository to retrieve the user entities from.
+     * @param ownerId   the id of the owner.
+     * @return list of {@link UserEntity}.
+     */
+    public <E extends UserEntity> List<E> getAllForOwnerId(UserEntityRepository<E> repository, String ownerId) {
+        // Retrieve all owner entities from the database
+        return repository.findByOwner(ownerId);
+    }
+
+    /**
      * Retrieves a user entity from the database.
      *
      * @param <E>           the type of the {@link UserEntity}.
