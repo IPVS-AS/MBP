@@ -74,9 +74,9 @@ def main(argv):
             continue
         else:
             if(param["name"] == 'interval'):
-                sendingInterval = str(param["value"]).replace("-", ", ")
+                sendingInterval = str(param["value"]).replace("||", ", ")
             elif(param["name"] == 'value'):
-                sensorVals = str(param["value"]).replace("-", ", ")
+                sensorVals = str(param["value"]).replace("||", ", ")
 
 
     configFileName = "connections.txt"
@@ -132,7 +132,7 @@ def main(argv):
         # while True:
         for sensorValue in sensorVals:
             value = sensorValue
-            msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % (value) }
+            msg_pub = {"component": component.upper(), "id": component_id, "value": {"value": value}}
             publisher.sendMessage(topic_pub, json.dumps(msg_pub))
             print(topic_pub, json.dumps(msg_pub))
             if(counter < len(sendingInterval)):

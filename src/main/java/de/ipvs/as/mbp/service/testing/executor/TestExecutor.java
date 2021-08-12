@@ -676,7 +676,7 @@ public class TestExecutor {
 
         StringBuilder intervalString = new StringBuilder("[");
         StringBuilder valueString = new StringBuilder("[");
-        String comma = "-";
+        String comma = "||";
 
 
         for (Iterator<Map.Entry<Long, Document>> iterator =
