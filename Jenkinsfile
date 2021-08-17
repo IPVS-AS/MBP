@@ -25,6 +25,7 @@ pipeline {
             stages {
                 stage ('Launch Mosquitto') {
                     steps {
+                        sh 'docker stop mqtt-jenkins || true'
                         sh 'docker run -d --rm -p 1883:1883 -p 9001:9001 --name mqtt-jenkins eclipse-mosquitto:1.6.14'
                     }
                 }
@@ -43,7 +44,7 @@ pipeline {
                             }
                             post {
                                 always {
-                                    junit(testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true)
+                                    junit(testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true)
                                 }
                             }
                         }
@@ -56,7 +57,7 @@ pipeline {
                             }
                             post {
                                 always {
-                                    junit(testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true)
+                                    junit(testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true)
                                 }
                             }
                         }
