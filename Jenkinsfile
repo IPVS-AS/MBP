@@ -33,7 +33,7 @@ pipeline {
                         timeout(time: 1, unit: 'HOURS')
                     }
 
-                    parallel {
+                    stages {
                         stage('Backend') {
                             environment {
                                 TEST_MODE="backend"
