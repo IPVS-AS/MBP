@@ -35,7 +35,7 @@ public class BasicTest extends BaseBackendTest {
     private UserService userService;
 
     @Test
-    void name() throws Exception {
+    void loadFrontPage() throws Exception {
         mockMvc.perform(get("/"))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -79,30 +79,4 @@ public class BasicTest extends BaseBackendTest {
         assertThat(deviceFromDB.getIpAddress()).isEqualTo(requestDto.getIpAddress());
         assertThat(responseDevice.getIpAddress()).isEqualTo(requestDto.getIpAddress());
     }
-
-    // @Test
-    // @WithMockUser(username = "admin", password = "12345")
-    void createDevice_returnConflict() throws Exception {
-        DeviceDTO requestDto = new DeviceDTO();
-        requestDto.setName("testDevice");
-        requestDto.setUsername("admin");
-        requestDto.setPassword("12345");
-        requestDto.setIpAddress("127.0.0.1");
-        requestDto.setComponentType("Computer");
-
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(requestDto))
-                .characterEncoding("utf-8"))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn();
-
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(requestDto))
-                .characterEncoding("utf-8"))
-                .andDo(print())
-                .andExpect(status().isConflict()).andReturn();
-    }
-
 }

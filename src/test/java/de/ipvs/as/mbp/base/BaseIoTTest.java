@@ -13,9 +13,11 @@ import de.ipvs.as.mbp.util.testexecution.IoTDeviceTest;
 import de.ipvs.as.mbp.util.testexecution.RequiresMQTTExtension;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.StreamUtils;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -31,6 +33,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @IoTDeviceTest
 @ExtendWith({RequiresMQTTExtension.class})
 public abstract class BaseIoTTest extends BaseIntegrationTest {
+
+    protected final static String testScript = "#!/bin/bash\n" +
+            "echo  $(date): Test Script was called | tee -a /home/mbp/calllog.log";
+
+
+
+    @Container
+    public IoTDeviceContainer device = new IoTDeviceContainer();
+
+    // @AfterEach
+    // void tearDown() throws Exception {
+    //     mongoDbContainer.wipeMongoDB();
+    // }
 
     public OperatorRoutine getRoutineFromClasspath(String name, String type, String path) throws Exception {
         InputStream classPathInput = getClass().getClassLoader().getResourceAsStream(path);

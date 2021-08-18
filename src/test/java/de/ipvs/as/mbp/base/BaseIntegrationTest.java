@@ -6,6 +6,8 @@ import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.util.IntegrationTestConfiguration;
 import de.ipvs.as.mbp.util.testexecution.MBPTestExtension;
 import de.ipvs.as.mbp.util.MongoDbContainer;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
