@@ -20,8 +20,10 @@ public interface ACConditionRepository extends MongoRepository<ACAbstractConditi
 	
 	@Query("{ 'ownerId' : :#{#ownerId} }")
 	List<ACAbstractCondition> findAllByOwner(@Param("ownerId") String ownerId, Pageable pageable);
+
+	List<ACAbstractCondition> findByOwnerId(String ownerId);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)
-	boolean existsByName(@Param("name") String name); 
+	boolean existsByName(@Param("name") String name);
 	
 }

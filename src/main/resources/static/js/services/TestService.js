@@ -4,21 +4,17 @@
  * Provides services for managing tests.
  */
 app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT_URI', 'NotificationService',
-    function (HttpService, $http,$resource, $q, ENDPOINT_URI, NotificationService) {
+    function (HttpService, $http, $resource, $q, ENDPOINT_URI, NotificationService) {
 
         //URLs for server requests
         const URL_TEST_START = ENDPOINT_URI + '/test-details/test/';
         const URL_TEST_STOP = ENDPOINT_URI + '/test-details/test/stop/';
         const URL_REPORT_LIST = ENDPOINT_URI + '/test-details/pdfList/';
-        const URL_REPORT_EXISTS = ENDPOINT_URI + '/test-details/pdfExists/';
         const URL_REPORT_DELETE = ENDPOINT_URI + '/test-details/deleteTestReport/';
-        const URL_TESTDEVICE_REGISTER = ENDPOINT_URI + '/test-details/registerTestDevice';
-        const URL_TESTACTUATOR_REGISTER = ENDPOINT_URI + '/test-details/registerTestActuator';
-        const URL_ONEDIM_SENSOR_REGISTER = ENDPOINT_URI + '/test-details/registerSensorSimulator';
-        const URL_RERUN_OPERATOR_REGISTER = ENDPOINT_URI + '/test-details/addRerunOperator';
-        const URL_RULE_LIST_TEST = ENDPOINT_URI + "/test-details/ruleList/";
-        const URL_DOWNLOAD_REPORT = 'api/test-details/downloadPDF/';
+        const URL_RULE_LIST_TEST = ENDPOINT_URI + '/test-details/ruleList/';
         const URL_UPDATE_TEST = ENDPOINT_URI + '/test-details/updateTest/';
+        const URL_RERUN_TEST = ENDPOINT_URI + '/test-details/rerun-test/'
+
         const vm = this;
 
         vm.parameterValues = [];
@@ -27,11 +23,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             TEMPERATURE: 'TESTING_TemperatureSensor',
             TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
             HUMIDITY: 'TESTING_HumiditySensor',
-            HUMIDITY_PL: 'TESTING_HumiditySensorPl',
-            ACCELERATION: 'TESTING_AccelerationSensor',
-            ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
-            GPS: 'TESTING_GPSSensor',
-            GPS_PL: 'TESTING_GPSSensorPl'
+            HUMIDITY_PL: 'TESTING_HumiditySensorPl'
         };
 
 
@@ -41,10 +33,21 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Performs a server request in order to start the current test (in case it has been stopped before).
          * @param testId The id of the test to be started
          */
-        function startTest(testId){
-            return HttpService.postRequest(URL_TEST_START + testId);
-
+        function startTest(testId, useNewData) {
+            return HttpService.postRequest(URL_TEST_START + testId, useNewData);
         }
+
+        /**
+         * [Public]
+         *
+         * Performs a server request in order to start a test rerun of a specific test execution.
+         * @param testId The id of the test to be started
+         * @param reportId of the test which should be repeated
+         */
+        function rerunTest(testId, reportId) {
+            return HttpService.postRequest(URL_RERUN_TEST + testId + "/" + reportId);
+        }
+
 
         /**
          * [Public]
@@ -68,34 +71,15 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_REPORT_LIST + testId).then(function (response) {
                 const pdfList = {};
                 let pdfDetails = [];
-                if (Object.keys(response).length > 0) {
-                    angular.forEach(response, function (value, key) {
-
-                        pdfDetails.push({
-                            "date": key,
-                            "path": value
-                        });
+                angular.forEach(response, function (value, key) {
+                    pdfDetails.push({
+                        "date": Number(key),
+                        "report": value
                     });
-                    pdfList.pdfTable = pdfDetails;
-                    return pdfList.pdfTable;
-                } else {
-                    return document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
-
-                }
+                });
+                pdfList.pdfTable = pdfDetails;
+                return pdfList.pdfTable;
             });
-        }
-
-        /**
-         * [Public]
-         *
-         * Performs a server request to get the information if a test report for a specific test exists or not.
-         *
-         * @param testId Id of the test to check
-         * @returns {*}
-         */
-        function pdfExists(testId) {
-            return HttpService.getRequest(URL_REPORT_EXISTS + testId)
-
         }
 
 
@@ -104,10 +88,9 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          *
          * Performs a server request to delete a specific test report of a test.
          */
-        function deleteTestReport(testId, path) {
-            return HttpService.postRequest(URL_REPORT_DELETE + testId, path).then(function (response)
-            {
-                if(response){
+        function deleteTestReport(reportId, testId) {
+            return HttpService.postRequest(URL_REPORT_DELETE + reportId).then(function (response) {
+                if (response) {
                     NotificationService.notify('Test Report successfully deleted.', 'success');
                 } else {
                     NotificationService.notify('Error during deletion.', 'error');
@@ -134,46 +117,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
         }
 
-        /**
-         * [Public]
-         *
-         * Performs a server request to register the testing device.
-         * @returns {*|void}
-         */
-        function registerTestDevice() {
-            return HttpService.postRequest(URL_TESTDEVICE_REGISTER);
-        }
-
-        /**
-         * [Public]
-         *
-         * Performs a server request to register the testing actuator.
-         * @returns {*|void}
-         */
-        function registerTestActuator() {
-            return HttpService.postRequest(URL_TESTACTUATOR_REGISTER);
-
-        }
-
-        /**
-         * [Public]
-         *
-         * Performs a server request to register the a one dimensional sensor simulator.
-         * @returns {*|void}
-         */
-        function registerOneDimSensor(sensor) {
-            return $http.post(URL_ONEDIM_SENSOR_REGISTER, sensor);
-
-        }
-
-        /**
-         * [Public]
-         *
-         * Performs a server request to register the operator for the test repetitions.
-         */
-        function registerRerunOperator() {
-            return HttpService.postRequest(URL_RERUN_OPERATOR_REGISTER);
-        }
 
         /**
          * [Public]
@@ -196,18 +139,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_RULE_LIST_TEST + testId);
         }
 
-        /**
-         * [Public]
-         *
-         * Sends a server request in order to open a window for downloading/open the specific test report
-         *
-         * @param testId Id from which a report should be opened
-         * @param endTimeUnix end time of the test report to be opened
-         * @returns {Window}
-         */
-        function downloadReport(testId, endTimeUnix) {
-            return window.open(URL_DOWNLOAD_REPORT + testId + "_" + endTimeUnix, '_blank');
-        }
 
         /**
          * [Private]
@@ -241,11 +172,11 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         function getRuleNames(rules, ruleList) {
             let ruleNames = [];
             angular.forEach(rules, function (rule) {
-               angular.forEach(ruleList, function (ruleInList) {
-                    if(ruleInList._links.self.href === rule ){
+                angular.forEach(ruleList, function (ruleInList) {
+                    if (ruleInList._links.self.href === rule) {
                         ruleNames.push(ruleInList.name);
                     }
-               })
+                })
             });
             return ruleNames;
 
@@ -266,7 +197,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @param executeRules information if rules should be triggered through the test
          * @param data object
          */
-        function getTestData(sensors, realSensors, realParameterValues, config, rules, ruleList ,executeRules, data) {
+        function getTestData(sensors, realSensors, realParameterValues, config, rules, ruleList, executeRules, data) {
 
             let ruleNames = getRuleNames(rules, ruleList);
             // to check if the user has selected at least one sensor
@@ -281,38 +212,21 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
             let parameterValues = [];
 
-            // random values Angle and Axis for the GPS-Sensor
-            const randomAngle = Math.floor((Math.random() * 361));
-            const randomAxis = Math.floor((Math.random() * 3));
-
-
-            // random values for the direction of the outlier and movement for the acceleration Sensor
-            const directionOutlier = Math.floor(Math.random() * 6);
-            const directionMovement = Math.floor(Math.random() * 6);
-
 
             try {
-
                 if (!angular.isUndefined(realSensors)) {
+                    for (let x = 0; x < realSensors.length; x++) {
+                        newTestObject.type.push(realSensors[x].name);
+                        parameterValues = [];
+                        parameterValues.push({
+                            "name": "ConfigName",
+                            "value": realSensors[x].name
+                        });
+                        if (!angular.isUndefined(realParameterValues)) {
+                            angular.forEach(realParameterValues, function (parameters, key) {
+                                if (key === realSensors[x].name) {
 
-                    checkRealSensor = true;
-                    if (!angular.isUndefined(realParameterValues)) {
-                        for (let x = 0; x < realSensors.length; x++) {
-                            newTestObject.type.push(realSensors[x].name);
-                        }
-
-                        angular.forEach(realParameterValues, function (parameters, key) {
-                            for (let i = 0; i < realSensors.length; i++) {
-
-                                if (realSensors[i].name === key) {
-                                    parameterValues = [];
-                                    parameterValues.push({
-                                        "name": "ConfigName",
-                                        "value": realSensors[i].name
-                                    });
-                                    const requiredParams = realSensors[i].operator.parameters;
-
-
+                                    const requiredParams = realSensors[x].operator.parameters;
 
                                     //Iterate over all parameters
                                     for (let i = 0; i < requiredParams.length; i++) {
@@ -334,17 +248,16 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                                             "value": parameters[i]
                                         });
                                     }
-                                    newTestObject.config.push(parameterValues);
                                 }
-                            }
-                        });
-                        newTestObject.config.push([{
-                            "name": "ConfigRealSensors",
-                            "value": realParameterValues
-                        }]);
-                    }
-                }
+                            })
+                        }
+                        newTestObject.config.push(parameterValues);
 
+
+                    }
+
+
+                }
 
                 if (!angular.isUndefined(sensors)) {
                     checkSimSensor = true;
@@ -509,334 +422,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                         }
                         newTestObject.config.push(parameterValues);
                     }
-
-                    if (sensors.includes(SIMULATOR_LIST.GPS)) {
-                        parameterValues = [];
-                        parameterValues.push({
-                            "name": "ConfigName",
-                            "value": SIMULATOR_LIST.GPS
-                        });
-                        if (config.eventGPS === '3' || config.eventGPS === '4' || config.eventGPS === '5') {
-                            parameterValues.push({"name": "who", "value": config.whoGPS});
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventGPS)
-                            });
-                            parameterValues.push({"name": "anomaly", "value": 0});
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "latitude",
-                                "value": config.latitudeGPS
-                            });
-                            parameterValues.push({
-                                "name": "longitude",
-                                "value": config.longitudeGPS
-                            });
-                            parameterValues.push({"name": "hight", "value": config.hightGPS});
-                            parameterValues.push({
-                                "name": "reactionMeters",
-                                "value": config.reactionMetersGPS
-                            });
-                            parameterValues.push({"name": "randomAngle", "value": randomAngle});
-                            parameterValues.push({"name": "axis", "value": randomAxis});
-                        } else {
-                            parameterValues.push({"name": "who", "value": config.whoGPS});
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventGPS)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "latitude",
-                                "value": config.latitudeGPS
-                            });
-                            parameterValues.push({
-                                "name": "longitude",
-                                "value": config.longitudeGPS
-                            });
-                            parameterValues.push({"name": "hight", "value": config.heightGPS});
-                            parameterValues.push({
-                                "name": "reactionMeters",
-                                "value": config.reactionMetersGPS
-                            });
-                            parameterValues.push({"name": "randomAngle", "value": randomAngle});
-                            parameterValues.push({"name": "axis", "value": randomAxis});
-                            parameterValues.push({
-                                "name": "anomaly",
-                                "value": parseInt(config.anomalyGPS)
-                            });
-                        }
-
-                        newTestObject.config.push(parameterValues);
-                    }
-                    if (sensors.includes(SIMULATOR_LIST.GPS_PL)) {
-                        parameterValues = [];
-                        parameterValues.push({
-                            "name": "ConfigName",
-                            "value": SIMULATOR_LIST.GPS_PL
-                        });
-                        if (config.eventGPSPl === '3' || config.eventGPSPl === '4' || config.eventGPSPl === '5') {
-
-                            parameterValues.push({"name": "who", "value": config.whoGPSPl});
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventGPSPl)
-                            });
-                            parameterValues.push({"name": "anomaly", "value": 0});
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "latitude",
-                                "value": config.latitudeGPSPl
-                            });
-                            parameterValues.push({
-                                "name": "longitude",
-                                "value": config.longitudeGPSPl
-                            });
-                            parameterValues.push({"name": "hight", "value": config.heightGPSPl});
-                            parameterValues.push({
-                                "name": "reactionMeters",
-                                "value": config.reactionMetersGPSPl
-                            });
-                            parameterValues.push({"name": "randomAngle", "value": randomAngle});
-                            parameterValues.push({"name": "axis", "value": randomAxis});
-                            parameterValues.push({"name": "simTime", "value": config.simTime});
-                            parameterValues.push({
-                                "name": "amountEvents",
-                                "value": config.amountEvents
-                            });
-                            parameterValues.push({
-                                "name": "amountAnomalies",
-                                "value": config.amountAnomalies
-                            });
-                        } else {
-                            parameterValues.push({"name": "who", "value": config.whoGPSPl});
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventGPSPl)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "latitude",
-                                "value": config.latitudeGPSPl
-                            });
-                            parameterValues.push({
-                                "name": "longitude",
-                                "value": config.longitudeGPSPl
-                            });
-                            parameterValues.push({"name": "hight", "value": config.heightGPSPl});
-                            parameterValues.push({
-                                "name": "reactionMeters",
-                                "value": config.reactionMetersGPSPl
-                            });
-                            parameterValues.push({"name": "randomAngle", "value": randomAngle});
-                            parameterValues.push({"name": "axis", "value": randomAxis});
-                            parameterValues.push({
-                                "name": "anomaly",
-                                "value": parseInt(config.anomalyGPSPl)
-                            });
-                            parameterValues.push({"name": "simTime", "value": config.simTime});
-                            parameterValues.push({
-                                "name": "amountEvents",
-                                "value": config.amountEvents
-                            });
-                            parameterValues.push({
-                                "name": "amountAnomalies",
-                                "value": config.amountAnomalies
-                            });
-                        }
-
-                        newTestObject.config.push(parameterValues);
-                    }
-                    if (sensors.includes(SIMULATOR_LIST.ACCELERATION)) {
-                        parameterValues = [];
-                        parameterValues.push({
-                            "name": "ConfigName",
-                            "value": SIMULATOR_LIST.ACCELERATION
-                        });
-                        if (config.eventAcc === '3' || config.eventAcc === '4' || config.eventAcc === '5') {
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventAcc)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "directionAnomaly",
-                                "value": directionOutlier
-                            });
-                            parameterValues.push({
-                                "name": "directionMovement",
-                                "value": directionMovement
-                            });
-
-                            parameterValues.push({"name": "anomaly", "value": 0});
-                            parameterValues.push({"name": "weightObject", "value": 0});
-                            parameterValues.push({"name": "sensitivityClass", "value": 0});
-                            parameterValues.push({"name": "reactionMeters", "value": 3});
-                        } else if (config.event === '2') {
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventAcc)
-                            });
-                            parameterValues.push({
-                                "name": "anomaly",
-                                "value": parseInt(config.anomalyAcc)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "weightObject",
-                                "value": parseInt(config.weightObjectAcc)
-                            });
-                            parameterValues.push({
-                                "name": "sensitivityClass",
-                                "value": parseInt(config.sensitivityAcc)
-                            });
-                            parameterValues.push({
-                                "name": "reactionMeters",
-                                "value": parseInt(config.reactionMetersAcc)
-                            });
-                            parameterValues.push({
-                                "name": "directionAnomaly",
-                                "value": directionOutlier
-                            });
-                            parameterValues.push({
-                                "name": "directionMovement",
-                                "value": directionMovement
-                            });
-                        } else if (config.event === '1') {
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventAcc)
-                            });
-                            parameterValues.push({
-                                "name": "anomaly",
-                                "value": parseInt(config.anomalyAcc)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "directionAnomaly",
-                                "value": directionOutlier
-                            });
-                            parameterValues.push({
-                                "name": "directionMovement",
-                                "value": directionMovement
-                            });
-
-                            parameterValues.push({"name": "weightObject", "value": 0});
-                            parameterValues.push({"name": "sensitivityClass", "value": 0});
-                            parameterValues.push({"name": "reactionMeters", "value": 3});
-                        }
-                        newTestObject.config.push(parameterValues);
-                    }
-
-                    if (sensors.includes(SIMULATOR_LIST.ACCELERATION_PL)) {
-                        parameterValues = [];
-                        parameterValues.push({
-                            "name": "ConfigName",
-                            "value": SIMULATOR_LIST.ACCELERATION
-                        });
-                        if (config.eventAccPl === '3' || config.eventAccPl === '4' || config.eventAccPl === '5') {
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventAccPl)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "directionAnomaly",
-                                "value": directionOutlier
-                            });
-                            parameterValues.push({
-                                "name": "directionMovement",
-                                "value": directionMovement
-                            });
-
-                            parameterValues.push({"name": "anomaly", "value": 0});
-                            parameterValues.push({"name": "weightObject", "value": 0});
-                            parameterValues.push({"name": "sensitivityClass", "value": 0});
-                            parameterValues.push({"name": "reactionMeters", "value": 3});
-                            parameterValues.push({"name": "simTime", "value": config.simTime});
-                            parameterValues.push({
-                                "name": "amountEvents",
-                                "value": config.amountEvents
-                            });
-                            parameterValues.push({
-                                "name": "amountAnomalies",
-                                "value": config.amountAnomalies
-                            });
-                        } else if (config.event === '2') {
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventAccPl)
-                            });
-                            parameterValues.push({
-                                "name": "anomaly",
-                                "value": parseInt(config.anomalyAccPl)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "weightObject",
-                                "value": parseInt(config.weightObjectAccPl)
-                            });
-                            parameterValues.push({
-                                "name": "sensitivityClass",
-                                "value": parseInt(config.sensitivityAccPl)
-                            });
-                            parameterValues.push({
-                                "name": "reactionMeters",
-                                "value": parseInt(config.reactionMetersAccPl)
-                            });
-                            parameterValues.push({
-                                "name": "directionAnomaly",
-                                "value": directionOutlier
-                            });
-                            parameterValues.push({
-                                "name": "directionMovement",
-                                "value": directionMovement
-                            });
-                            parameterValues.push({"name": "simTime", "value": config.simTime});
-                            parameterValues.push({
-                                "name": "amountEvents",
-                                "value": config.amountEvents
-                            });
-                            parameterValues.push({
-                                "name": "amountAnomalies",
-                                "value": config.amountAnomalies
-                            });
-                        } else if (config.event === '1') {
-                            parameterValues.push({
-                                "name": "event",
-                                "value": parseInt(config.eventAccPl)
-                            });
-                            parameterValues.push({
-                                "name": "anomaly",
-                                "value": parseInt(config.anomalyAccPl)
-                            });
-                            parameterValues.push({"name": "useNewData", "value": true});
-                            parameterValues.push({
-                                "name": "directionAnomaly",
-                                "value": directionOutlier
-                            });
-                            parameterValues.push({
-                                "name": "directionMovement",
-                                "value": directionMovement
-                            });
-
-                            parameterValues.push({"name": "weightObject", "value": 0});
-                            parameterValues.push({"name": "sensitivityClass", "value": 0});
-                            parameterValues.push({"name": "reactionMeters", "value": 3});
-                            parameterValues.push({"name": "simTime", "value": config.simTime});
-                            parameterValues.push({
-                                "name": "amountEvents",
-                                "value": config.amountEvents
-                            });
-                            parameterValues.push({
-                                "name": "amountAnomalies",
-                                "value": config.amountAnomalies
-                            });
-                        }
-                        newTestObject.config.push(parameterValues);
-                    }
-
-
                 }
 
 
@@ -895,15 +480,10 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             getPDFList: getPDFList,
             editConfig: editConfig,
             getTestData: getTestData,
-            pdfExists: pdfExists,
-            registerTestDevice: registerTestDevice,
-            registerTestActuator: registerTestActuator,
-            registerOneDimSensor: registerOneDimSensor,
-            registerRerunOperator: registerRerunOperator,
-            downloadReport: downloadReport,
             getRuleListTest: getRuleListTest,
             updateTest: updateTest,
-            deleteTestReport: deleteTestReport
+            deleteTestReport: deleteTestReport,
+            rerunTest: rerunTest
 
         }
     }

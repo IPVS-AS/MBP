@@ -31,8 +31,11 @@ public interface UserEntityRepository<T extends UserEntity> extends MongoReposit
 //    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the entity"), @ApiResponse(code = 404, message = "Entity not found")})
 //    Optional<T> findById(@ApiParam(value = "The ID of the entity", example = "5c97dc2583aeb6078c5ab672", required = true) String id);
     
+//	@Query("{ 'owner.id' : :#{#ownerId} }")
+//	List<T> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
+
 	@Query("{ 'owner.id' : :#{#ownerId} }")
-	List<T> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
+	List<T> findByOwner(@Param("ownerId") String ownerId);
 	
 	@Query(value = "{ 'name' : :#{#name} }", exists = true)
 	boolean existsByName(@Param("name") String name);

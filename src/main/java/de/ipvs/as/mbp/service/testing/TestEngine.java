@@ -1,45 +1,21 @@
 package de.ipvs.as.mbp.service.testing;
 
 
-import com.mongodb.util.JSON;
-import de.ipvs.as.mbp.domain.component.Actuator;
-import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
-import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
-import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.device.DeviceCreateEventHandler;
-import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
-import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
+import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.repository.SensorRepository;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
 
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 public class TestEngine {
@@ -50,63 +26,75 @@ public class TestEngine {
     @Autowired
     private RuleRepository ruleRepository;
 
-    @Autowired
-    private DeviceRepository deviceRepository;
 
     @Autowired
-    private PropertiesService propertiesService;
-
-    @Autowired
-    ActuatorRepository actuatorRepository;
-
-    @Autowired
-    OperatorRepository operatorRepository;
-
-    @Autowired
-    private SensorRepository sensorRepository;
-
-    @Autowired
-    private ComponentCreateValidator componentCreateValidator;
-
-    @Autowired
-    ComponentCreateEventHandler componentCreateEventHandler;
-
-    @Autowired
-    private DeviceCreateValidator deviceCreateValidator;
-
-    @Autowired
-    DeviceCreateEventHandler deviceCreateEventHandler;
+    private TestReportRepository testReportRepository;
 
 
-    @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
-    List<String> THREE_DIM_SIMULATOR_LIST;
 
-    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
-    List<String> SIMULATOR_LIST;
+    /**
+     * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
+     *
+     * @param testId ID of the test from which all reports are to be found
+     * @return hashMap with the date and path to every report regarding to the specific test
+     */
+    public ResponseEntity<Map<Long, TestReport>> getPDFList(String testId) {
+        ResponseEntity<Map<Long, TestReport>> pdfList;
+        Map<Long, TestReport> nullList = new TreeMap<>();
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
+        try {
+            if (testDetailsOptional.isPresent()) {
+                for (TestReport testReport : testReportRepository.findAllByName(testDetailsOptional.get().getName())) {
+                    nullList.put(Long.valueOf(testReport.getStartTimeUnix()), testReport);
+                }
+            }
 
-    //To resolve ${} in @Value
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
-        return new PropertySourcesPlaceholderConfigurer();
+            pdfList = new ResponseEntity<>(nullList, HttpStatus.OK);
+        } catch (Exception e) {
+            pdfList = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return pdfList;
     }
 
-    private final String TEST_DEVICE;
-    private final String TEST_DEVICE_IP;
-    private final String TEST_DEVICE_USERNAME;
-    private final String TEST_DEVICE_PASSWORD;
-    private final String ACTUATOR_NAME;
+    /**
+     * Returns a list of the generated sensor values of a specific test execution with a specific format to display them in the Highchart.
+     *
+     * @param reportId of the report for which the sensor values should be returned
+     * @return list of sensor values for all sensors within the test report
+     */
+    public Map<String, ArrayList> getSimulationValues(String reportId) {
+        Map<String, ArrayList> simulationValues = new HashMap<>();
+
+        if (testReportRepository.findById(reportId).isPresent()) {
+            TestReport testReport = testReportRepository.findById(reportId).get();
+
+            Map<String, LinkedHashMap<Long, Double>> simulationList = testReport.getSimulationList();
+
+            if (simulationList != null && simulationList.size() > 0) {
+                for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : simulationList.entrySet()) {
+                    ArrayList tupelList = new ArrayList();
 
 
-    public TestEngine() throws IOException {
-        propertiesService = new PropertiesService();
-        TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
-        TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.ipAddressTestDevice");
-        TEST_DEVICE_USERNAME = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
-        TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
-        ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
+                    String key = entry.getKey();
+                    LinkedHashMap<Long, Double> valueList = entry.getValue();
+                    for (Map.Entry<Long, Double> list : valueList.entrySet()) {
+                        List timeValueTupel = new ArrayList<>();
+                        timeValueTupel.add(list.getKey() * 1000);
+                        timeValueTupel.add(list.getValue());
+                        tupelList.add(timeValueTupel);
+                    }
+
+                    simulationValues.put(key, tupelList);
+
+                }
+            }
+
+
+        }
+        return simulationValues;
     }
-
 
     /**
      * Update the test configurations redefined by the user.
@@ -117,34 +105,39 @@ public class TestEngine {
      */
     public ResponseEntity<Boolean> editTestConfig(String testID, String changes) {
         try {
-            TestDetails testToUpdate = testDetailsRepository.findById(testID).get();
+            Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testID);
+            if (testDetailsOptional.isPresent()) {
+                TestDetails testToUpdate = testDetailsOptional.get();
 
-            // Clear the configuration and rules field of the specific test
-            testToUpdate.getConfig().clear();
-            testToUpdate.getRules().clear();
-            testToUpdate.getRuleNames().clear();
+                // Clear the configuration and rules field of the specific test
+                testToUpdate.getConfig().clear();
+                testToUpdate.getRules().clear();
+                testToUpdate.getRuleNames().clear();
 
-            // convert the string of the request body to a JSONObject in order to continue working with it
-            JSONObject updateInfos = new JSONObject(changes);
+                // convert the string of the request body to a JSONObject in order to continue working with it
+                JSONObject updateInfos = new JSONObject(changes);
 
-            List<List<ParameterInstance>> newConfig = updateSenorConfig(updateInfos.get("config"));
-            // Update the rules to be observed in the test
-            List<Rule> newRuleList = updateRuleInformation(updateInfos);
-            List<String> newRuleNames = updateRuleNames(newRuleList);
+                List<List<ParameterInstance>> newConfig = updateSenorConfig(updateInfos.get("config"));
+                // Update the rules to be observed in the test
+                List<Rule> newRuleList = updateRuleInformation(updateInfos);
+                List<String> newRuleNames = updateRuleNames(newRuleList);
 
-            testToUpdate.setConfig(newConfig);
-            testToUpdate.setRules(newRuleList);
-            testToUpdate.setRuleNames(newRuleNames);
-            // Update the information if the selected rules be triggered during the test or not
-            testToUpdate.setTriggerRules(updateInfos.getBoolean("triggerRules"));
+                testToUpdate.setConfig(newConfig);
+                testToUpdate.setRules(newRuleList);
+                testToUpdate.setRuleNames(newRuleNames);
+                // Update the information if the selected rules be triggered during the test or not
+                testToUpdate.setTriggerRules(updateInfos.getBoolean("triggerRules"));
 
 
-            testDetailsRepository.save(testToUpdate);
+                testDetailsRepository.save(testToUpdate);
+            }
 
-            return ResponseEntity.status(HttpStatus.OK).body(true);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         }
+
+        return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
     /**
@@ -175,7 +168,9 @@ public class TestEngine {
             for (int i = 0; i < rules.length(); i++) {
                 JSONObject ruleDetails = rules.getJSONObject(i);
                 String ruleName = ruleDetails.getString("name");
-                newRules.add(ruleRepository.findByName(ruleName).get());
+                if (ruleRepository.findByName(ruleName).isPresent()) {
+                    newRules.add(ruleRepository.findByName(ruleName).get());
+                }
             }
         }
         return newRules;
@@ -214,419 +209,36 @@ public class TestEngine {
         return newConfig;
     }
 
-    /**
-     * Method to download a specific Test Report
-     *
-     * @param path to the specific Test Report to download
-     * @return ResponseEntity
-     */
-    public ResponseEntity<Serializable> downloadPDF(String path) throws IOException {
-        TestDetails test = null;
-        ResponseEntity<Serializable> respEntity;
-        Pattern pattern = Pattern.compile("(.*?)_");
-        Matcher m = pattern.matcher(path);
-        if (m.find()) {
-            test = testDetailsRepository.findById(m.group(1)).get();
-        }
-
-
-        assert test != null;
-        File result = new File(test.getPathPDF() + "/" + path + ".pdf");
-
-
-        if (result.exists()) {
-            InputStream inputStream = new FileInputStream(result);
-
-            byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
-
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("content-disposition", "attachment; filename=" + path + ".pdf");
-
-            respEntity = new ResponseEntity<>(out, responseHeaders, HttpStatus.OK);
-            inputStream.close();
-        } else {
-            respEntity = new ResponseEntity<>("File Not Found", HttpStatus.NOT_FOUND);
-        }
-
-
-        return respEntity;
-    }
 
     /**
-     * Deletes the last Test report and the corresponding graph if existing.
+     * Delete a specific test report of a test.
      *
-     * @param testId of the test the report to be deleted belongs to
-     * @return if files could be deleted successfully or not
+     * @param reportId of the specific report to be deleted
+     * @return if successful or not
      */
-    public ResponseEntity<Boolean> deleteReport(String testId, Object path) {
-        String fileName = String.valueOf(path);
-        ResponseEntity response;
-
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-
-        //Path pathTestReport = Paths.get(testDetails.getPathPDF()+ ""fileName);
+    public ResponseEntity<Void> deleteReport(String reportId) {
         try {
-            if (testDetails.isPdfExists()) {
-                File dir = new File(testDetails.getPathPDF());
-                FileFilter fileFilter = new WildcardFileFilter(fileName);
-                File[] files = dir.listFiles(fileFilter);
-                for (final File file : files) {
-                    if (!file.delete()) {
-                        System.err.println("Can't remove " + file.getAbsolutePath());
-                    }
-                }
-
-                //  Files.delete(pathTestReport);
-                response = new ResponseEntity<>(true, HttpStatus.OK);
-
-            } else {
-                response = new ResponseEntity<>(true, HttpStatus.NOT_FOUND);
-            }
-            return response;
+            Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
+            testReportOptional.ifPresent(testReport -> testReportRepository.delete(testReport));
         } catch (Exception e) {
-            e.printStackTrace();
-            response = new ResponseEntity<>(false, HttpStatus.CONFLICT);
-
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return response;
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-
     /**
-     * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
+     * Deletes all test reports corresponding to a specific test.
      *
-     * @param testId ID of the test from which all reports are to be found
-     * @return hashMap with the date and path to every report regarding to the specific test
+     * @param testId of the test from which the reports should be deleted.
      */
-    public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
-        ResponseEntity<Map<Long, String>> pdfList;
-        Map<Long, String> nullList = new TreeMap<>();
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        try {
-            if (testDetails.isPdfExists()) {
-                Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
-                    File file = path.toFile();
-                    return !file.isDirectory() &&
-                            file.getName().contains(testId + "_");
-                });
+    public void deleteAllReports(String testId) {
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
-                pdfList = new ResponseEntity<>(generateReportList(pathStream), HttpStatus.OK);
-            } else {
-                pdfList = new ResponseEntity<>(nullList, HttpStatus.OK);
-            }
-
-
-        } catch (IOException e) {
-            pdfList = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (testDetailsOptional.isPresent()) {
+            List<TestReport> testReportList = testReportRepository.findAllByName(testDetailsOptional.get().getName());
+            testReportRepository.deleteAll(testReportList);
         }
 
-        return pdfList;
-    }
-
-
-    /**
-     * Generates a HashMap where the entries consist of the creation date of the report and the path to it.
-     *
-     * @param pathStream Stream of the matching reports regarding to to the specific test
-     * @return Map out of the creation dates and paths to the report
-     */
-    public Map<Long, String> generateReportList(Stream<Path> pathStream) {
-        Map<Long, String> pdfEntry = new TreeMap<>();
-
-        // Pattern to find the PDF-Files for a specific test with the specific ID in the Filename
-        Pattern pattern = Pattern.compile("_(.*?).pdf");
-
-
-        Long dateMilliseconds = null;
-
-        // Put every path out of the stream into a list
-        List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
-
-        for (Path singlePath : files) {
-            // get  date in milliseconds out of the filename and convert this into the specified date format
-            Matcher machter = pattern.matcher(singlePath.toString());
-            if (machter.find()) {
-                dateMilliseconds = Long.valueOf(machter.group(1));
-            }
-            //Add properties to object
-            pdfEntry.put(dateMilliseconds, singlePath.getFileName().toString());
-
-        }
-
-
-        return sortMap(pdfEntry);
-    }
-
-    /**
-     * Sorts the timestamps of the List of Test-Reports.
-     *
-     * @param unsortedMap Sorted map with the timestamp as Long in the key
-     * @return sorted Map depending on the key
-     */
-    private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
-
-        Map<Long, String> treeMap = new TreeMap<>(Long::compareTo);
-
-        treeMap.putAll(unsortedMap);
-        return treeMap;
-    }
-
-    /**
-     * Registers the Testing Device which is used for testing purposes.
-     *
-     * @return response entity if insertion was successful or not
-     */
-    public ResponseEntity registerTestDevice() {
-        ResponseEntity responseEntity;
-        Device testDevice = null;
-
-
-        try {
-            // Check if device with this name is already registered
-            testDevice = getTestDevice();
-
-            if (testDevice == null) {
-                //Enrich device for details
-                testDevice = new Device();
-                testDevice.setName(TEST_DEVICE);
-                testDevice.setComponentType("Computer");
-                testDevice.setIpAddress(TEST_DEVICE_IP);
-                testDevice.setUsername(TEST_DEVICE_USERNAME);
-                testDevice.setPassword(TEST_DEVICE_PASSWORD);
-            }
-
-            // Validate & insert device
-            deviceCreateValidator.validateCreatable(testDevice);
-            deviceRepository.insert(testDevice);
-            deviceCreateEventHandler.onCreate(testDevice);
-
-
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception exception) {
-            responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return responseEntity;
-
-
-    }
-
-    /**
-     * Registers the Testing Actuator which is used for testing purposes and does't make any real actions.
-     *
-     * @return response entity if insertion was successful or not
-     */
-    public ResponseEntity registerTestActuator() {
-        //Validation errors
-        Errors errors;
-        ResponseEntity responseEntity = null;
-        Actuator testingActuator;
-
-        Device testDevice;
-
-
-        try {
-
-
-            boolean testingActuatorExists = actuatorRepository.existsByName(ACTUATOR_NAME);
-            Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get();
-            testDevice = getTestDevice();
-
-            // Check if testing device and actuator are already registered
-            if (testDevice == null) {
-                // Register the Testing device automatically if not existing
-                registerTestDevice();
-            } else {
-                // Check if Actuator is already existing
-                if (testingActuatorExists == false) {
-                    // Check if the corresponding adapter is registered
-                    if (testActuatorAdapter != null) {
-                        //Enrich actuator for details
-
-
-                        testingActuator = new Actuator();
-                        testingActuator.setName(ACTUATOR_NAME);
-                        testingActuator.setOwner(null);
-                        testingActuator.setDevice(testDevice);
-                        testingActuator.setOperator(testActuatorAdapter);
-                        testingActuator.setComponentType("Buzzer");
-
-
-                        // Validate & insert testing actuator
-                        componentCreateValidator.validateCreatable(testingActuator);
-                        actuatorRepository.insert(testingActuator);
-                        componentCreateEventHandler.onCreate(testingActuator);
-
-                        responseEntity = new ResponseEntity(HttpStatus.CREATED);
-
-                    }
-                } else {
-                    responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
-
-                }
-            }
-
-
-        } catch (Exception e) {
-            responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
-
-        }
-        return responseEntity;
-    }
-
-    /**
-     * Checks if the Testing Device is already registered and turn back this device or null.
-     *
-     * @return the test Device if existing
-     */
-    private Device getTestDevice() {
-        Device testDevice = null;
-
-        // List of all registered Devices
-        List<Device> testDeviceList = deviceRepository.findAll();
-
-        // Go through the List of devices and check if testing Device is available
-        Iterator iterator = testDeviceList.listIterator();
-        while (iterator.hasNext()) {
-            Device tempDevice = (Device) iterator.next();
-            if (tempDevice.getName().equals(TEST_DEVICE)) {
-                testDevice = tempDevice;
-                break;
-            }
-        }
-        return testDevice;
-    }
-
-    /**
-     * Checks if given Sensor Simulator is already registered and turn back this sensor or null.
-     *
-     * @return the sensor simulator if existing
-     */
-    private Sensor getSensorSimulator(String sensorName) {
-        Sensor sensorSimulator = null;
-
-        // List of all registered Sensors
-        List<Sensor> sensorList = sensorRepository.findAll();
-
-        // Go through the List of sensors and check if specific sensor is available
-        Iterator iterator = sensorList.listIterator();
-        while (iterator.hasNext()) {
-            Sensor tempSensor = (Sensor) iterator.next();
-            if (tempSensor.getName().equals(sensorName)) {
-                sensorSimulator = tempSensor;
-            }
-
-        }
-
-        return sensorSimulator;
-    }
-
-
-    /**
-     * Registers the wished sensor simulator if the corresponding adapter is already registered
-     *
-     * @param sensorName Name of the sensor simulator to be registered
-     * @return ResponseEntity if the registration was successful or not
-     */
-    public ResponseEntity registerSensorSimulator(String sensorName) {
-
-        ResponseEntity<String> responseEntity;
-
-        Operator sensorAdapter = operatorRepository.findByName(sensorName).get();
-        Device testingDevice = getTestDevice();
-        Sensor sensorSimulator = getSensorSimulator(sensorName);
-
-        try {
-            // Check if corresponding adapter exists
-            if (sensorAdapter == null) {
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-
-            } else if (testingDevice == null) {
-                registerTestDevice();
-            } else if (sensorSimulator == null) {
-                //Enrich actuator for details
-                sensorSimulator = new Sensor();
-                sensorSimulator.setName(sensorName);
-                sensorSimulator.setOwner(null);
-
-                if (sensorName.contains("Temperature")) {
-                    sensorSimulator.setComponentType("Temperature");
-                } else if (sensorName.contains("Humidity")) {
-                    sensorSimulator.setComponentType("Humidity");
-                } else {
-                    sensorSimulator.setComponentType("Motion");
-                }
-
-                sensorSimulator.setOperator(sensorAdapter);
-                sensorSimulator.setDevice(testingDevice);
-
-                //Validate & insert sensor
-                componentCreateValidator.validateCreatable(sensorSimulator);
-                sensorRepository.insert(sensorSimulator);
-                componentCreateEventHandler.onCreate(sensorSimulator);
-
-
-            }
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
-
-        }
-
-        return responseEntity;
-    }
-
-    /**
-     * Checks if the one and three dimensional sensor simulators are already registered.
-     *
-     * @param sensor Name of the sensor to be checked
-     * @return Boolean if the sensor is already registered or not
-     */
-    public Boolean isSimulatorRegistr(String sensor) {
-        Boolean registered = false;
-        String dimX = sensor + "X";
-        String dimY = sensor + "Y";
-        String dimZ = sensor + "Z";
-
-        if (THREE_DIM_SIMULATOR_LIST.contains(sensor)) {
-            Sensor sensorX = getSensorSimulator(dimX);
-            Sensor sensorY = getSensorSimulator(dimY);
-            Sensor sensorZ = getSensorSimulator(dimZ);
-
-            if (sensorX != null && sensorY != null && sensorZ != null) {
-                registered = true;
-            }
-        } else {
-            if (getSensorSimulator(sensor) != null) {
-                registered = true;
-            }
-        }
-
-        return registered;
-    }
-
-
-    /**
-     * Registers the wished three dimensional sensor simulator if the corresponding adapter is already registered.
-     *
-     * @param sensorName of the three dimensional sensor to be registered
-     * @return Response entity if registration was successful
-     */
-    public void registerThreeDimSensorSimulator(String sensorName) {
-        //TODO
-    }
-
-    /**
-     * Delete Tets with specific test id.
-     *
-     * @param testId
-     */
-    public void deleteTest(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-
-        if (testDetailsRepository.existsById(testId)) {
-            testDetailsRepository.deleteById(testId);
-        }
 
     }
 }

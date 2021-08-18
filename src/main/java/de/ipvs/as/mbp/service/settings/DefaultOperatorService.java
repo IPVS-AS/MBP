@@ -1,7 +1,9 @@
 package de.ipvs.as.mbp.service.settings;
 
+import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.operator.OperatorCreateValidator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterType;
 import de.ipvs.as.mbp.error.MBPException;
@@ -33,24 +35,27 @@ public class DefaultOperatorService {
     private ServletContext servletContext;
 
     @Autowired
-    private List<String> defaultOperatorWhitelist;
-
-    @Autowired
     private OperatorRepository operatorRepository;
 
+
+    @Autowired
+    private OperatorCreateValidator operatorCreateValidator;
+
     private static final String DESCRIPTOR_FILE = "operator.json";
+
 
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
      */
-    public void addDefaultOperators() {
+    public void addDefaultOperators(List<String> whiteList) {
+
 
         //Remembers if an operator was inserted
         boolean inserted = false;
 
         //Iterate over all default operator paths
-        for (String operatorPath : defaultOperatorWhitelist) {
+        for (String operatorPath : whiteList) {
             //Create new operator object to add it later to the repository
             Operator newOperator = new Operator();
 
@@ -161,17 +166,15 @@ public class DefaultOperatorService {
                 newOperator.replaceLineBreaks();
 
                 //Insert new operator into repository
+                operatorCreateValidator.validateCreatable(newOperator);
                 operatorRepository.insert(newOperator);
-                inserted = true;
+
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        //Check for failure
-        if (!inserted) {
-            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "All available default operators have already been added.");
-        }
+
     }
 }

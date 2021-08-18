@@ -33,13 +33,33 @@
                 </ul>
                 <div class="tab-content">
                     <div id="deviceTypesTable" class="tab-pane fade in active">
-                        <div class="align-right">
-                            <button type="button"
-                                    class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
-                                    data-toggle="modal" data-target="#addDeviceTypeModal" data-backdrop="static"
-                                    data-keyboard="false">
-                                <i class="material-icons">add</i>
-                            </button>
+                        <div class="row">
+                            <div class="col-lg-10">
+                                <div class="form-group list-filter">
+                                    <div class="input-group">
+                                        <div class="form-line">
+                                            <input class="form-control ng-pristine ng-valid ng-touched"
+                                                   type="text" placeholder="Filter by name..."
+                                                   ng-model="deviceTypeListCtrl.filterTerm">
+                                        </div>
+                                        <span class="input-group-addon">
+                                            <button type="button" class="list-filter-clear"
+                                                    ng-show="deviceTypeListCtrl.filterTerm.length > 0"
+                                                    ng-click="deviceTypeListCtrl.filterTerm = ''">
+                                                <i class="material-icons">clear</i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 align-right">
+                                <button type="button"
+                                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                        data-toggle="modal" data-target="#addDeviceTypeModal" data-backdrop="static"
+                                        data-keyboard="false">
+                                    <i class="material-icons">add</i>
+                                </button>
+                            </div>
                         </div>
                         <table class="table table-hover" st-table="displayedDeviceCollection"
                                st-safe-src="deviceTypeListCtrl.items">
@@ -52,7 +72,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="device in displayedDeviceCollection">
+                            <tr ng-repeat="device in displayedDeviceCollection | filter:deviceTypeListCtrl.nameFilter">
                                 <td>{{device.name}}</td>
                                 <td><img ng-src="{{device.icon.content}}" alt="{{device.icon.name}}"
                                          style="width:40px;height:40px;"/></td>
@@ -88,13 +108,33 @@
                         </table>
                     </div>
                     <div id="actuatorTypesTable" class="tab-pane fade in">
-                        <div class="align-right">
-                            <button type="button"
-                                    class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
-                                    data-toggle="modal" data-target="#addActuatorTypeModal" data-backdrop="static"
-                                    data-keyboard="false">
-                                <i class="material-icons">add</i>
-                            </button>
+                        <div class="row">
+                            <div class="col-lg-10">
+                                <div class="form-group list-filter">
+                                    <div class="input-group">
+                                        <div class="form-line">
+                                            <input class="form-control ng-pristine ng-valid ng-touched"
+                                                   type="text" placeholder="Filter by name..."
+                                                   ng-model="actuatorTypeListCtrl.filterTerm">
+                                        </div>
+                                        <span class="input-group-addon">
+                                            <button type="button" class="list-filter-clear"
+                                                    ng-show="actuatorTypeListCtrl.filterTerm.length > 0"
+                                                    ng-click="actuatorTypeListCtrl.filterTerm = ''">
+                                                <i class="material-icons">clear</i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 align-right">
+                                <button type="button"
+                                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                        data-toggle="modal" data-target="#addActuatorTypeModal" data-backdrop="static"
+                                        data-keyboard="false">
+                                    <i class="material-icons">add</i>
+                                </button>
+                            </div>
                         </div>
                         <table class="table table-hover" st-table="displayedActuatorCollection"
                                st-safe-src="actuatorTypeListCtrl.items">
@@ -106,7 +146,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="actuator in displayedActuatorCollection">
+                            <tr ng-repeat="actuator in displayedActuatorCollection | filter:actuatorTypeListCtrl.nameFilter">
                                 <td>{{actuator.name}}</td>
                                 <td><img ng-src="{{actuator.icon.content}}" alt="{{actuator.icon.name}}"
                                          style="width:40px;height:40px;"/></td>
@@ -140,13 +180,33 @@
                         </table>
                     </div>
                     <div id="sensorTypesTable" class="tab-pane fade in">
-                        <div class="align-right">
-                            <button type="button"
-                                    class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
-                                    data-toggle="modal" data-target="#addSensorTypeModal" data-backdrop="static"
-                                    data-keyboard="false">
-                                <i class="material-icons">add</i>
-                            </button>
+                        <div class="row">
+                            <div class="col-lg-10">
+                                <div class="form-group list-filter">
+                                    <div class="input-group">
+                                        <div class="form-line">
+                                            <input class="form-control ng-pristine ng-valid ng-touched"
+                                                   type="text" placeholder="Filter by name..."
+                                                   ng-model="sensorTypeListCtrl.filterTerm">
+                                        </div>
+                                        <span class="input-group-addon">
+                                            <button type="button" class="list-filter-clear"
+                                                    ng-show="sensorTypeListCtrl.filterTerm.length > 0"
+                                                    ng-click="sensorTypeListCtrl.filterTerm = ''">
+                                                <i class="material-icons">clear</i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 align-right">
+                                <button type="button"
+                                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                        data-toggle="modal" data-target="#addSensorTypeModal" data-backdrop="static"
+                                        data-keyboard="false">
+                                    <i class="material-icons">add</i>
+                                </button>
+                            </div>
                         </div>
                         <table class="table table-hover" st-table="displayedSensorCollection"
                                st-safe-src="sensorTypeListCtrl.items">
@@ -158,7 +218,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="sensor in displayedSensorCollection">
+                            <tr ng-repeat="sensor in displayedSensorCollection | filter:sensorTypeListCtrl.nameFilter">
                                 <td>{{sensor.name}}</td>
                                 <td><img ng-src="{{sensor.icon.content}}" alt="{{sensor.icon.name}}"
                                          style="width:40px;height:40px;"/></td>
@@ -226,16 +286,34 @@
                                 <span class="help-block"
                                       ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
                             </div>
+                            <!-- item.sshsupport group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.sshsupport }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.sshsupport }">
+                                    <select class="form-control selectpicker show-tick" title="SSH Support"
+                                            data-header="SSH Support"
+                                            ng-model="addDeviceTypeCtrl.item.sshsupport">
+                                        <option value="" selected></option>
+                                        <option value="false">No</option>
+                                        <option value="true">Yes</option>
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceTypeCtrl.item.errors.sshsupport">{{addDeviceTypeCtrl.item.errors.sshsupport}}</span>
+                            </div>
                             <!-- item.icon group -->
-                            <label>Icon:</label>
+                            <label>Icon: </label>
                             <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.icon }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.icon }">
                                     <div class="dropzone" options="ctrl.dzIconOptions"
                                          callbacks="ctrl.dzDeviceTypeIconCallbacks"
-                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                         methods="ctrl.dzDeviceIconMethods" ng-dropzone>
                                     </div>
                                 </div>
+                                <span style="font-style: italic; font-size: smaller">
+                                   Square image between 10x10 px and 300x300 px. Image file type between 20 B and 5 MB.
+                                </span>
                                 <span class="help-block"
                                       ng-show="addDeviceTypeCtrl.item.errors.icon">{{addDeviceTypeCtrl.item.errors.icon}}</span>
                             </div>
@@ -245,7 +323,14 @@
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
                                 Close
                             </button>
-                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect"
+                                    ng-disabled="addDeviceTypeCtrl.item.icon.length !== 1 ||
+                                    !addDeviceTypeCtrl.item.name ||
+                                    addDeviceTypeCtrl.item.name === '' ||
+                                    addDeviceTypeCtrl.item.sshsupport === undefined ||
+                                    addDeviceTypeCtrl.item.sshsupport === ''">
+                                Register
+                            </button>
                         </div>
                     </fieldset>
                 </form>
@@ -290,9 +375,12 @@
                                      ng-class="{'focused error' : addActuatorTypeCtrl.item.errors.icon }">
                                     <div class="dropzone" options="ctrl.dzIconOptions"
                                          callbacks="ctrl.dzActuatorTypeIconCallbacks"
-                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                         methods="ctrl.dzActuatorIconMethods" ng-dropzone>
                                     </div>
                                 </div>
+                                <span style="font-style: italic; font-size: smaller">
+                                   Square image between 10x10 px and 300x300 px. Image file type between 20 B and 5 MB.
+                                </span>
                                 <span class="help-block"
                                       ng-show="addActuatorTypeCtrl.item.errors.icon">{{addActuatorTypeCtrl.item.errors.icon}}</span>
                             </div>
@@ -302,7 +390,12 @@
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
                                 Close
                             </button>
-                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect"
+                                    ng-disabled="addActuatorTypeCtrl.item.icon.length !== 1 ||
+                                    !addActuatorTypeCtrl.item.name ||
+                                     addActuatorTypeCtrl.item.name === ''">
+                                Register
+                            </button>
                         </div>
                     </fieldset>
                 </form>
@@ -347,9 +440,12 @@
                                      ng-class="{'focused error' : addSensorTypeCtrl.item.errors.icon }">
                                     <div class="dropzone" options="ctrl.dzIconOptions"
                                          callbacks="ctrl.dzSensorTypeIconCallbacks"
-                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                         methods="ctrl.dzSensorIconMethods" ng-dropzone>
                                     </div>
                                 </div>
+                                <span style="font-style: italic; font-size: smaller">
+                                   Square image between 10x10 px and 300x300 px. Image file type between 20 B and 5 MB.
+                                </span>
                                 <span class="help-block"
                                       ng-show="addSensorTypeCtrl.item.errors.icon">{{addSensorTypeCtrl.item.errors.icon}}</span>
                             </div>
@@ -359,7 +455,12 @@
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
                                 Close
                             </button>
-                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect"
+                                    ng-disabled="addSensorTypeCtrl.item.icon.length !== 1 ||
+                                    !addSensorTypeCtrl.item.name ||
+                                    addSensorTypeCtrl.item.name === ''">
+                                Register
+                            </button>
                         </div>
                     </fieldset>
                 </form>
