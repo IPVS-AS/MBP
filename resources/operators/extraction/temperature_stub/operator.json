@@ -1,7 +1,7 @@
 {
   "name": "Temperature Stub",
   "description": "Stub operator simulating a temperature sensor.",
-  "unit": "°C",
+  "unit": "",
   "files": [
     "temperature_stub.py",
     "../../mbp_client/mbp_client.py",

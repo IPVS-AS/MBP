@@ -168,7 +168,7 @@ public class TestExecutor {
     }
 
     /**
-     * Reruns a specific test execution with the same configurations an sensor values.
+     * Reruns a specific test execution with the same configurations and sensor values.
      *
      * @param test         tests to be repeated
      * @param testReportId test report with all needed information for the repetition
@@ -662,7 +662,6 @@ public class TestExecutor {
 
 
     /**
-     *  TODO adapt rerun operator
      * Creates the List of Parameter Instances for start of the rerun sensors.
      *
      * @param sensorValues map of all sensor values for the rerun test
