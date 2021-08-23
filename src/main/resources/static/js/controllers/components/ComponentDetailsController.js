@@ -517,7 +517,7 @@ app.controller('ComponentDetailsController',
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
             }
 
-            // ---------------------------- NEW VISUALIZATION STUFF -----------------------------
+            // ---------------------------- MODULAR SENSOR VALUE VISUALIZATION START -----------------------------
 
             // All visualizations applicable for this sensor
             vm.availableVisualizationsMappings = vm.component.operator.dataModel.possibleVisMappings;

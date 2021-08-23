@@ -18,24 +18,7 @@ import java.util.*;
  * {@link DataModel} repository and to reduce the need of converting the saved date model structure
  * each time to a {@link DataModelTree}, it caches recently used {@link DataModelTree}s
  * with the respective {@link de.ipvs.as.mbp.domain.component.Component#getId() component id}
- * as key.</p>
- *
- * <p><b>NOTE</b>: The current (very simple) implementation of this cache
- * does not consider that in VERY rare cases it would be at least theoretically
- * possible that the MongoDB generates a not unique ObjectID for a new sensor (e.g.
- * id which matches an old deleted sensor because of hash function collision).
- * In these cases it might occur that the cache returns
- * the wrong (not up-to-date) data model for a specified component id. But as this case
- * seems to be very unlikely it can be neglected for the current local use of MBP,
- * as additional data base checks if something is still up-to-date would make the
- * cache less efficient.
- * But it must be handled as soon as the editing of data models is somehow enabled (then entries
- * should be removed anyway).
- * Interesting links covering this topic: <br>
- * -https://docs.mongodb.com/manual/reference/method/ObjectId/#ObjectIDs-BSONObjectIDSpecification <br>
- * -https://stackoverflow.com/questions/5303869/mongodb-are-mongoids-unique-across-collections <br>
- * -https://stackoverflow.com/questions/4677237/possibility-of-duplicate-mongo-objectids-being-generated-in-two-different-colle
- * </p>
+ * as key.
  */
 @Component
 public class DataModelTreeCache {

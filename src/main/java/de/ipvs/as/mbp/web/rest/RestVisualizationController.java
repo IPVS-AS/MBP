@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
  * REST controller for managing the visualization views of
  * components.
  * <p>
- * TODO enable the same functionality for other components (other than sensors).
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH + "/component-vis")
