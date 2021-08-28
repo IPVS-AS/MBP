@@ -1,16 +1,24 @@
 package de.ipvs.as.mbp.iottest;
 
+import javax.print.attribute.standard.JobName;
 import javax.servlet.http.Cookie;
 
+import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseIoTTest;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.util.CommandOutput;
 import de.ipvs.as.mbp.util.testexecution.RequiresMQTT;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
 
@@ -64,7 +72,15 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
         System.out.println("Waiting for data to be Produced");
         Thread.sleep(15000);
 
-        // Validate that data has been collected
-        // Thread.sleep(3600_000);
+        String url = RestConfiguration.BASE_PATH + "/sensors/" + sensorResponse.getId() + "/valueLogs?sort=time,desc&size=200&startTime=-1&endTime=-1";
+        MvcResult result = this.mockMvc.perform(get(url).cookie(sessionCookie).headers(getMBPAccessHeaderForAdmin()))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        JSONObject bodyObj = new JSONObject(result.getResponse().getContentAsString());
+        JSONArray contentArray = bodyObj.getJSONArray("content");
+        
+        assertThat(contentArray.length()).isGreaterThanOrEqualTo(15);
     }
 }
