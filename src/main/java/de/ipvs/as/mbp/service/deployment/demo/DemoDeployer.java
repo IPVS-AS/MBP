@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -43,6 +44,9 @@ public class DemoDeployer implements IDeployer {
 
     //Map (component --> state) of deployed components and their deployment state
     private final Map<Component, ComponentState> deployedComponents = new HashMap<>();
+
+    // Map (component --> ValueLog queue) of predefined value logs which should be sent by a component (rerun feature)
+    private final Map<Component, Queue<ValueLog>> rerunValueLogs = new HashMap<>();
 
     @Autowired
     private ValueLogReceiver valueLogReceiver;
@@ -177,6 +181,7 @@ public class DemoDeployer implements IDeployer {
 
         //"Undeploy" component
         deployedComponents.remove(component);
+        rerunValueLogs.remove(component);
     }
 
     /**
@@ -231,33 +236,66 @@ public class DemoDeployer implements IDeployer {
     }
 
     /**
+     * Adds {@link ValueLog}s to the sending queue of ValueLogs to enable a dynamic configuration of ValueLogs
+     * which should be sent by a certain component if it is started. Overwrites old entries.
+     *
+     * @param component       The component of which the ValueLogs to sent should be defined
+     * @param valueLogsToSend A FIFO queue of ValueLogs which should be sent to the ValueLogReceiver
+     */
+    public void addRerunValueLogsForComponent(Component component, Queue<ValueLog> valueLogsToSend) {
+        rerunValueLogs.put(component, valueLogsToSend);
+    }
+
+    /**
+     * Checks whether there are certain scheduled ValueLogs for a component which are not
+     * randomly generated.
+     *
+     * @param component The component of which to check the scheduled ValueLog status.
+     * @return True if there are certain value logs scheduled for this component.
+     */
+    private boolean checkIfRerunValueLogsAreScheduledForComponent(Component component) {
+        if (!rerunValueLogs.containsKey(component)) {
+            return false;
+        } else {
+            return !rerunValueLogs.get(component).isEmpty();
+        }
+    }
+
+    /**
      * Generates value logs for the running components with a fixed time interval.
      */
     @Scheduled(fixedDelay = VALUE_LOG_INTERVAL)
     private void generateValueLogs() {
         //Stream the deployed components and filter for running ones
         deployedComponents.keySet().stream().filter(c -> ComponentState.RUNNING.equals(deployedComponents.get(c))).forEach(component -> {
-            //Create new value log for the current component
+
             ValueLog valueLog = new ValueLog();
-            valueLog.setTime(Instant.now());
-            valueLog.setIdref(component.getId());
-            valueLog.setComponent(component.getComponentTypeName());
-            valueLog.setTopic(component.getTopicName());
-            valueLog.setQos(0);
-            valueLog.setMessage("Randomly generated");
 
-            // Get the data model of the component to generate a fitting value
-            DataModelTree dataModel = dataModelCache.getDataModelOfComponent(component.getId());
+            if (checkIfRerunValueLogsAreScheduledForComponent(component)) {
+                valueLog = rerunValueLogs.get(component).poll();
+                valueLog.setTime(Instant.now());
+            } else {
+                //Create new value log for the current component
+                valueLog.setTime(Instant.now());
+                valueLog.setIdref(component.getId());
+                valueLog.setComponent(component.getComponentTypeName());
+                valueLog.setTopic(component.getTopicName());
+                valueLog.setQos(0);
+                valueLog.setMessage("Randomly generated");
 
-            // Get example json payload from the data model, parse it to a document and set it as value log value
-            try {
-                JSONObject jsonValue = new JSONObject(dataModel.getJSONExample());
-                valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
-                        jsonValue.getJSONObject("value"),
-                        dataModel
-                ));
-            } catch (JSONException | ParseException e) {
-                e.printStackTrace();
+                // Get the data model of the component to generate a fitting value
+                DataModelTree dataModel = dataModelCache.getDataModelOfComponent(component.getId());
+
+                // Get example json payload from the data model, parse it to a document and set it as value log value
+                try {
+                    JSONObject jsonValue = new JSONObject(dataModel.getJSONExample());
+                    valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                            jsonValue.getJSONObject("value"),
+                            dataModel
+                    ));
+                } catch (JSONException | ParseException e) {
+                    e.printStackTrace();
+                }
             }
 
             //Inject value log into the receiver component

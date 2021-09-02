@@ -19,7 +19,6 @@ import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.testing.TestEngine;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
-import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,9 +57,6 @@ public class RestTestingController {
 
     @Autowired
     private TestExecutor testExecutor;
-
-    @Autowired
-    private TestRerunService testRerunService;
 
     @Autowired
     private TestAnalyzer testAnalyzer;
@@ -167,7 +163,6 @@ public class RestTestingController {
             @PathVariable("testId") String testId) throws MissingPermissionException, EntityNotFoundException {
 
         if (testDetailsRepository.findById(testId).isPresent()) {
-            testRerunService.deleteRerunComponents(testDetailsRepository.findById(testId).get());
             testEngine.deleteAllReports(testId);
         }
 
@@ -295,20 +290,6 @@ public class RestTestingController {
     @PostMapping(value = "/deleteTestReport/{reportId}")
     public ResponseEntity<Void> deleteTestReport(@PathVariable(value = "reportId") String reportId) {
         return testEngine.deleteReport(reportId);
-    }
-
-
-    /**
-     * Changes the value "UseNewData", changed with the switch button, in the database.
-     *
-     * @param testId     ID of the test in which the configuration is to be changed.
-     * @param useNewData boolean, whether a new data set should be used or not
-     * @return edited configuration
-     */
-    @PostMapping(value = "/editConfig/{testId}")
-    public ResponseEntity<List<List<ParameterInstance>>> editConfig(@PathVariable(value = "testId") String testId,
-                                                                    @RequestBody boolean useNewData) {
-        return testRerunService.editUseNewData(testId, useNewData);
     }
 
     /**
