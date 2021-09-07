@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.web.rest;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,6 @@ import de.ipvs.as.mbp.error.MissingOwnerPrivilegesException;
 import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.util.C;
 import de.ipvs.as.mbp.util.Pages;
-import org.assertj.core.util.Arrays;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.access_control.dto.ACPolicyRequestDTO;
 import de.ipvs.as.mbp.domain.access_control.dto.ACPolicyResponseDTO;
@@ -114,7 +114,7 @@ public class RestACPolicyController {
 	@ApiOperation(value = "Retrieves all existing policy access types.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })
     public ResponseEntity<List<String>> accessTypes() {
-    	return ResponseEntity.ok(Arrays.asList(ACAccessType.values()).stream().map(at -> at.toString()).collect(Collectors.toList()));
+    	return ResponseEntity.ok(Arrays.stream(ACAccessType.values()).map(Enum::toString).collect(Collectors.toList()));
     }
     
     private EntityModel<ACPolicyResponseDTO> policyToEntityModel(ACPolicyResponseDTO policy) {

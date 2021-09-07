@@ -81,8 +81,8 @@ public class RestValueLogController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
             @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
-            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "°C", required = false) Long startTime,
-            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "°C", required = false) Long endTime,
+            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "1631041263", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "1631041263", required = false) Long endTime,
             @ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve actuator from the database (includes access-control)
         Actuator actuator = userEntityService.getForId(actuatorRepository, actuatorId);
@@ -102,8 +102,8 @@ public class RestValueLogController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
             @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the sensor values", example = "°C", required = false) String unit,
-            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "°C", required = false) Long startTime,
-            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "°C", required = false) Long endTime,
+            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "1631041263", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "1631041263", required = false) Long endTime,
             @ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve actuator from the database (includes access-control)
         Sensor sensor = userEntityService.getForId(sensorRepository, sensorId);
@@ -124,8 +124,8 @@ public class RestValueLogController {
             @PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
             @RequestParam("monitoringOperatorId") @ApiParam(value = "ID of the monitoring operator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringOperatorId,
             @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value logs", example = "°C", required = false) String unit,
-            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "°C", required = false) Long startTime,
-            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "°C", required = false) Long endTime,
+            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "1631041263", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "1631041263", required = false) Long endTime,
             @ApiParam(value = "The page configuration", required = true) Pageable pageable) throws MissingPermissionException, EntityNotFoundException {
         // Create new monitoring component from parameters
         MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);

@@ -7,7 +7,6 @@ public class MBPInfo {
     private String version = "";
     private String commitID = "";
     private String commitTime = "";
-    private String buildTime = "";
     private String branch = "";
     private BrokerLocation brokerLocation = BrokerLocation.LOCAL;
     private boolean demoMode = false;
@@ -38,14 +37,6 @@ public class MBPInfo {
 
     public void setCommitTime(String commitTime) {
         this.commitTime = commitTime;
-    }
-
-    public String getBuildTime() {
-        return buildTime;
-    }
-
-    public void setBuildTime(String buildTime) {
-        this.buildTime = buildTime;
     }
 
     public String getBranch() {

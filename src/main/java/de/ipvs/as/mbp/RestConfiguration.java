@@ -54,7 +54,6 @@ public class RestConfiguration implements RepositoryRestConfigurer {
      *
      * @param config Repository REST configuration to extend
      */
-    @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
         System.out.println("load RepositoryRestMvcConfiguration");
 

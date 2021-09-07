@@ -27,25 +27,22 @@ public class SettingsService {
 
     //Auto-injected data
     @Value("${mqtt_broker.default.location}")
-    private String defaultBrokerLocation;
+    private String defaultBrokerLocation = "LOCAL";
 
     @Value("${mqtt_broker.default.host}")
-    private String defaultBrokerHost;
+    private String defaultBrokerHost = "127.0.0.1";
 
     @Value("${git.branch}")
-    private String branch;
-
-    @Value("${git.build.time}")
-    private String buildTime;
+    private String branch = "unknown";
 
     @Value("${git.build.version}")
-    private String buildVersion;
+    private String buildVersion = "unknown";
 
     @Value("${git.commit.id.abbrev}")
-    private String commitID;
+    private String commitID = "unknown";
 
-    @Value("${git.commit.time")
-    private String commitTime;
+    @Value("${git.commit.time}")
+    private String commitTime = "unknown";
 
     /**
      * Returns a MBOInfo object containing information about the running MBP app instance and the environment
@@ -59,7 +56,6 @@ public class SettingsService {
         mbpInfo.setVersion(buildVersion);
         mbpInfo.setCommitID(commitID);
         mbpInfo.setCommitTime(commitTime);
-        mbpInfo.setBuildTime(buildTime);
         mbpInfo.setBranch(branch);
 
         //Set broker location from stored settings

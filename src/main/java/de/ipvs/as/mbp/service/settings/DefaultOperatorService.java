@@ -69,7 +69,7 @@ public class DefaultOperatorService {
             String descriptorPath = operatorPath + "/" + DESCRIPTOR_FILE;
 
             //Check if there is a descriptor file, otherwise skip the operator
-            if (!operatorContent.contains(descriptorPath)) {
+            if ((operatorContent == null) || (!operatorContent.contains(descriptorPath))) {
                 continue;
             }
 
