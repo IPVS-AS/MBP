@@ -187,3 +187,9 @@ local.properties
 .settings/org.eclipse.wst.common.component
 .settings/org.eclipse.wst.common.project.facet.core.xml
 .settings/org.eclipse.wst.jsdt.ui.superType.container
+
+# Gradle
+.gradle
+gradle
+gradlew.bat
+gradlew
