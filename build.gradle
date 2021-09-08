@@ -40,7 +40,8 @@ dependencies {
 
     //MongoDB
     implementation 'org.mongodb:mongo-java-driver:3.12.10'
-    implementation 'org.springframework.data:spring-data-mongodb:2.2.9.RELEASE' //Do not change version
+    //implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.5.4'
+    implementation 'org.springframework.data:spring-data-mongodb:2.2.9.RELEASE'
 
     //Caching
     implementation 'com.github.ben-manes.caffeine:caffeine:3.0.3'
