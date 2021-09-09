@@ -28,3 +28,8 @@ The name convention for subfolders is `<actuator-type>_<IoT-device-type>`.
 - [loudspeaker_computer](loudspeaker_computer): operator scripts to control a loudspeaker actuator.
 - [relay_raspberry-pi](relay_raspberry-pi): operator scripts to control a relay.
 - [switch_raspberry-pi](switch_raspberry-pi): operator scripts to control a radio frequency (RF), Arduino-based switch.
+
+## Note on data model definition
+
+As many here listed actuators do not send any data to the MBP they can use an arbitrary data model. Therefore, for these actuators
+no data model json definition is provided in their folders.

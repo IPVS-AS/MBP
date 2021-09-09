@@ -25,4 +25,4 @@ Optional parameter:
  - `start.sh`: This file starts the execution of the python script.
  - `running.sh`: This file checks if the python script is running.
  - `stop.sh`: This file stops the execution of the python script.
-
+ - `dataModel.json`: This file contains a data model definition which can be used for the creation of a respective operator entity in the MBP.

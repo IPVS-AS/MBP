@@ -1,0 +1,93 @@
+{
+  "name": "DM_all_data_types_test",
+  "treeNodes": [{
+		"name": "schema",
+		"description": "",
+		"semanticHint": "",
+		"type": "object",
+		"parent": null,
+		"children": [
+			"doubleVal",
+			"stringVal",
+			"binaryVal",
+			"booleanVal",
+			"dateVal",
+			"intVal",
+			"longVal",
+			"decimal128Val"
+		]
+	},
+	{
+		"name": "doubleVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "double",
+		"parent": "schema",
+		"unit": "°C",
+		"children": []
+	},
+	{
+		"name": "stringVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "string",
+		"parent": "schema",
+		"unit": "Name",
+		"children": []
+	},
+	{
+		"name": "binaryVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "binary",
+		"parent": "schema",
+		"unit": "Chunk",
+		"children": []
+	},
+	{
+		"name": "booleanVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "boolean",
+		"parent": "schema",
+		"unit": "",
+		"children": []
+	},
+	{
+		"name": "dateVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "date",
+		"parent": "schema",
+		"unit": "",
+		"children": []
+	},
+	{
+		"name": "intVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "int",
+		"parent": "schema",
+		"unit": "",
+		"children": []
+	},
+	{
+		"name": "longVal",
+		"description": "",
+		"semanticHint": "",
+		"type": "long",
+		"parent": "schema",
+		"unit": "",
+		"children": []
+	},
+	{
+		"name": "decimal128Val",
+		"description": "",
+		"semanticHint": "",
+		"type": "decimal128",
+		"parent": "schema",
+		"unit": "",
+		"children": []
+	}
+]
+}

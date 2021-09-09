@@ -159,7 +159,7 @@ def main(argv):
 
          value = subscriber.getLastValue()
 
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % (float(value)) }
+         msg_pub = {"component": component.upper(), "id": component_id, "value": {"value": float(value)}}
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
 
          time.sleep(5)

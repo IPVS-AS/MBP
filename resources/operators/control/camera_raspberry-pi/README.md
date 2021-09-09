@@ -30,3 +30,8 @@ When a picture is taken, it is saved on the deployed folder on the Raspberry Pi 
 - `running.sh`: This file checks if the python script is running.
   
 - `stop.sh`: This file stops the execution of the python script.
+
+## Data model support
+
+Since the here provided scripts send a MQTT message for each camera image to a "image" MQTT topic (in a not normalized message format) it can't be handled like usual sensor data (must be considered separately by the MBP implementation). 
+Thefore no data model support is provided 

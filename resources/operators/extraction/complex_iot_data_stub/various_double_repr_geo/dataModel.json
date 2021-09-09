@@ -1,0 +1,105 @@
+{
+  "name": "DM_nestedDoubles_test",
+  "treeNodes": [{
+		"name": "schema",
+		"description": "",
+		"semanticHint": "",
+		"type": "object",
+		"parent": null,
+		"children": [
+			"val1",
+			"arr1",
+			"arr2",
+			"arr4"
+		]
+	},
+	{
+		"name": "val1",
+		"description": "",
+		"semanticHint": "",
+		"type": "double",
+		"parent": "schema",
+		"unit": "°C",
+		"children": []
+	},
+	{
+		"name": "arr1",
+		"description": "",
+		"semanticHint": "",
+		"type": "array",
+		"size": 4,
+		"parent": "schema",
+		"children": ["val2"]
+	},
+	{
+		"name": "val2",
+		"description": "",
+		"semanticHint": "",
+		"type": "double",
+		"parent": "arr1",
+		"unit": "°F",
+		"children": []
+	},
+	{
+		"name": "arr2",
+		"description": "",
+		"semanticHint": "",
+		"type": "array",
+		"parent": "schema",
+		"size": 4,
+		"children": ["arr3"]
+	},
+	{
+		"name": "arr3",
+		"description": "",
+		"semanticHint": "",
+		"type": "array",
+		"parent": "arr2",
+		"size": 4,
+		"children": ["val3"]
+	},
+	{
+		"name": "val3",
+		"description": "",
+		"semanticHint": "",
+		"type": "double",
+		"parent": "arr3",
+		"children": []
+	},
+	{
+		"name": "arr4",
+		"description": "",
+		"semanticHint": "",
+		"type": "array",
+		"parent": "schema",
+		"size": 4,
+		"children": ["obj1"]
+	},
+	{
+		"name": "obj1",
+		"description": "",
+		"semanticHint": "",
+		"type": "object",
+		"parent": "arr4",
+		"children": ["arr5"]
+	},
+	{
+		"name": "arr5",
+		"description": "",
+		"semanticHint": "",
+		"type": "array",
+		"parent": "obj1",
+		"size": 4,
+		"children": ["val4"]
+	},
+	{
+		"name": "val4",
+		"description": "",
+		"semanticHint": "",
+		"type": "double",
+		"parent": "arr5",
+		"children": []
+	}
+
+]
+}

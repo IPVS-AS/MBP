@@ -7,9 +7,3 @@ Provided sensorsimulators:
  - [Planned humidity sensor](sensoradapter_hum_planned): operator scripts for a planned simulation of a humidity sensor 
  - [Temperature sensor](sensoradapter_temp): operator scripts to simulate a temperature sensor
  - [Planned temperature sensor](sensoradapter_temp_planned): operator scripts for a planned simulation of a temperature sensor
- 
- **Currently no data model support (as the java .class files are not available):**
- - [Acceleration sensor](sensoradapters_acc):  operator scripts to simulate a acceleration sensor 
- - [Planned acceleration sensor](sensoradapters_acc_planned): operator scripts for a planned simulation of a acceleration sensor 
- - [GPS sensor](sensoradapters_gps): operator scripts to simulate a GPS sensor 
- - [Planned GPS sensor](sensoradapters_gps_planned): operator scripts for a planned simulation of a GPS sensor
