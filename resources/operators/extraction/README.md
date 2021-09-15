@@ -14,12 +14,12 @@ The expected message structure by the MBP is a json-formatted string with the fo
 	"value": {"temperature:" 20}
 }
 ```
-The `value` key can have an arbitrary JSON object as value. However the structure of this JSON object must be registered by creating a data model entity to the MBP.
+The `value` key can have an arbitrary JSON object as value. However the structure of this JSON object must be registered to the MBP by creating a data model entity.
 
 The following shows a command line example using the paho MQTT client to send sensor data to the MBP: 
 
 ```bash
-$ mosquitto_pub.exe -t 'sensor/596cafaa6c0ccd5d29da0e90' -m '{"component":"SENSOR","id":"596cafaa6c0ccd5d29da0e90","value":20}'
+$ mosquitto_pub.exe -t 'sensor/596cafaa6c0ccd5d29da0e90' -m '{"component":"SENSOR","id":"596cafaa6c0ccd5d29da0e90","value": {"temperature:" 20}}'
 ```
 
 
