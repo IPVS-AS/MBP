@@ -5,7 +5,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MBPException;
@@ -46,7 +46,7 @@ import io.swagger.annotations.ApiResponses;
  * establishing SSH connections.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/key-pairs")
+@RequestMapping(Constants.BASE_PATH + "/key-pairs")
 @Api(tags = {"key-pairs"})
 public class RestKeyPairController {
 

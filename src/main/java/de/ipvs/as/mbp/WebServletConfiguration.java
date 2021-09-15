@@ -27,13 +27,7 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 import java.util.List;
 
 @Configuration
-@EnableWebMvc
-@EnableSpringDataWebSupport
-@ComponentScan(basePackages = {
-        Constants.ROOT_PACKAGE
-})
-@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
-public class WebServletConfiguration extends AbstractSecurityWebApplicationInitializer implements WebMvcConfigurer {
+public class WebServletConfiguration implements WebMvcConfigurer {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -50,13 +44,9 @@ public class WebServletConfiguration extends AbstractSecurityWebApplicationIniti
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        System.out.println("load addResourceHandlers");
         registry.addResourceHandler("swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");
-        if (!registry.hasMappingForPattern("/webjars/**")) {
-            registry.addResourceHandler("/webjars/**").addResourceLocations(
-                    "classpath:/META-INF/resources/webjars/");
-        }
+
         if (!registry.hasMappingForPattern("/**")) {
             registry.addResourceHandler("/**").addResourceLocations(
                     CLASSPATH_RESOURCE_LOCATIONS);

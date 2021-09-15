@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp;
 
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.security.UserSessionCookieFilter;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.SecurityConfig;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -17,16 +19,16 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
-@Import(UserSessionService.class)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     //URLs to important pages
     public static final String URL_LOGIN = "/login";
     public static final String URL_LOGOUT = "/logout";
@@ -35,7 +37,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UserSessionCookieFilter userSessionCookieFilter;
 
     @Autowired
-    public SecurityConfiguration(UserSessionService userSessionService) {
+    public WebSecurityConfig(UserSessionService userSessionService) {
         this.userSessionCookieFilter = new UserSessionCookieFilter(userSessionService);
     }
 
@@ -51,15 +53,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/resources/**")
                 .antMatchers("/webapp/**")
                 .antMatchers(URL_LOGIN, "/templates/register")
-                .antMatchers(HttpMethod.GET, RestConfiguration.BASE_PATH + "/settings/mbpinfo")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenUser")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenSuperuser")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenAcl");
+                .antMatchers(HttpMethod.GET, Constants.BASE_PATH + "/settings/mbpinfo")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/users")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenUser")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenSuperuser")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenAcl");
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    public void configure(HttpSecurity http) throws Exception {
         //Configure HTTP security
         http
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

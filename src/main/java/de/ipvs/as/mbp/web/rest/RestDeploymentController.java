@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.error.DeploymentException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
@@ -30,7 +30,7 @@ import java.util.List;
  * REST Controller for deployment related REST requests.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Deployment"})
 public class RestDeploymentController implements RepresentationModelProcessor<EntityModel<?>> {
 

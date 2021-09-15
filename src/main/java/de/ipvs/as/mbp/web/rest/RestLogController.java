@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.logs.ExceptionLog;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.ExceptionLogRepository;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST controller for retrieving exception logs. Only administrators are permitted to do so.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/exception-logs")
+@RequestMapping(Constants.BASE_PATH + "/exception-logs")
 @Api(tags = {"Exception logs"})
 public class RestLogController {
 

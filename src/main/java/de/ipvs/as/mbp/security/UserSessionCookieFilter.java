@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.security;
 
-import de.ipvs.as.mbp.SecurityConfiguration;
+import de.ipvs.as.mbp.WebSecurityConfig;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import org.springframework.security.core.Authentication;
@@ -77,7 +77,7 @@ public class UserSessionCookieFilter extends GenericFilterBean implements Logout
         userSessionService.invalidateSession(sessionId);
 
         //Reply with redirect to login page
-        response.sendRedirect(request.getContextPath() + SecurityConfiguration.URL_LOGIN);
+        response.sendRedirect(request.getContextPath() + WebSecurityConfig.URL_LOGIN);
     }
 
     /**

@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'war'
     id 'org.springframework.boot' version '2.5.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 
@@ -16,10 +17,14 @@ repositories {
 
 dependencies {
     //Spring
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.4'
-    implementation 'org.springframework.boot:spring-boot-starter-security:2.5.4'
-    implementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
-    implementation 'org.springframework.security.oauth:spring-security-oauth2:2.5.1.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    //MongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    //Thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     //JAXB
     implementation 'javax.xml.bind:jaxb-api:2.3.0'
@@ -32,16 +37,8 @@ dependencies {
     //JavaX Web
     compileOnly 'javax:javaee-web-api:8.0.1'
 
-    //Thymeleaf
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.5.4'
-
     //JSON
     implementation 'org.json:json:20210307'
-
-    //MongoDB
-    implementation 'org.mongodb:mongo-java-driver:3.12.10'
-    //implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.5.4'
-    implementation 'org.springframework.data:spring-data-mongodb:2.2.9.RELEASE'
 
     //Caching
     implementation 'com.github.ben-manes.caffeine:caffeine:3.0.3'
@@ -69,9 +66,6 @@ dependencies {
     implementation 'io.springfox:springfox-swagger-ui:2.10.5'
     implementation 'io.springfox:springfox-swagger2:2.10.5'
     implementation 'io.github.swagger2markup:swagger2markup:1.3.3'
-
-    //Cglib
-    implementation 'cglib:cglib:3.3.0'
 }
 
 test {

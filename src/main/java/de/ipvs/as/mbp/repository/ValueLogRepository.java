@@ -10,6 +10,7 @@ import com.mongodb.client.model.UpdateOptions;
 import de.ipvs.as.mbp.MongoConfiguration;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
@@ -60,7 +61,7 @@ public class ValueLogRepository {
     @Autowired
     private ValueLogRepository(MongoClient mongoClient, MongoConfiguration mongoConfiguration) {
         // Fetch coded registry for mapping value log objects from and to BSON documents
-        CodecRegistry codecRegistry = fromRegistries(com.mongodb.MongoClient.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        CodecRegistry codecRegistry = CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build());
 
         //Get database name from configuration
         String databaseName = mongoConfiguration.getMongoDatabase();

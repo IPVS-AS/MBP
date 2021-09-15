@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.EnvironmentModelParseException;
@@ -33,7 +33,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * REST Controller for deployment related REST requests.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/env-models")
+@RequestMapping(Constants.BASE_PATH + "/env-models")
 @Api(tags = {"Environment models"})
 public class RestEnvModelController {
 

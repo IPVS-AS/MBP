@@ -5,7 +5,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -42,7 +42,7 @@ import io.swagger.annotations.ApiResponses;
  * REST Controller that exposes methods for the purpose of managing rule actions.
  */
 @RestController()
-@RequestMapping(RestConfiguration.BASE_PATH + "/rule-actions")
+@RequestMapping(Constants.BASE_PATH + "/rule-actions")
 @Api(tags = {"Rule Actions"})
 public class RestRuleActionController {
 

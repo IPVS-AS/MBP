@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingOwnerPrivilegesException;
@@ -50,7 +50,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/policies")
+@RequestMapping(Constants.BASE_PATH + "/policies")
 @Api(tags = {"Access-Control Policies"})
 public class RestACPolicyController {
 	

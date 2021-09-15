@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.rules.Rule;
@@ -37,7 +37,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * REST Controller that exposes methods for the purpose of managing rules.
  */
 @RestController()
-@RequestMapping(RestConfiguration.BASE_PATH + "/rules")
+@RequestMapping(Constants.BASE_PATH + "/rules")
 @Api(tags = {"Rules"})
 public class RestRuleController {
 
