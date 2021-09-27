@@ -6,7 +6,7 @@ This project contains the **Multi-purpose Binding and Provisioning Platform (MBP
 
 Please take a look on our :book: [Wiki](https://github.com/IPVS-AS/MBP/wiki) for more information about the MBP, it includes:
 
-* :computer: [Installation guides](https://github.com/IPVS-AS/MBP/wiki/Installation): providing installation instructions for the MBP.
+* :computer: [Installation guides](https://github.com/IPVS-AS/MBP/wiki/Installation): providing installation instructions for the MBP. For Ubuntu 20.04 or newer use the "install from Ubuntu 20.04" folder.
 
 * :rocket: [Quick start](https://github.com/IPVS-AS/MBP/wiki/Quick-Start): showing how to connect an IoT device (Raspberry Pi) and a temperature sensor to the MBP, in order to visualize temperature values in the MBP dashboard.
 
