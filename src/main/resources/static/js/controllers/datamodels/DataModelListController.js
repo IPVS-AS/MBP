@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('DataModelListController',
-    ['$scope', '$controller', '$q', 'dataModelList', 'addDataModel', 'deleteDataModel', 'DataModelService', 'OperatorService', 'NotificationService',
-        function ($scope, $controller, $q, dataModelList, addDataModel, deleteDataModel, DataModelService, OperatorService, NotificationService) {
+    ['$scope', '$controller', '$q', 'dataModelList', 'addDataModel', 'deleteDataModel', 'DataModelService', 'OperatorService', 'NotificationService', 'HttpService',
+        function ($scope, $controller, $q, dataModelList, addDataModel, deleteDataModel, DataModelService, OperatorService, NotificationService, HttpService) {
             var vm = this;
 
             vm.showDataModelTextBox = false;
@@ -126,6 +126,7 @@ app.controller('DataModelListController',
                     return vm.addDataModelCtrl.result;
                 },
                 function () {
+
                     //Callback
                     var data = vm.addDataModelCtrl.result;
                     if (data) {
@@ -134,8 +135,6 @@ app.controller('DataModelListController',
 
                         //Add new item to list
                         vm.dataModelListCtrl.pushItem(data);
-                        // TODO Get again a get request for getting the json representation
-                        data.jsonexample = "Refresh page to view the example.";
                     }
                 }
             );
