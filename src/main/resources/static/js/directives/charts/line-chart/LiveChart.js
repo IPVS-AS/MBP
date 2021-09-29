@@ -194,7 +194,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                                 path: jsonPathAsObj.value.path,
                                 json: array[index][1]
                             }).toString());
-                        } else {
+                        } else if (scope.fieldCollectionId === 'arrVal'){
                             array[index][1] = JSONPath.JSONPath({
                                 path: jsonPathAsObj.arrVal.path,
                                 json: array[index][1]
@@ -221,7 +221,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                                 tooltip: {valueSuffix: ' ' + (jsonPathAsObj.arrVal.unit ? jsonPathAsObj.arrVal.unit : '')}
                             }, true);
                         }
-                    } else {
+                    } else if (scope.fieldCollectionId === 'default') {
                         series[0].update({
                             name: jsonPathAsObj.value.name,
                             tooltip: {valueSuffix: ' ' + (jsonPathAsObj.value.unit ? jsonPathAsObj.value.unit : '')}

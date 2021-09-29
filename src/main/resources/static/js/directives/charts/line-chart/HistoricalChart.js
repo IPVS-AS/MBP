@@ -181,7 +181,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                             path: jsonPathAsObj.value.path,
                             json: array[index][1]
                         }).toString());
-                    } else {
+                    } else if (scope.fieldCollectionId === 'arrVal') {
                         array[index][1] = JSONPath.JSONPath({
                             path: jsonPathAsObj.arrVal.path,
                             json: array[index][1]
@@ -196,7 +196,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                         tooltip: {valueSuffix: ' ' + (jsonPathAsObj.value.unit ? jsonPathAsObj.value.unit : '')},
                         data: values
                     }, true); //Redraw chart
-                } else {
+                } else if (scope.fieldCollectionId === 'arrVal') {
                     // Check if enough series are existing - if not add the missing ones
 
                     var dataSeriesNumber = chart.series.length;
@@ -223,6 +223,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                             })
                         }, true);
                     }
+                } else {
+                    // Nothing
                 }
                 //Loading finished
                 scope.loadingFinish();
@@ -242,7 +244,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             return scope.jsonPath;
         }, function (newValue, oldValue) {
             //Update chart if jsonPath was changed
-            console.log("JSONPATh updated");
+            console.log("JSONPath updated");
             initChart();
         });
 
@@ -250,10 +252,6 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         scope.$watch(function () {
             return scope.fieldCollectionId;
         }, function (newValue, oldValue) {
-            console.log("Field collection ID: ");
-            console.log(newValue);
-            console.log(oldValue);
-            console.log(scope.fieldCollectionId);
             initChart();
         });
 
