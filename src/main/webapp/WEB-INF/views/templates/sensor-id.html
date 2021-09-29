@@ -208,13 +208,16 @@
             <div class="card">
                 <div class="header">
                     <ul class="nav nav-tabs tab-nav-right" role="tablist">
-                        <li role="presentation" ng-show="componentDetailsCtrl.deploymentState==='RUNNING'">
+                        <li role="presentation"
+                            class="{{componentDetailsCtrl.deploymentState==='RUNNING' ? 'active' : ''}} "
+                            ng-show="componentDetailsCtrl.deploymentState==='RUNNING'">
                             <a data-target="#live-chart-card-{{visItem.instanceId}}" data-toggle="tab">
                                 <i class="material-icons">live_tv</i>
                                 Live Chart
                             </a>
                         </li>
-                        <li role="presentation" class="active">
+                        <li role="presentation"
+                            class="{{componentDetailsCtrl.deploymentState==='RUNNING' ? '' : 'active'}}">
                             <a data-target="#historical-chart-card-{{visItem.instanceId}}" data-toggle="tab">
                                 <i class="material-icons">access_time</i>
                                 Historical Chart

@@ -616,11 +616,13 @@ app.controller('ComponentDetailsController',
                     vm.allActiveVisualizations.push(visToAdd);
                 });
             }
+
             initActiveVisualizations();
 
 
             // Actions when the "Add a chart" button is clicked
             var cardCount = 0;
+
             function onCreateNewVisualizationClicked() {
 
                 if (vm.nextChartToAdd === "select") {
@@ -638,6 +640,18 @@ app.controller('ComponentDetailsController',
                     // Request succeeded --> update the vis component instance id and add the new active vis
                     visToAdd.instanceId = data.idOfLastAddedVisualization;
                     vm.allActiveVisualizations.push(visToAdd);
+
+                    // Workaround START for preventing a tab display error when adding a chart while the sensor is currently running
+                    if (vm.deploymentState === 'RUNNING') {
+                        $(document).ready(function () {
+                            setTabActive('#historical-chart-card', visToAdd.instanceId);
+                        });
+                        $(document).ready(function () {
+                            setTabActive('#live-chart-card', visToAdd.instanceId);
+                        });
+                    }
+                    // Workaround END
+
                     NotificationService.notify('Chart was added successfully.', 'success');
                 }, function (errData) {
                     // Request failed --> notify the user and do nothing
@@ -685,8 +699,8 @@ app.controller('ComponentDetailsController',
             function updateJsonPath(visToUpdate) {
 
                 // Convert string json object to objects
-                var convertMappings = function(mappingToConvert) {
-                    Object.keys(mappingToConvert).forEach(function(key) {
+                var convertMappings = function (mappingToConvert) {
+                    Object.keys(mappingToConvert).forEach(function (key) {
                         if (typeof mappingToConvert[key] === "string") {
                             mappingToConvert[key] = JSON.parse(mappingToConvert[key]);
                         }
@@ -736,7 +750,7 @@ app.controller('ComponentDetailsController',
              */
             function setTabActive(tab, instanceId) {
                 if (instanceId != null) {
-                    $('.nav-tabs a[data-target="' + tab + "-" + instanceId + ']"').tab('show');
+                    $('.nav-tabs a[data-target*="' + tab + "-" + instanceId + '"]').tab('show');
                 } else {
                     // Select the tab as active which id begins with tab
                     $('.nav-tabs a[data-target^="' + tab + '"]').tab('show');
