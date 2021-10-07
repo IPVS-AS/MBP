@@ -3,9 +3,14 @@ package de.ipvs.as.mbp.iottest;
 import javax.servlet.http.Cookie;
 
 import de.ipvs.as.mbp.base.BaseIoTTest;
+import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.util.testexecution.RequiresMQTT;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiresMQTT
 public class ActuatorPerformActuationTest extends BaseIoTTest {
@@ -16,5 +21,33 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
 
         Device deviceObj = this.createNewDevice(device, sessionCookie, "performactuation-mockdevice");
 
+        Operator opResponse = createOperator(
+                sessionCookie,
+                "TestActuationOperator",
+                "",
+                this.getRoutineFromClasspath("mbp_client.py", "text/plain", "scripts/mbp_client/mbp_client.py"),
+                this.getRoutineFromClasspath("docker_dummy.py", "text/plain", "scripts/test_actuator/docker_dummy.py"),
+                this.getRoutineFromClasspath("entry-file-name", "text/plain", "scripts/test_actuator/entry-file-name"),
+                this.getRoutineFromClasspath("running.sh", "application/x-shellscript", "scripts/test_actuator/running.sh"),
+                this.getRoutineFromClasspath("start.sh", "application/x-shellscript", "scripts/mbp_client/start.sh"),
+                this.getRoutineFromClasspath("stop.sh", "application/x-shellscript", "scripts/mbp_client/stop.sh")
+        );
+
+        Actuator actuatorResponse = createActuator(
+                sessionCookie,
+                "TestActuator",
+                "Switch",
+                deviceObj.getId(),
+                opResponse.getId()
+        );
+
+        deployActuator(sessionCookie, actuatorResponse.getId());
+        startActuator(sessionCookie, actuatorResponse.getId());
+
+        RuleAction ruleAction = createActuatorRuleAction(sessionCookie, actuatorResponse.getId(), "TestActuationRuleAction", "test");
+
+        assertThat(testRuleAction(sessionCookie, ruleAction.getId())).isTrue();
+
+        Thread.sleep(3600_000);
     }
 }

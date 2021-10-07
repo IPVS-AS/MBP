@@ -32,7 +32,7 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
         // Create Operator
         Operator opResponse = createOperator(
                 sessionCookie,
-                "TestOperator",
+                "TestSensorOperator",
                 "",
                 this.getRoutineFromClasspath("mbp_client.py", "text/plain", "scripts/mbp_client/mbp_client.py"),
                 this.getRoutineFromClasspath("docker_dummy.py", "text/plain", "scripts/test_sensor/docker_dummy.py"),

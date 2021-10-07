@@ -1,28 +1,30 @@
 package de.ipvs.as.mbp.base;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import javax.servlet.http.Cookie;
 
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.ComponentDTO;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.domain.rules.RuleActionType;
 import de.ipvs.as.mbp.util.IoTDeviceContainer;
 import de.ipvs.as.mbp.util.testexecution.IoTDeviceTest;
 import de.ipvs.as.mbp.util.testexecution.RequiresMQTTExtension;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.StreamUtils;
 import org.testcontainers.junit.jupiter.Container;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -37,15 +39,8 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     protected final static String testScript = "#!/bin/bash\n" +
             "echo  $(date): Test Script was called | tee -a /home/mbp/calllog.log";
 
-
-
     @Container
     public IoTDeviceContainer device = new IoTDeviceContainer();
-
-    // @AfterEach
-    // void tearDown() throws Exception {
-    //     mongoDbContainer.wipeMongoDB();
-    // }
 
     public OperatorRoutine getRoutineFromClasspath(String name, String type, String path) throws Exception {
         InputStream classPathInput = getClass().getClassLoader().getResourceAsStream(path);
@@ -103,21 +98,72 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     }
 
     public void deploySensor(Cookie sessionCookie, String sensorId) throws Exception {
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/deploy/sensor/" + sensorId)
+        deployOperator(sessionCookie, "sensor", sensorId);
+    }
+
+    public void deployActuator(Cookie sessionCookie, String actuatorId) throws Exception {
+        deployOperator(sessionCookie, "actuator", actuatorId);
+    }
+
+    public void startSensor(Cookie sessionCookie, String sensorId) throws Exception {
+        startOperator(sessionCookie, "sensor", sensorId);
+    }
+
+    public void startActuator(Cookie sessionCookie, String actuatorId) throws Exception {
+        startOperator(sessionCookie, "actuator", actuatorId);
+    }
+
+    private void deployOperator(Cookie sessionCookie, String operatorType, String operatorId) throws Exception {
+        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/deploy/" + operatorType + "/" + operatorId)
                 .headers(getMBPAccessHeaderForAdmin())
                 .cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
 
-    public void startSensor(Cookie sessionCookie, String sensorId) throws Exception {
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/start/sensor/" + sensorId)
+    private void startOperator(Cookie sessionCookie, String operatorType, String operatorId) throws Exception {
+        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/start/" + operatorType + "/" + operatorId)
                 .headers(getMBPAccessHeaderForAdmin())
                 .cookie(sessionCookie)
                 .contentType(REQUEST_CONTENT_TYPE)
                 .content("[]"))
                 .andExpect(status().isOk())
                 .andDo(print());
+    }
+
+    public RuleAction createActuatorRuleAction(Cookie sessionCookie, String actuatorId, String ruleName, String actionSuffix) throws Exception {
+        return createRuleAction(sessionCookie, actuatorId, ruleName, actionSuffix, RuleActionType.ACTUATOR_ACTION);
+    }
+
+    public RuleAction createRuleAction(Cookie sessionCookie, String actuatorId, String ruleName, String actionSuffix, RuleActionType type) throws Exception {
+        JSONObject ruleAction = new JSONObject();
+        ruleAction.put("name", ruleName);
+        ruleAction.put("type", type.name());
+
+        JSONObject ruleActionParams = new JSONObject();
+        ruleActionParams.put("action", actionSuffix);
+        ruleActionParams.put("actuator", actuatorId);
+        ruleAction.put("parameters", ruleActionParams);
+
+        MvcResult response = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/rule-actions")
+                .headers(getMBPAccessHeaderForAdmin())
+                .cookie(sessionCookie)
+                .contentType(REQUEST_CONTENT_TYPE)
+                .content(ruleAction.toString()))
+                .andExpect(status().isOk())
+                .andDo(print()).andReturn();
+
+        return objectMapper.readValue(response.getResponse().getContentAsString(), RuleAction.class);
+    }
+
+    public boolean testRuleAction(Cookie sessionCookie, String ruleActionId) throws Exception {
+        MvcResult response = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/rule-actions/test/" + ruleActionId)
+                .headers(getMBPAccessHeaderForAdmin())
+                .cookie(sessionCookie))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+        return Boolean.parseBoolean(response.getResponse().getContentAsString());
     }
 
     public Sensor createSensor(Cookie sessionCookie, String sensorName, String sensorType, String deviceId, String operatorId) throws Exception {
@@ -132,9 +178,26 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
                 .cookie(sessionCookie)
                 .contentType(REQUEST_CONTENT_TYPE)
                 .content(objectMapper.writeValueAsString(sensorReq))
-        ).andDo(print()).andReturn();
+        ).andExpect(status().isOk()).andDo(print()).andReturn();
 
         return objectMapper.readValue(result.getResponse().getContentAsString(), Sensor.class);
+    }
+
+    public Actuator createActuator(Cookie sessionCookie, String actuatorName, String actuatorType, String deviceId, String operatorId) throws Exception {
+        ComponentDTO actuatorCreationReq = new ComponentDTO();
+        actuatorCreationReq.setDeviceId(deviceId);
+        actuatorCreationReq.setComponentType(actuatorType);
+        actuatorCreationReq.setOperatorId(operatorId);
+        actuatorCreationReq.setName(actuatorName);
+
+        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/actuators")
+                .headers(getMBPAccessHeaderForAdmin())
+                .cookie(sessionCookie)
+                .contentType(REQUEST_CONTENT_TYPE)
+                .content(objectMapper.writeValueAsString(actuatorCreationReq))
+        ).andExpect(status().isOk()).andDo(print()).andReturn();
+
+        return objectMapper.readValue(result.getResponse().getContentAsString(), Actuator.class);
     }
 
     public void ensureDeviceHasSSH(Cookie sessionCookie, String deviceId) throws Exception {
