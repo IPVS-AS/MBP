@@ -17,7 +17,7 @@ public class SensorUploadOperatorTest extends BaseIoTTest {
     void sensorUploadOperator() throws Exception {
         Cookie sessionCookie = getSessionCookieForAdmin();
 
-        Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");
+        Device deviceObj = this.createNewDevice(device, sessionCookie, "upload-mockdevice");
 
         // Create Operator
         Operator opResponse = createOperator(

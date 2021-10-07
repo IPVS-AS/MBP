@@ -12,14 +12,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@RequiresMQTT
 public class SensorRunScriptTest extends BaseIoTTest {
 
     @Test
-    @RequiresMQTT
     void sensorRunStartScript() throws Exception {
         Cookie sessionCookie = getSessionCookieForAdmin();
 
-        Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");
+        Device deviceObj = this.createNewDevice(device, sessionCookie, "startscript-mockdevice");
 
         // Create Operator
         Operator opResponse = createOperator(

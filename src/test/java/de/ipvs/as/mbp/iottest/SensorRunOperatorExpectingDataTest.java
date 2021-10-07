@@ -20,14 +20,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@RequiresMQTT
 public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
 
     @Test
-    @RequiresMQTT
     void sensorDeployAndRunScriptExpectData() throws Exception {
         Cookie sessionCookie = getSessionCookieForAdmin();
 
-        Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");
+        Device deviceObj = this.createNewDevice(device, sessionCookie, "expectdata-mockdevice");
 
         // Create Operator
         Operator opResponse = createOperator(
