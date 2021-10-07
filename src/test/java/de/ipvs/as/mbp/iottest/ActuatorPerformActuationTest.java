@@ -7,6 +7,7 @@ import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.util.CommandOutput;
 import de.ipvs.as.mbp.util.testexecution.RequiresMQTT;
 import org.junit.jupiter.api.Test;
 
@@ -17,10 +18,13 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
 
     @Test
     void actuatorShouldPerformActuation() throws Exception {
+        printStageMessage("Requesting Session Cookie");
         Cookie sessionCookie = getSessionCookieForAdmin();
 
+        printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "performactuation-mockdevice");
 
+        printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
                 "TestActuationOperator",
@@ -33,6 +37,7 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
                 this.getRoutineFromClasspath("stop.sh", "application/x-shellscript", "scripts/mbp_client/stop.sh")
         );
 
+        printStageMessage("Creating Actuator Object");
         Actuator actuatorResponse = createActuator(
                 sessionCookie,
                 "TestActuator",
@@ -41,13 +46,23 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
                 opResponse.getId()
         );
 
+        printStageMessage("Deploying and Starting Actuator");
         deployActuator(sessionCookie, actuatorResponse.getId());
         startActuator(sessionCookie, actuatorResponse.getId());
 
+        printStageMessage("Creating Rule Action");
         RuleAction ruleAction = createActuatorRuleAction(sessionCookie, actuatorResponse.getId(), "TestActuationRuleAction", "test");
 
-        assertThat(testRuleAction(sessionCookie, ruleAction.getId())).isTrue();
+        printStageMessage("Triggering Action 10 times");
+        for (int i = 0; i < 10; i++) {
+            assertThat(testRuleAction(sessionCookie, ruleAction.getId())).isTrue();
+            Thread.sleep(250);
+        }
 
-        Thread.sleep(3600_000);
+        printStageMessage("Validating action trigger count");
+        String filePath = "/home/mbp/scripts/mbp"+actuatorResponse.getId()+"/actions.log";
+        CommandOutput output = this.device.runCommand("cat "+filePath);
+        System.out.println(output.getStdout());
+        assertThat(output.getStdout().split("\n").length).isEqualTo(10);
     }
 }

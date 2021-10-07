@@ -19,9 +19,11 @@ public class SensorRunScriptTest extends BaseIoTTest {
     void sensorRunStartScript() throws Exception {
         Cookie sessionCookie = getSessionCookieForAdmin();
 
+        printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "startscript-mockdevice");
 
         // Create Operator
+        printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
                 "TestOperator",
@@ -30,6 +32,7 @@ public class SensorRunScriptTest extends BaseIoTTest {
         );
 
         // Create sensor
+        printStageMessage("Creating Sensor");
         Sensor sensorResponse = createSensor(
                 sessionCookie,
                 "TestSensor",
@@ -38,8 +41,11 @@ public class SensorRunScriptTest extends BaseIoTTest {
                 opResponse.getId()
         );
 
+        printStageMessage("Deploying and Starting Sensor");
         deploySensor(sessionCookie, sensorResponse.getId());
         startSensor(sessionCookie, sensorResponse.getId());
+
+        printStageMessage("Ensuring that the deployed Script has been invoked");
 
         CommandOutput commandOutput = device.runCommand("cat /home/mbp/calllog.log");
         assertThat(commandOutput.getStderr()).isEmpty();

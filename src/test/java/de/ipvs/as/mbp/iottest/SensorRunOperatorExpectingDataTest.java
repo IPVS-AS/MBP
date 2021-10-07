@@ -25,11 +25,14 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
 
     @Test
     void sensorDeployAndRunScriptExpectData() throws Exception {
+        printStageMessage("Requesting Session Cookie");
         Cookie sessionCookie = getSessionCookieForAdmin();
 
+        printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "expectdata-mockdevice");
 
         // Create Operator
+        printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
                 "TestSensorOperator",
@@ -42,6 +45,7 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
         );
 
         // Create sensor
+        printStageMessage("Creating Sensor");
         Sensor sensorResponse = createSensor(
                 sessionCookie,
                 "TestSensor",
@@ -50,8 +54,11 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
                 opResponse.getId()
         );
 
+        printStageMessage("Deploying and Starting Sensor");
         deploySensor(sessionCookie, sensorResponse.getId());
         startSensor(sessionCookie, sensorResponse.getId());
+
+        printStageMessage("Ensuring that the deployed Script is running");
 
         // Assert that Tmux Server is running with a session
         CommandOutput commandOutput = device.runCommand("ps aux");
@@ -67,6 +74,8 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
         System.out.println(stdoutString);
         assertThat(stdoutString.split("\n").length).isEqualTo(1);
         assertThat(stdoutString).contains("scriptSession");
+
+        printStageMessage("Validating that data is received");
 
         // Wait some time for data to be sent
         System.out.println("Waiting for data to be Produced");

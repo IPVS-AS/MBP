@@ -18,10 +18,13 @@ public class DeviceConnectTest extends BaseIoTTest {
 
     @Test
     void deviceConnect() throws Exception {
+        printStageMessage("Requesting Session Cookie");
         Cookie sessionCookie = getSessionCookieForAdmin();
 
+        printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");
 
+        printStageMessage("Validating SSH availablity");
         ensureDeviceHasSSH(sessionCookie, deviceObj.getId());
 
         CommandOutput commandOutput = device.runCommand("sudo cat /var/log/auth.log");

@@ -15,11 +15,14 @@ public class SensorUploadOperatorTest extends BaseIoTTest {
 
     @Test
     void sensorUploadOperator() throws Exception {
+        printStageMessage("Requesting Session Cookie");
         Cookie sessionCookie = getSessionCookieForAdmin();
 
+        printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "upload-mockdevice");
 
         // Create Operator
+        printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
                 "TestOperator",
@@ -29,6 +32,7 @@ public class SensorUploadOperatorTest extends BaseIoTTest {
         assertThat(opResponse.getId()).isNotNull();
 
         // Create sensor
+        printStageMessage("Creating Sensor");
         Sensor sensorResponse = createSensor(
                 sessionCookie,
                 "TestSensor",
@@ -37,6 +41,7 @@ public class SensorUploadOperatorTest extends BaseIoTTest {
                 opResponse.getId()
         );
 
+        printStageMessage("Ensuring sensor is ready");
         // Ensure Sensor is Ready
         ensureSensorIsReady(sessionCookie, sensorResponse.getId());
 
@@ -46,8 +51,11 @@ public class SensorUploadOperatorTest extends BaseIoTTest {
 
         assertThat(stdoutString).contains("USER=root ; COMMAND=/usr/bin/[ -d /home/mbp/scripts/mbp");
 
+        printStageMessage("Deploying Sensor");
+
         deploySensor(sessionCookie, sensorResponse.getId());
 
+        printStageMessage("Validate files have been deployed");
         // Check if deployment files exist
         commandOutput = device.runCommand("ls /home/mbp/scripts/mbp" + sensorResponse.getId());
         stdoutString = commandOutput.getStdout();

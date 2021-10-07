@@ -50,6 +50,15 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         return new OperatorRoutine(name, type, fileData.toByteArray());
     }
 
+    public void printStageMessage(String message) {
+        message = "#  " + message + "  #";
+        StringBuilder sep = new StringBuilder();
+        for (int i = 0; i < message.length(); i++) {
+            sep.append('#');
+        }
+        System.out.printf("\n\n%s\n%s\n%s\n", sep.toString(), message.toUpperCase(), sep.toString());
+    }
+
     public Device createNewDevice(IoTDeviceContainer container, Cookie sessionCookie, String name) throws Exception {
         DeviceDTO requestDto = new DeviceDTO();
         requestDto.setName(name);
