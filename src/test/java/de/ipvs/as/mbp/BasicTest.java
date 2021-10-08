@@ -2,16 +2,15 @@ package de.ipvs.as.mbp;
 
 import javax.servlet.http.Cookie;
 
+import de.ipvs.as.mbp.base.BaseBackendTest;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.user.UserService;
-import de.ipvs.as.mbp.base.BaseBackendTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
