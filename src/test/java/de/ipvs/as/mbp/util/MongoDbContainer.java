@@ -1,15 +1,20 @@
 package de.ipvs.as.mbp.util;
 
+import java.util.List;
+
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import org.testcontainers.containers.GenericContainer;
 
 public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     private static MongoDbContainer instance = null;
-    private static final String WIPE_COMMAND = "db.getCollectionNames().forEach( function(collection_name) { if (collection_name.indexOf(\"system.\") == -1) {db[collection_name].drop();} else{db[collection_name].remove({});}});";
+    private static final int MONGODB_STANDARD_PORT = 27017;
+    private static final List<String> MONGODB_CLEANUP_BLACKLIST = List.of(new String[] {"admin", "config", "local"});
 
     public MongoDbContainer() {
         super("mongo:latest");
-        this.withExposedPorts(27017);
+        this.withExposedPorts(MONGODB_STANDARD_PORT);
     }
 
     public static MongoDbContainer getInstance() {
@@ -19,13 +24,21 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
         return instance;
     }
 
-    public void wipeMongoDB() throws Exception {
+    /**
+     * This is needed after each test, because @DirtiesContext does not function reliably,
+     * therefore we connect to the mongoDB via the MongoClient and manually wipe all databases
+     * which are not protected from deletion
+     */
+    public void wipeMongoDB() {
         if (this.isRunning()) {
-            ExecResult execResult = this.execInContainer("/usr/bin/mongo", "--eval", String.format("'%s'", WIPE_COMMAND));
-            System.out.println("Attempted Wipe on MongoDB. Exit Code: " + execResult.getExitCode() + " Stdout Output:");
-            System.out.println(execResult.getStdout());
-            System.out.println("Stderr Output:");
-            System.out.println(execResult.getStderr());
+            MongoClient mongoClient = new MongoClient(this.getHost(), this.getMappedPort(MONGODB_STANDARD_PORT));
+
+            for (String dbName : mongoClient.listDatabaseNames()) {
+                MongoDatabase database = mongoClient.getDatabase(dbName);
+                if (!MONGODB_CLEANUP_BLACKLIST.contains(dbName)) {
+                    database.drop();
+                }
+            }
         }
     }
 
@@ -33,6 +46,6 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
     public void start() {
         super.start();
 
-        System.setProperty("MONGO_PORT", this.getMappedPort(27017).toString());
+        System.setProperty("MONGO_PORT", this.getMappedPort(MONGODB_STANDARD_PORT).toString());
     }
 }

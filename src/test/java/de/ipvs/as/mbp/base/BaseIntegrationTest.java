@@ -47,6 +47,11 @@ public abstract class BaseIntegrationTest {
     @Autowired
     protected ObjectMapper objectMapper;
 
+    @AfterEach
+    void resetMongoDB() {
+        mongoDbContainer.wipeMongoDB();
+    }
+
     public HttpHeaders getMBPAccessHeaderForAdmin() {
         return getMBPAccessHeaderForUser("admin", "admin", "admin");
     }
