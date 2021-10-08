@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.util;
 import java.util.List;
 
 import com.mongodb.MongoClient;
-import com.mongodb.client.MongoDatabase;
 import org.testcontainers.containers.GenericContainer;
 
 public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
@@ -34,9 +33,8 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
             MongoClient mongoClient = new MongoClient(this.getHost(), this.getMappedPort(MONGODB_STANDARD_PORT));
 
             for (String dbName : mongoClient.listDatabaseNames()) {
-                MongoDatabase database = mongoClient.getDatabase(dbName);
                 if (!MONGODB_CLEANUP_BLACKLIST.contains(dbName)) {
-                    database.drop();
+                    mongoClient.getDatabase(dbName).drop();
                 }
             }
         }
