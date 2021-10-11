@@ -141,8 +141,6 @@ public class DefaultTestingComponents {
                 if (operatorRepository.findFirstByName(simulatorName).isPresent() && deviceRepository.findFirstByName(TEST_DEVICE).isPresent()) {
                     sensorSimulator.setOperator(operatorRepository.findFirstByName(simulatorName).get());
                     sensorSimulator.setDevice(deviceRepository.findFirstByName(TEST_DEVICE).get());
-                } else  {
-                    return;
                 }
 
                 // Validate, insert and create a new event handler for the new sensor simulator
