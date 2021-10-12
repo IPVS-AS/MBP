@@ -14,7 +14,7 @@ pipeline {
 
         stage ('Build') {
             steps {
-                sh "gradle bootBuildImage --imageName=mbp/${env.BRANCH_NAME}:latest" 
+                sh "gradle bootBuildImage --imageName=mbp_${env.BRANCH_NAME}:latest" 
             }
         }
     }
