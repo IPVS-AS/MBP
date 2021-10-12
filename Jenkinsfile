@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        maven 'Gradle'
+        gradle 'Gradle'
     }
     stages {
         stage ('Initialize') {
