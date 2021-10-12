@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    tools {
+        maven 'Gradle'
+    }
     stages {
         stage ('Initialize') {
             steps {
