@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * Allows to look up Spring managed beans by their class and to provide them to non-bean classes.
+ * Allows looking up Spring managed beans by their class and to provide them to non-bean classes.
  */
 @Component
 public class DynamicBeanProvider implements ApplicationContextAware {
