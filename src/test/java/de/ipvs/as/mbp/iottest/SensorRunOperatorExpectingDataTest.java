@@ -56,9 +56,6 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
 
         printStageMessage("Deploying and Starting Sensor");
         deploySensor(sessionCookie, sensorResponse.getId());
-        
-        Thread.sleep(3600000);
-        
         startSensor(sessionCookie, sensorResponse.getId());
 
         printStageMessage("Ensuring that the deployed Script is running");

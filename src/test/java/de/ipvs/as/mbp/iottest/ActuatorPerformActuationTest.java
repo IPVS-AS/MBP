@@ -55,6 +55,7 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
 
         printStageMessage("Triggering Action 10 times");
         for (int i = 0; i < 10; i++) {
+            System.out.println("Calling "+(i+1)+"/10 with ID"+ruleAction.getId());
             assertThat(testRuleAction(sessionCookie, ruleAction.getId())).isTrue();
             Thread.sleep(250);
         }

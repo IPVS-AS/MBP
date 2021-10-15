@@ -69,7 +69,7 @@ pipeline {
                     }
                     post {
                         always {
-                            sh 'docker stop mqtt-jenkins'
+                            sh 'docker stop mqtt-jenkins || true'
                         }
                     }
                 }
