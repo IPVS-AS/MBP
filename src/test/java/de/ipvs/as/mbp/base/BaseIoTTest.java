@@ -140,11 +140,11 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
                 .andDo(print());
     }
 
-    public RuleAction createActuatorRuleAction(Cookie sessionCookie, String actuatorId, String ruleName, String actionSuffix) throws Exception {
+    public String createActuatorRuleAction(Cookie sessionCookie, String actuatorId, String ruleName, String actionSuffix) throws Exception {
         return createRuleAction(sessionCookie, actuatorId, ruleName, actionSuffix, RuleActionType.ACTUATOR_ACTION);
     }
 
-    public RuleAction createRuleAction(Cookie sessionCookie, String actuatorId, String ruleName, String actionSuffix, RuleActionType type) throws Exception {
+    public String createRuleAction(Cookie sessionCookie, String actuatorId, String ruleName, String actionSuffix, RuleActionType type) throws Exception {
         JSONObject ruleAction = new JSONObject();
         ruleAction.put("name", ruleName);
         ruleAction.put("type", type.name());
@@ -162,7 +162,8 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print()).andReturn();
 
-        return objectMapper.readValue(response.getResponse().getContentAsString(), RuleAction.class);
+        // Only Retrieve id to resolve occational issues when trying to parse using the object mapper
+        return new JSONObject(response.getResponse().getContentAsString()).getString("id");
     }
 
     public boolean testRuleAction(Cookie sessionCookie, String ruleActionId) throws Exception {

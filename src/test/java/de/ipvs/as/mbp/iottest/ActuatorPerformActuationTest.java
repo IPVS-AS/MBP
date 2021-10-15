@@ -51,18 +51,18 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
         startActuator(sessionCookie, actuatorResponse.getId());
 
         printStageMessage("Creating Rule Action");
-        RuleAction ruleAction = createActuatorRuleAction(sessionCookie, actuatorResponse.getId(), "TestActuationRuleAction", "test");
+        String ruleActionId = createActuatorRuleAction(sessionCookie, actuatorResponse.getId(), "TestActuationRuleAction", "test");
 
         printStageMessage("Triggering Action 10 times");
         for (int i = 0; i < 10; i++) {
-            System.out.println("Calling "+(i+1)+"/10 with ID"+ruleAction.getId());
-            assertThat(testRuleAction(sessionCookie, ruleAction.getId())).isTrue();
+            System.out.println("Calling " + (i + 1) + "/10 with ID " + ruleActionId);
+            assertThat(testRuleAction(sessionCookie, ruleActionId)).isTrue();
             Thread.sleep(250);
         }
 
         printStageMessage("Validating action trigger count");
-        String filePath = "/home/mbp/scripts/mbp"+actuatorResponse.getId()+"/actions.log";
-        CommandOutput output = this.device.runCommand("cat "+filePath);
+        String filePath = "/home/mbp/scripts/mbp" + actuatorResponse.getId() + "/actions.log";
+        CommandOutput output = this.device.runCommand("cat " + filePath);
         System.out.println(output.getStdout());
         assertThat(output.getStdout().split("\n").length).isEqualTo(10);
     }
