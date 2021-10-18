@@ -1,10 +1,11 @@
-package de.ipvs.as.mbp;
+package de.ipvs.as.mbp.controller;
 
 import java.util.List;
 
 import javax.servlet.http.Cookie;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseBackendTest;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserLoginData;

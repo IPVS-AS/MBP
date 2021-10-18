@@ -1,9 +1,10 @@
-package de.ipvs.as.mbp;
+package de.ipvs.as.mbp.controller;
 
 import java.util.Optional;
 
 import javax.servlet.http.Cookie;
 
+import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseBackendTest;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
