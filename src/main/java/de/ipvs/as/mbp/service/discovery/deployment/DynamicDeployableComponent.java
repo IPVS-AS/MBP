@@ -64,7 +64,7 @@ public class DynamicDeployableComponent extends Component {
         }
 
         //Copy fields to the component
-        this.setId(dynamicDeployment.getId() + (deviceDetails == null ? "" : ("|" + deviceDetails.getMacAddress())));
+        this.setId(dynamicDeployment.getId());
         this.setName(dynamicDeployment.getName());
         this.setComponentType(TYPE_NAME);
         this.setOperator(dynamicDeployment.getOperator());
@@ -96,5 +96,26 @@ public class DynamicDeployableComponent extends Component {
     @Override
     public String getComponentTypeName() {
         return TYPE_NAME;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Component component = (Component) o;
+
+        //Check if IDs are available
+        if ((this.getId() == null || component.getId() == null)) {
+            return false;
+        }
+
+        //Check if devices are available
+        if ((this.getDevice() == null) || (component.getDevice() == null)) {
+            //Compare IDs
+            return this.getId().equals(component.getId());
+        }
+
+        //Compare IDs and device MACs
+        return this.getId().equals(component.getId()) && this.getDevice().getId().equals(component.getDevice().getId());
     }
 }
