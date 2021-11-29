@@ -64,7 +64,7 @@ public class DynamicDeployableComponent extends Component {
         }
 
         //Copy fields to the component
-        this.setId(dynamicDeployment.getId());
+        this.setId(dynamicDeployment.getId() + (deviceDetails == null ? "" : ("|" + deviceDetails.getMacAddress())));
         this.setName(dynamicDeployment.getName());
         this.setComponentType(TYPE_NAME);
         this.setOperator(dynamicDeployment.getOperator());

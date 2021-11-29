@@ -85,6 +85,8 @@ public class DemoDeployer implements IDeployer {
         //Check if component is not deployed or already running
         if (!deployedComponents.containsKey(component)) {
             throw new DeploymentException("The component must first be deployed before it can be started.");
+        } else if (deployedComponents.get(component).equals(ComponentState.RUNNING)) {
+            throw new DeploymentException("The component is already running.");
         }
 
         //Artificial delay for demo purposes
@@ -128,6 +130,11 @@ public class DemoDeployer implements IDeployer {
         // Sanity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Check if component is already deployed
+        if (deployedComponents.containsKey(component)) {
+            throw new DeploymentException("The component is already deployed.");
         }
 
         //Artificial delay for demo purposes
