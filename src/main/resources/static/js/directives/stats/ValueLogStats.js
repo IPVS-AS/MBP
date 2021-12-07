@@ -4,8 +4,6 @@
 
 /**
  * Directive which creates a table for displaying descriptive statistics for value logs of a certain component.
- *
- * @author Jan
  */
 app.directive('valueLogStats', ['$interval', function ($interval) {
     //Time interval with that the value statistics are supposed to be refreshed
@@ -42,8 +40,6 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             scope.getStats({unit: scope.unit}).then(function (receivedData) {
                 //Take received data
                 scope.statisticsData = receivedData;
-                console.log("STATSTICS");
-                console.log(scope.statisticsData);
 
                 //Loading finish callback if desired
                 if (!noCallback) {

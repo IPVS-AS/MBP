@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.domain.data_model.treelogic;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
 import de.ipvs.as.mbp.domain.visualization.repo.ValueLogPathObject;
 import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
@@ -13,14 +13,11 @@ import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Permutations;
 import de.ipvs.as.mbp.util.Validation;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -58,7 +55,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
     /**
      * Map storing all jsonPaths which can be retrieved easily if path is known
      */
-    private final Map<String, Map.Entry<JsonPath, IoTDataTypes>> jsonPathMap;
+    private final Map<String, Map.Entry<JsonPath, DataModelDataType>> jsonPathMap;
 
     /**
      * Builds a tree data structure out of repository {@link DataTreeNode}s. Before the tree is built, various
@@ -139,7 +136,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     "much roots.");
         } else {
             // Check if root is object
-            if (!rootCandidates.get(0).getType().toLowerCase().equals(IoTDataTypes.OBJECT.getName())) {
+            if (!rootCandidates.get(0).getType().toLowerCase().equals(DataModelDataType.OBJECT.getName())) {
                 exception.addInvalidField("treeNodes", "Tree root must be an object.");
             }
         }
@@ -267,7 +264,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         List<VisMappingInfo> allMappings = new ArrayList<>();
 
         // For all visualizations
-        for (Visualization v : VisualizationCollection.visIdMapping.values()) {
+        for (Visualization v : VisualizationCollection.visNameMapping.values()) {
             VisMappingInfo currVisInfo = getVisInfoPerVisualization(v);
 
             if (currVisInfo.getMappingPerVisualizationField() != null && currVisInfo.getMappingPerVisualizationField().size() > 0) {
@@ -286,7 +283,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      */
     private VisMappingInfo getVisInfoPerVisualization(Visualization vis) {
         VisMappingInfo currVisInfo = new VisMappingInfo();
-        currVisInfo.setVisName(vis.getId());
+        currVisInfo.setVisName(vis.getName());
 
         // For all visualization field collections
         for (VisualizationFields field : vis.getFieldsToVisualize()) {
@@ -368,7 +365,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             int arrParentCount = 0;
             DataModelTreeNode nextNodeToInvestigate = leafNode;
             while (true) {
-                if (nextNodeToInvestigate.getType() == IoTDataTypes.ARRAY) {
+                if (nextNodeToInvestigate.getType() == DataModelDataType.ARRAY) {
                     arrParentCount++;
                 }
                 if (nextNodeToInvestigate.getParent() != null) {
@@ -400,7 +397,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         DataModelTreeNode currNodeToInvestigate = root;
         DataModelTreeNode leafNodeOfRoot;
         while (true) {
-            if (currNodeToInvestigate.getType() == IoTDataTypes.ARRAY) {
+            if (currNodeToInvestigate.getType() == DataModelDataType.ARRAY) {
                 arrayAmountCount++;
             }
 
@@ -466,7 +463,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         if (Validation.isNullOrEmpty(nodeToValidate.getType())) {
             exception.addInvalidField("treeNodes", "All data model tree nodes need a valid type.");
             // Is the type known?
-        } else if (IoTDataTypes.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()) == null) {
+        } else if (DataModelDataType.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()) == null) {
             exception.addInvalidField("treeNodes", nodeToValidate.getType() + " is not a known type.");
         }
 
@@ -481,7 +478,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         }
 
         // Set the dimension to -1 if not an array
-        if (IoTDataTypes.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()) != IoTDataTypes.ARRAY) {
+        if (DataModelDataType.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()) != DataModelDataType.ARRAY) {
             nodeToValidate.setSize(-1);
         }
 
@@ -498,7 +495,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         }
 
         // Check if: type = primitive --> no children
-        if (IoTDataTypes.isPrimitive(IoTDataTypes.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()))) {
+        if (DataModelDataType.isPrimitive(DataModelDataType.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()))) {
             if (nodeToValidate.getChildren() != null && nodeToValidate.getChildren().size() > 0) {
                 exception.addInvalidField("treeNodes", "Node " + nodeToValidate.getName() + " is " +
                         "a primitive type but has children.");
@@ -506,7 +503,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         }
 
         // Check if: type = object --> at least one children
-        if (nodeToValidate.getType().toLowerCase().equals(IoTDataTypes.OBJECT.getName())) {
+        if (nodeToValidate.getType().toLowerCase().equals(DataModelDataType.OBJECT.getName())) {
             if (nodeToValidate.getChildren() == null || nodeToValidate.getChildren().size() <= 0) {
                 exception.addInvalidField("treeNodes", "Node " + nodeToValidate.getName() + " is " +
                         " an object but has no children.");
@@ -514,7 +511,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         }
 
         // Check if: type = array --> exactly one children and always with a dimension >= 1
-        if (nodeToValidate.getType().toLowerCase().equals(IoTDataTypes.ARRAY.getName())) {
+        if (nodeToValidate.getType().toLowerCase().equals(DataModelDataType.ARRAY.getName())) {
             if (nodeToValidate.getChildren() == null || nodeToValidate.getChildren().size() != 1) {
                 exception.addInvalidField("treeNodes", "Node " + nodeToValidate.getName() + " is " +
                         " an array and needs exactly one child.");
@@ -584,107 +581,46 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      */
     private void getJSONFromChild(DataModelTreeNode currNode, JSONArray lastArray, JSONObject lastObject) {
         try {
-            if (lastArray == null && lastObject != null) {
-                // The parent was an object
-                if (currNode.getType() == IoTDataTypes.OBJECT) {
-                    JSONObject newObj = new JSONObject();
+            // The parent was an object
+            if (currNode.getType() == DataModelDataType.OBJECT) {
+                //Create new empty JSON object
+                JSONObject newObj = new JSONObject();
+
+                //Check whether last array or last object are available
+                if (lastArray == null && lastObject != null) {
                     lastObject.put(currNode.getName(), newObj);
-                    // Call the function for all childs recursively
-                    for (DataModelTreeNode node : currNode.getChildren()) {
-                        getJSONFromChild(node, null, newObj);
-                    }
-                } else if (currNode.getType() == IoTDataTypes.ARRAY) {
-                    JSONArray newArr = new JSONArray();
-                    lastObject.put(currNode.getName(), newArr);
-                    // Call the function for the childs recursively (call it that often as the array size   )
-                    for (int i = 0; i < currNode.getSize(); i++) {
-                        getJSONFromChild(currNode.getChildren().get(0), newArr, null);
-                    }
-                } else if (currNode.getType() == IoTDataTypes.DECIMAL128
-                        || currNode.getType() == IoTDataTypes.DOUBLE) {
-                    lastObject.put(currNode.getName(), getRandomDouble());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.LONG) {
-                    lastObject.put(currNode.getName(), getRandomInteger());
-                } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
-                    lastObject.put(currNode.getName(), getRandomBoolean());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.INT) {
-                    lastObject.put(currNode.getName(), getRandomInteger());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.STRING) {
-                    lastObject.put(currNode.getName(), getRandomString());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.DATE) {
-                    lastObject.put(currNode.getName(), new SimpleDateFormat(
-                            "yyyy-MM-dd'T'HH:mm:ss").format(new Date())
-                    );
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.BINARY) {
-                    lastObject.put(currNode.getName(), "QmFzZTY0QmluYXJ5U3RyaW5n");
-                    // As primitive no children to be expected --> return
+                } else if (lastArray != null && lastObject == null) {
+                    lastArray.put(newObj);
                 }
 
+                // Call the function for all children recursively
+                currNode.getChildren().forEach(node -> getJSONFromChild(node, null, newObj));
+            } else if (currNode.getType() == DataModelDataType.ARRAY) {
+                //Create new empty JSON array
+                JSONArray newArr = new JSONArray();
 
-            } else if (lastArray != null && lastObject == null) {
-                // The parent was an array
-                if (currNode.getType() == IoTDataTypes.OBJECT) {
-                    JSONObject newObj = new JSONObject();
-                    lastArray.put(newObj);
-                    // Call the function for all childs recursively
-                    for (DataModelTreeNode node : currNode.getChildren()) {
-                        getJSONFromChild(node, null, newObj);
-                    }
-                } else if (currNode.getType() == IoTDataTypes.ARRAY) {
-                    JSONArray newArr = new JSONArray();
+                //Check whether last array or last object are available
+                if (lastArray == null && lastObject != null) {
+                    lastObject.put(currNode.getName(), newArr);
+                } else if (lastArray != null && lastObject == null) {
                     lastArray.put(newArr);
-                    // Call the function for the childs recursively (call it that often like dimensions)
-                    for (int i = 0; i < currNode.getSize(); i++) {
-                        getJSONFromChild(currNode.getChildren().get(0), newArr, null);
-                    }
-                } else if (currNode.getType() == IoTDataTypes.DECIMAL128
-                        || currNode.getType() == IoTDataTypes.DOUBLE) {
-                    lastArray.put(getRandomDouble());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.LONG) {
-                    lastArray.put(getRandomInteger());
-                } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
-                    lastArray.put(getRandomBoolean());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.INT) {
-                    lastArray.put(getRandomInteger());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.STRING) {
-                    lastArray.put(getRandomString());
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.DATE) {
-                    lastArray.put(new SimpleDateFormat(
-                            "yyyy-MM-dd'T'HH:mm:ss").format(new Date()));
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.BINARY) {
-                    lastArray.put("QmFzZTY0QmluYXJ5U3RyaW5n");
-                    // As primitive no children to be expected --> return
+                }
+
+                // Call the function for the children recursively
+                for (int i = 0; i < currNode.getSize(); i++) {
+                    getJSONFromChild(currNode.getChildren().get(0), newArr, null);
+                }
+            } else {
+                //Check whether last array or last object are available
+                if (lastArray == null && lastObject != null) {
+                    lastObject.put(currNode.getName(), currNode.getType().getExample());
+                } else if (lastArray != null && lastObject == null) {
+                    lastArray.put(currNode.getType().getExample());
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    private long getRandomInteger() {
-        return ThreadLocalRandom.current().nextInt(100);
-    }
-
-    private double getRandomDouble() {
-        return Math.round(ThreadLocalRandom.current().nextDouble(0, 100) * 1.0e2) / 1.0e2;
-    }
-
-    private boolean getRandomBoolean() {
-        return ThreadLocalRandom.current().nextBoolean();
-    }
-
-    private String getRandomString() {
-        return RandomStringUtils.randomAlphabetic(ThreadLocalRandom.current().nextInt(30));
     }
 
     @Override
@@ -700,11 +636,11 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
     /**
      * @param path A JsonPath string representation of which one want to retrieve the compiled
-     *             {@link JsonPath} and the {@link IoTDataTypes} of the related node .
-     * @return A {@link Map.Entry} with the JsonPath of the given string and the {@link IoTDataTypes} of
+     *             {@link JsonPath} and the {@link DataModelDataType} of the related node .
+     * @return A {@link Map.Entry} with the JsonPath of the given string and the {@link DataModelDataType} of
      * the node the path targets at.
      */
-    public Map.Entry<JsonPath, IoTDataTypes> getJsonPathWithType(String path) {
+    public Map.Entry<JsonPath, DataModelDataType> getJsonPathWithType(String path) {
         return this.jsonPathMap.get(path);
     }
 
@@ -799,8 +735,8 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             // IoTDatatype and children size of root node is equal.
             if (rootOfFirstTree.getChildren().size() != 0) {
                 // We are not at the end of the tree: Create a list of all occurring child data types
-                List<IoTDataTypes> typesOfNextChildrenOfFirstNode = new ArrayList<>();
-                List<IoTDataTypes> typesOfNextChildrenOfSecondNode = new ArrayList<>();
+                List<DataModelDataType> typesOfNextChildrenOfFirstNode = new ArrayList<>();
+                List<DataModelDataType> typesOfNextChildrenOfSecondNode = new ArrayList<>();
 
                 // Fill the temp lists with data in the same order the originals are sorted
                 for (int i = 0; i < rootOfFirstTree.getChildren().size(); i++) {
@@ -890,7 +826,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
     }
 
-    public Map<String, Map.Entry<JsonPath, IoTDataTypes>> getJsonPathMap() {
+    public Map<String, Map.Entry<JsonPath, DataModelDataType>> getJsonPathMap() {
         return jsonPathMap;
     }
 }

@@ -26,7 +26,7 @@ public class DataModelTreeCache {
     /**
      * Specifies how old a cache date entry can be, being still part of the cache.
      */
-    private final int UNUSED_DAYS_REMOVAL_CRITERION = 1;
+    private static final int UNUSED_DAYS_REMOVAL_CRITERION = 1;
 
     /**
      * Map used as the cache data structure to store data models together with their components id.
@@ -48,7 +48,6 @@ public class DataModelTreeCache {
 
     private DataModelTreeCache() {
         // Init the data models cache
-        System.out.println("Data model cache started.");
         this.cachedDataModels = new HashMap<>();
         this.monitoringOperatorDataModel = createOperatorDataModel();
     }
@@ -63,7 +62,7 @@ public class DataModelTreeCache {
         DataTreeNode root  = new DataTreeNode();
         root.setType("object");
         root.setName("root");
-        root.setChildren(Arrays.asList("value"));
+        root.setChildren(Collections.singletonList("value"));
         root.setParent("");
 
         // The child double field of the data model

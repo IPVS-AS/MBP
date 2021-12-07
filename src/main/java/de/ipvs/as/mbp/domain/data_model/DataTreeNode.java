@@ -18,7 +18,7 @@ public class DataTreeNode {
     private String semanticHint;
 
     /**
-     * Type of the node. Must be compatible with all available {@link IoTDataTypes}
+     * Type of the node. Must be compatible with all available {@link DataModelDataType}
      */
     private String type;
 

@@ -1,7 +1,6 @@
 package de.ipvs.as.mbp.domain.visualization;
 
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
-import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,40 +10,40 @@ import java.util.Map;
  */
 public class VisualizationCollection {
 
-    public final static Map<String, Visualization> visIdMapping = new HashMap<>();
+    public final static Map<String, Visualization> visNameMapping = new HashMap<>();
 
     static {
 
-        visIdMapping.put(
+        visNameMapping.put(
                 "doubleVis",
                 new Visualization("doubleVis")
                         .addFieldsToVisualize(new VisualizationFields("default")
-                                .addNewPrimitiveType("value", IoTDataTypes.DECIMAL128)
-                                .addNewPrimitiveType("value", IoTDataTypes.DOUBLE)
-                                .addNewPrimitiveType("value", IoTDataTypes.LONG)
-                                .addNewPrimitiveType("value", IoTDataTypes.INT)
+                                .addNewPrimitiveType("value", DataModelDataType.DECIMAL128)
+                                .addNewPrimitiveType("value", DataModelDataType.DOUBLE)
+                                .addNewPrimitiveType("value", DataModelDataType.LONG)
+                                .addNewPrimitiveType("value", DataModelDataType.INT)
                         )
                         .addFieldsToVisualize(new VisualizationFields("arrVal")
-                                .addNewArray("arrVal", IoTDataTypes.DECIMAL128, 1)
-                                .addNewArray("arrVal", IoTDataTypes.DOUBLE,1)
-                                .addNewArray("arrVal", IoTDataTypes.LONG, 1)
-                                .addNewArray("arrVal", IoTDataTypes.INT, 1)
+                                .addNewArray("arrVal", DataModelDataType.DECIMAL128, 1)
+                                .addNewArray("arrVal", DataModelDataType.DOUBLE,1)
+                                .addNewArray("arrVal", DataModelDataType.LONG, 1)
+                                .addNewArray("arrVal", DataModelDataType.INT, 1)
                         )
         );
 
         // Map
-        visIdMapping.put(
+        visNameMapping.put(
                 "geoMap",
                 new Visualization("geoMap")
                         .addFieldsToVisualize(new VisualizationFields("default")
-                                .addNewPrimitiveType("latitude", IoTDataTypes.DECIMAL128)
-                                .addNewPrimitiveType("latitude", IoTDataTypes.DOUBLE)
-                                .addNewPrimitiveType("latitude", IoTDataTypes.LONG)
-                                .addNewPrimitiveType("latitude", IoTDataTypes.INT)
-                                .addNewPrimitiveType("longitude", IoTDataTypes.DECIMAL128)
-                                .addNewPrimitiveType("longitude", IoTDataTypes.DOUBLE)
-                                .addNewPrimitiveType("longitude", IoTDataTypes.LONG)
-                                .addNewPrimitiveType("longitude", IoTDataTypes.INT))
+                                .addNewPrimitiveType("latitude", DataModelDataType.DECIMAL128)
+                                .addNewPrimitiveType("latitude", DataModelDataType.DOUBLE)
+                                .addNewPrimitiveType("latitude", DataModelDataType.LONG)
+                                .addNewPrimitiveType("latitude", DataModelDataType.INT)
+                                .addNewPrimitiveType("longitude", DataModelDataType.DECIMAL128)
+                                .addNewPrimitiveType("longitude", DataModelDataType.DOUBLE)
+                                .addNewPrimitiveType("longitude", DataModelDataType.LONG)
+                                .addNewPrimitiveType("longitude", DataModelDataType.INT))
         );
     }
 

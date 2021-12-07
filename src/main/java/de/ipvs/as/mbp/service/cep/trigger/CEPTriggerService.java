@@ -4,7 +4,7 @@ import java.util.*;
 
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.component.Component;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -255,19 +255,19 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
             }
 
             // Add all json path options for the current leaf node to the event type
-            IoTDataTypes typeOfNode = node.getType();
+            DataModelDataType typeOfNode = node.getType();
             for (String path : paths) {
                 JsonPath jsonPath = JsonPath.compile(path);
                 // Remove the $ from the json path
                 path = path.substring(1);
                 // No arrays are in the path --> just add the path as field
-                if (IoTDataTypes.hasCepPrimitiveDataType(typeOfNode)) {
+                if (DataModelDataType.hasCepPrimitiveDataType(typeOfNode)) {
                     eventType.addField(path, typeOfNode.getCepType());
                 } else {
                     // Special cases for special IoT data types like Date and Binary for which no explicit mapping is defined
-                    if (typeOfNode == IoTDataTypes.DATE) {
+                    if (typeOfNode == DataModelDataType.DATE) {
                         eventType.addField(path, CEPPrimitiveDataTypes.LONG);
-                    } else if (typeOfNode == IoTDataTypes.BINARY) {
+                    } else if (typeOfNode == DataModelDataType.BINARY) {
                         eventType.addField(path, CEPPrimitiveDataTypes.STRING);
                     }
                 }

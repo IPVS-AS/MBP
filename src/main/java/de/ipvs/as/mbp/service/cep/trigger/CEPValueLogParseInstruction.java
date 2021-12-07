@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.cep.trigger;
 
 import com.jayway.jsonpath.JsonPath;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 
 /**
  * Stores parse instructions for one {@link de.ipvs.as.mbp.domain.valueLog.ValueLog} field.
@@ -12,9 +12,9 @@ public class CEPValueLogParseInstruction {
 
     private JsonPath fieldPath;
 
-    private IoTDataTypes type;
+    private DataModelDataType type;
 
-    public CEPValueLogParseInstruction(String fieldName, JsonPath fieldPath, IoTDataTypes type) {
+    public CEPValueLogParseInstruction(String fieldName, JsonPath fieldPath, DataModelDataType type) {
         this.fieldName = fieldName.replaceAll("`", "");
         this.fieldPath = fieldPath;
         this.type = type;
@@ -36,11 +36,11 @@ public class CEPValueLogParseInstruction {
         this.fieldPath = fieldPath;
     }
 
-    public IoTDataTypes getType() {
+    public DataModelDataType getType() {
         return type;
     }
 
-    public void setType(IoTDataTypes type) {
+    public void setType(DataModelDataType type) {
         this.type = type;
     }
 }

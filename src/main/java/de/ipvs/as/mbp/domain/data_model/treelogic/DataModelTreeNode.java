@@ -2,14 +2,14 @@ package de.ipvs.as.mbp.domain.data_model.treelogic;
 
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * One node of the {@link DataModelTree}. Some contained fields are optional
- * for some {@link IoTDataTypes}:
+ * for some {@link DataModelDataType}:
  * - Only arrays need a dimension, not used dimensions should be <= 0
  * - Description is always optional
  */
@@ -27,7 +27,7 @@ public class DataModelTreeNode {
 
     private String name;
 
-    private IoTDataTypes type;
+    private DataModelDataType type;
 
     private String unit;
 
@@ -56,12 +56,12 @@ public class DataModelTreeNode {
         this.children = new ArrayList<>();
         this.parent = null;
         this.name = repoTreeNode.getName();
-        this.type = IoTDataTypes.getDataTypeWithValue(repoTreeNode.getType().toLowerCase());
+        this.type = DataModelDataType.getDataTypeWithValue(repoTreeNode.getType().toLowerCase());
         this.unit = repoTreeNode.getUnit();
         this.predecessors = new ArrayList<>();
 
         // Add dimension for arrays. If not an array set the dimension value to -1 as default.
-        if (this.type != null && this.type == IoTDataTypes.ARRAY) {
+        if (this.type != null && this.type == DataModelDataType.ARRAY) {
             this.size = repoTreeNode.getSize();
         } else {
             this.size = -1;
@@ -85,11 +85,11 @@ public class DataModelTreeNode {
         this.name = name;
     }
 
-    public IoTDataTypes getType() {
+    public DataModelDataType getType() {
         return type;
     }
 
-    public void setType(IoTDataTypes type) {
+    public void setType(DataModelDataType type) {
         this.type = type;
     }
 
@@ -143,13 +143,13 @@ public class DataModelTreeNode {
         String tmpInternPath = "";
 
         // If the parent is an array then the current node is not allowed to have a name
-        if (this.parent.getType() != IoTDataTypes.ARRAY) {
+        if (this.parent.getType() != DataModelDataType.ARRAY) {
             // Parent is no array --> names are needed
             tmpPath += "." + this.getName();
             tmpInternPath += "['" + this.getName() + "']";
         }
 
-        if (this.type == IoTDataTypes.ARRAY) {
+        if (this.type == DataModelDataType.ARRAY) {
             // This node is an array --> We need array brackets to signal the array
             tmpPath += "[*]";
             // This is an (mbp) intern representation of JsonPath which stores the dimension of a path too

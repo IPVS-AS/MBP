@@ -171,8 +171,6 @@ public class EsperCEPEngine implements CEPEngine {
             throw new EventNotRegisteredException("No event type has been registered for event \"" + event.getEventTypeName() + "\".");
         }
 
-        System.out.println("Sent event");
-
         //Send valid event to Esper
         cepRuntime.sendEvent(event.getFieldValues(), event.getEventTypeName());
     }

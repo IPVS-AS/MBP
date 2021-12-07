@@ -98,28 +98,9 @@
 
     <!-- jsonFormatter css -->
     <link th:href="@{/plugins/json-formatter/json-formatter.min.css}" rel="stylesheet"/>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
-
-
-    <script src="path/to/dom-to-image-more.min.js"/>
-    <script>
-        domtoimage.toPng(node)
-        //...
-    </script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"
-            integrity="sha256-c9vxcXyAG4paArQG3xk6DjyW/9aHxai2ef9RpMWO44A=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.min.js"></script>
-
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.2/jspdf.plugin.autotable.min.js"></script>
 
 <!-- Progress bar for HTTP requests -->
 <div id="requestLoadingBar" class="progress" ng-show="ctrl.loadingBarDisplay">
@@ -397,13 +378,18 @@
 <script th:src="@{/plugins/cryptojs/cryptojs.min.js}"></script>
 
 <!-- JsonPath -->
-<script th:src="@{/plugins/jsonpath/index-browser-umd.js}"></script>
+<script th:src="@{/plugins/jsonpath/index-browser-umd.min.js}"></script>
 
 <!-- Leaflet (Open-Street-Map javascript library) -->
 <script th:src="@{/plugins/leaflet/leaflet.js}"></script>
 
 <!-- Angular jsonFormatter plugin -->
 <script th:src="@{/plugins/json-formatter/json-formatter.min.js}"></script>
+
+<!-- JSPDF -->
+<script th:src="@{/plugins/jspdf/jspdf.umd.min.js}"></script>
+<script th:src="@{/plugins/jspdf/jspdf.plugin.autotable.min.js}"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.min.js"></script>-->
 
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>

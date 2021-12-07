@@ -1,13 +1,12 @@
 package de.ipvs.as.mbp.service.cep.trigger;
 
 import com.jayway.jsonpath.ReadContext;
-import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiveVerifier;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPPrimitiveDataTypes;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
 
@@ -22,7 +21,7 @@ import java.util.*;
  *
  * <p>To do this, the service stores parsing instructions for each pre-registered
  * {@link CEPEventType}. The instructions are containing a pre-compiled
- * {@link JsonPath} and a {@link IoTDataTypes} for each expected ValueLog value field.
+ * {@link JsonPath} and a {@link DataModelDataType} for each expected ValueLog value field.
  * These instructions get added by the {@link CEPTriggerService}.</p>
  */
 @Service
@@ -40,7 +39,7 @@ public class CEPValueLogParser {
         CEPValueLogParseInstruction monitoringParseInstructions = new CEPValueLogParseInstruction(
                 "value",
                 JsonPath.compile("$['value']"),
-                IoTDataTypes.DOUBLE
+                DataModelDataType.DOUBLE
         );
         HashSet<CEPValueLogParseInstruction> monitoringInstructionSet = new HashSet();
         monitoringInstructionSet.add(monitoringParseInstructions);
@@ -89,9 +88,9 @@ public class CEPValueLogParser {
 
         // Apply the parse instructions
         for (CEPValueLogParseInstruction instruction : parseInstructions) {
-            if (instruction.getType() == IoTDataTypes.DOUBLE || instruction.getType() == IoTDataTypes.INT ||
-                    instruction.getType() == IoTDataTypes.STRING
-            || instruction.getType() == IoTDataTypes.BOOLEAN) {
+            if (instruction.getType() == DataModelDataType.DOUBLE || instruction.getType() == DataModelDataType.INT ||
+                    instruction.getType() == DataModelDataType.STRING
+            || instruction.getType() == DataModelDataType.BOOLEAN) {
                 returnMap.put(instruction.getFieldName(), ctx.read(instruction.getFieldPath()));
             } else {
                 LinkedHashMap<String, Object> extractedObj = ctx.read(instruction.getFieldPath());

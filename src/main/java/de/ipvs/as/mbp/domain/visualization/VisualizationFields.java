@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.domain.visualization;
 
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 
 import java.util.*;
@@ -50,8 +50,8 @@ public class VisualizationFields {
      * @param dimension The dimension of the array (can be multi-dimensional)
      * @return A reference to this {@link VisualizationFields} object for chaining.
      */
-    public VisualizationFields addNewArray(String fieldName, IoTDataTypes primitiveTypeOfArray, int dimension) {
-        if (!IoTDataTypes.isPrimitive(primitiveTypeOfArray)) {
+    public VisualizationFields addNewArray(String fieldName, DataModelDataType primitiveTypeOfArray, int dimension) {
+        if (!DataModelDataType.isPrimitive(primitiveTypeOfArray)) {
             // For visualizations only arrays with a primitive type are valid.
             return this;
         }
@@ -60,7 +60,7 @@ public class VisualizationFields {
 
         List<DataModelTreeNode> arrayNodes = new ArrayList<>();
         for (int i = 0; i < dimension; i++) {
-            DataModelTreeNode nextArrNode  = getNewDataModelTreeNode(fieldName, IoTDataTypes.ARRAY);
+            DataModelTreeNode nextArrNode  = getNewDataModelTreeNode(fieldName, DataModelDataType.ARRAY);
             arrayNodes.add(nextArrNode);
         }
 
@@ -88,14 +88,14 @@ public class VisualizationFields {
     }
 
     /**
-     * Adds a primitive {@link IoTDataTypes} field to the visualization.
+     * Adds a primitive {@link DataModelDataType} field to the visualization.
      *
      * @param fieldName The name of the field.
      * @param primitiveType The type of the field.
      * @return this {@link VisualizationFields} for chaining.
      */
-    public VisualizationFields addNewPrimitiveType(String fieldName, IoTDataTypes primitiveType) {
-        if (!IoTDataTypes.isPrimitive(primitiveType)) {
+    public VisualizationFields addNewPrimitiveType(String fieldName, DataModelDataType primitiveType) {
+        if (!DataModelDataType.isPrimitive(primitiveType)) {
             return this;
         }
 
@@ -111,7 +111,7 @@ public class VisualizationFields {
 
 
 
-    public static DataModelTreeNode getNewDataModelTreeNode(String fieldName, IoTDataTypes type) {
+    public static DataModelTreeNode getNewDataModelTreeNode(String fieldName, DataModelDataType type) {
         DataTreeNode node = new DataTreeNode();
         node.setName(fieldName);
         node.setType(type.getName());
