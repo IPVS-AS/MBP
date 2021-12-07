@@ -52,8 +52,6 @@ public class RestDataModelController {
             @ApiParam(value = "Page parameters", required = true) Pageable pageable,
             @RequestBody DataModel dataModel) throws EntityAlreadyExistsException, EntityNotFoundException {
         // Save data model in the database
-        System.out.println("------------------\n" + dataModel.getName() + "\n" + dataModel.getDescription()
-        + "\n" + dataModel.getId() + "\n" + dataModel.getOwnerName());
         DataModel createdDataModel = userEntityService.create(dataModelRepository, dataModel);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDataModel));
     }

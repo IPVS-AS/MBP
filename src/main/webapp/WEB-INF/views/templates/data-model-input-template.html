@@ -1,44 +1,40 @@
 <script type="text/ng-template" id="tree_item_renderer.html">
-    <div class="panel panel-primary" style="margin-top: 5px; margin-bottom: 5px; margin-right: 2px;">
-        <div class="panel-heading" style="padding-bottom: 4px;padding-top: 4px;">
-            <button type="button" ng-click="collapseExpand(data)" ng-show="(data.nodes.length > 0)&&(data.expanded)"
-                    style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;"
+    <div class="panel panel-primary" style="margin-top: 5px; margin-bottom: 5px; margin-right: 2px;"
+         ng-init="data.expanded = false;">
+        <div class="panel-heading" style="height:42px; padding-bottom: 4px;padding-top: 4px;">
+            <button type="button" ng-show="data.nodes.length > 0" ng-click="collapseExpand(data)"
+                    style="margin-left:-8px; margin-right:7px; padding-left:9px; padding-right:8px; padding-bottom:4px; padding-top:4px;"
                     class="btn bg-mbp-blue waves-effect">
-                <i class="material-icons">expand_more</i></button>
+                <i class="material-icons">{{data.expanded ? "expand_less" : "expand_more"}}</i>
             </button>
-            <button type="button" ng-click="collapseExpand(data)" ng-show="(data.nodes.length > 0)&&(!data.expanded)"
-                    style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;"
-                    class="btn bg-light-blue waves-effect">
-                <i class="material-icons">expand_less</i></button>
-            </button>
-            {{data.name}}: <b>{{data.type}}{{data.size ? "[" + data.size + "]" : ""}}</b>
-
-            <button class="btn bg-green waves-effect" type="button" ng-click="edit(data)" ng-show="!data.isRoot"
-            style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;"><i
-                    class="material-icons">edit</i></button>
-            <button class="btn bg-light-green waves-effect"
-                    ng-show="data.type==='object' || (data.type==='array' && data.nodes.length == 0)" type="button"
-                    ng-click="add(data)"
-                    style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
-                <i class="material-icons">add</i></button>
-
-            </button>
-            <button class="btn bg-red waves-effect" type="button" ng-click="delete(data)" ng-show="data.nodes.length > 0"
-                    style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
-                <i class="material-icons">delete_forever</i></button>
-            </button>
+            <span style="display: inline-block; margin-top: 6px;">
+                {{data.name}}: <strong>{{data.type}}{{data.size ? "[" + data.size + "]" : ""}}</strong></span>
+            <div style="display: inline-block; float:right;">
+                <button type="button" class="btn bg-green waves-effect" ng-click="edit(data)" ng-show="!data.isRoot"
+                        style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
+                    <i class="material-icons">edit</i>
+                </button>
+                <button type="button" class="btn bg-green waves-effect"
+                        ng-show="data.type==='object' || (data.type==='array' && data.nodes.length == 0)"
+                        ng-click="data.expanded = true; add(data);"
+                        style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
+                    <i class="material-icons">add</i>
+                </button>
+                <button type="button" class="btn bg-red waves-effect" ng-click="delete(data)"
+                        ng-show="data.nodes.length > 0"
+                        style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
+                    <i class="material-icons">delete</i>
+                </button>
+            </div>
         </div>
 
         <div ng-show="data.edit">
             <table class="table table-hover">
                 <tbody>
                 <tr>
-                    <th>
-                        Type:
-                    </th>
+                    <th>Type:</th>
                     <td>
-                        <select name="type" ng-show="!data.isRoot" ng-model="data.type"
-                                ng-change="typeChanged(data)">
+                        <select name="type" ng-show="!data.isRoot" ng-model="data.type" ng-change="typeChanged(data)">
                             <option selected value="object">Object</option>
                             <option value="array">Array</option>
                             <option value="double">Double</option>

@@ -87,7 +87,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Create a new data model.
+                    <h5 class="modal-title">Register a new data model
                         <button type="button" class="close" data-dismiss="modal"
                                 aria-label="Close">
                             <span aria-hidden="true">&times;</span>
@@ -131,45 +131,26 @@
                                       ng-show="addDataModelCtrl.item.errors.description">{{addDataModelCtrl.item.errors.description}}</span>
                             </div>
                             <!-- item.treeNodes group -->
-                            <div class="form-group"
-                                 ng-class="{'has-error' : addDataModelCtrl.item.errors.treeNodes}">
+                            <div class="form-group" ng-class="{'has-error' : addDataModelCtrl.item.errors.treeNodes}">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addDataModelCtrl.item.errors.treeNodes}">
+                                     ng-class="{'focused error' : addDataModelCtrl.item.errors.treeNodes}"
+                                     style="border:0;">
                                     <dm-input ng-model="ctrl.treeNodes"></dm-input>
                                     <button type="button"
-                                            class="btn btn-secondary m-t-0 waves-effect"
-                                            ng-click="showDataModelTextBox = !showDataModelTextBox">
-                                        {{showDataModelTextBox ? "Hide" : "Show"}} json
-                                        definition
+                                            class="btn btn-primary m-t-0 waves-effect"
+                                            data-toggle="collapse" data-target="#data-model-json-definition"
+                                            style="margin-top: 10px;"> Toggle JSON definition
                                     </button>
-                                    <textarea ng-show="showDataModelTextBox"
-                                              class="form-control"
-                                              id="data-model-form-input-treeNodes"
-                                              type="text"
+                                    <div class="collapse" id="data-model-json-definition" style="margin-top: 5px;">
+                                    <textarea class="form-control"
                                               placeholder="Add here the data model tree"
-                                              ng-model="ctrl.treeNodes">
+                                              ng-model="ctrl.treeNodes"
+                                              style="height: 125px; border:none;">
                                     </textarea>
+                                    </div>
                                 </div>
                                 <span class="help-block"
                                       ng-show="addDataModelCtrl.item.errors.treeNodes">{{addDataModelCtrl.item.errors.treeNodes}}</span>
-                            </div>
-
-                            <!-- item.accessControlPolicyIds group -->
-                            <div class="form-group"
-                                 ng-class="{'has-error' : addDataModelCtrl.item.errors.accessControlPolicyIds }">
-                                <div class="form-line"
-                                     ng-class="{'focused error' : addDataModelCtrl.item.errors.accessControlPolicyIds }">
-                                    <select multiple class="form-control selectpicker"
-                                            title="Access Control Policies"
-                                            data-header="Access Control Policies"
-                                            ng-model="addDataModelCtrl.item.accessControlPolicyIds"
-                                            ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
-                                        <option value="">Select access control policies
-                                        <option/>
-                                    </select>
-                                </div>
-                                <span class="help-block"
-                                      ng-show="addDataModelCtrl.item.errors.accessControlPolicyIds">{{addDataModelCtrl.item.errors.accessControlPolicyIds}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
