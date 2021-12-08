@@ -30,13 +30,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private KeyPairRepository keyPairRepository;
-
-    @Autowired
     private UserEntityService userEntityService;
-
-    @Autowired
-    private UserService userService;
 
     private Cookie adminCookie;
 
