@@ -3,6 +3,9 @@ pipeline {
     tools {
         maven 'Maven'
     }
+    environment {
+        TEST_RUNTIME="ci"
+    }
     stages {
         stage ('Initialize') {
             steps {
@@ -15,9 +18,64 @@ pipeline {
 
         stage ('Build') {
             steps {
-                sh 'mvn -Dmaven.test.failure.ignore=true clean install' 
+                sh 'mvn -DskipTests -B clean install' 
             }
         }
+        stage ('Test with Mosquitto') {
+            stages {
+                stage ('Launch Mosquitto') {
+                    steps {
+                        sh 'docker stop mqtt-jenkins || true'
+                        sh 'docker run -d --rm -p 1883:1883 -p 9001:9001 --name mqtt-jenkins eclipse-mosquitto:1.6.14'
+                    }
+                }
+                stage ('Test') {
+                    options {
+                        timeout(time: 1, unit: 'HOURS')
+                    }
+
+                    stages {
+                        stage('Backend') {
+                            environment {
+                                TEST_MODE="backend"
+                            }
+                            steps {
+                                sh 'mvn -B clean verify'
+                            }
+                            post {
+                                always {
+                                    junit(testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true)
+                                }
+                            }
+                        }
+                        stage('Device tests') {
+                            environment {
+                                TEST_MODE="iotdevice"
+                            }
+                            steps {
+                                sh 'mvn -B clean verify'
+                            }
+                            post {
+                                always {
+                                    junit(testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true)
+                                }
+                            }
+                        }
+                        stage('Frontend') {
+                            steps {
+                                println('IMPLEMENT ME')
+                            }
+                        }
+                    }
+                    post {
+                        always {
+                            sh 'docker stop mqtt-jenkins || true'
+                        }
+                    }
+                }
+            }
+        }
+
         
         /*
         stage('Static Analysis') {
@@ -27,13 +85,13 @@ pipeline {
             steps {
                 do_static_analysis("http://localhost:9000", "MBP")
             }
-        }*/
+        }
         
         stage ('Deploy'){
             steps {
                 do_deploy(find_file("target/", "MBP-*.war"), "localhost", "deploy/${env.BRANCH_NAME}")
              }
-        }
+        }*/
     }
 }
 

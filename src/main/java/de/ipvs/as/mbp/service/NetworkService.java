@@ -95,7 +95,7 @@ public class NetworkService {
 
     /**
      * Checks whether a given IP address is valid and makes sense so it can be used for deployment.
-     * Considered as useless IP addresses are "127.0.0.1", "localhost" and IP addresses starting
+     * Considered as useless IP addresses are "127." (Localhost subnet), "localhost" and IP addresses starting
      * with "10." (internal OpenStack IP addresses).
      *
      * @param ipAddress The IP address to check
@@ -108,6 +108,6 @@ public class NetworkService {
         }
 
         //Validation check
-        return (!ipAddress.equals("127.0.0.1")) && (!ipAddress.equals("localhost")) && (!ipAddress.startsWith("10.0."));
+        return (!ipAddress.startsWith("127.")) && (!ipAddress.equals("localhost")) && (!ipAddress.startsWith("10.0."));
     }
 }
