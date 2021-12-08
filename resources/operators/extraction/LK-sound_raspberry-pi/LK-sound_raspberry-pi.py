@@ -40,7 +40,7 @@ def main(argv):
       now = time.perf_counter()
       if(now - last_send_time >= interval):
         # send data to the MBP
-        mbp.send_data(avg(last_20_values))
+        mbp.send_data(json.dumps({"sound-avg-val": avg(last_20_values)}))
         last_send_time = time.perf_counter()
         last_20_values = []
       time.sleep(0.05)

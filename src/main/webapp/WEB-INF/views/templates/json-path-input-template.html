@@ -1,0 +1,39 @@
+<!-- Dropdown for choosing one of all available json paths -->
+<select class="form-control show-tick json-path-select" ng-focus="fieldCollectionIdInput = pathType"
+        ng-model="selectedBinding"
+        ng-change="onSelectPathItem()"
+        >
+    <option ng-repeat="pathItem in jsonPathList" value="{{pathItem}}"
+    >{{pathItem.name}} ({{pathItem.type}}: {{pathItem.path}})
+    </option>
+</select>
+
+<!-- Table for needed array input -->
+<table class="table table-hover" ng-if="arrInputBinding.length > 0" ng-focus="focus">
+    <thead>
+    <tr>
+        <th colspan="2">
+           <span class="label bg-mbp-mid-blue" style="font-size: 14px">
+                {{bindedModel.path}}
+           </span>
+        </th>
+    </tr>
+    </thead>
+
+    <!-- All array inputs (dropdown for each) that are needed for a valid json path input -->
+    <tbody>
+    <tr ng-repeat="binding in $parent.arrInputBinding">
+        <td style="max-width: 70px"><b>Array {{$index}}:</b></td>
+        <td style="text-align: right;">
+            <select class="form-control json-path-select" ng-focus="$parent.fieldCollectionIdInput = $parent.pathType"
+                    ng-model="binding.input" ng-change="$parent.onDimensionInput($index)">
+                <option value="" ng-show="false">Choose an array index</option>
+                <option ng-repeat="inputOption in binding.inputOptions"
+                        value="{{'' + inputOption}}">
+                    {{inputOption}}
+                </option>
+            </select>
+        </td>
+    </tr>
+    </tbody>
+</table>

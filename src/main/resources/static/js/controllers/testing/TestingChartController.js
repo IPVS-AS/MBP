@@ -8,8 +8,6 @@ app.controller('TestingChartController',
             const vm = this;
 
             //Selectors that allow the selection of different ui cards
-            const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
-            const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const COMPONENT_ID = testingDetails.id;
 
@@ -32,10 +30,6 @@ app.controller('TestingChartController',
                 updateDeviceState();
 
                 getPDFList();
-                //Initialize charts
-                initLiveChart();
-                initHistoricalChart();
-
 
                 //Interval for updating states on a regular basis
                 const interval = $interval(function () {
@@ -200,118 +194,6 @@ app.controller('TestingChartController',
                 });
 
             }
-
-            /**
-             * [Public]
-             *
-             * Retrieves a certain number of value log data (in a specific order) for the current component
-             * as a promise.
-             *
-             * @param numberLogs The number of logs to retrieve
-             * @param descending The order in which the value logs should be retrieved. True results in descending
-             * order, false in ascending order. By default, the logs are retrieved in ascending
-             * order ([oldest log] --> ... --> [most recent log])
-             * @param unit The unit in which the values are supposed to be retrieved
-             * @param sensor The sensor of which the values are supposed to be retrieved
-             * @returns A promise that passes the logs as a parameter
-             */
-            function retrieveComponentData(numberLogs, descending, unit, sensor) {
-                //Set default order
-                let order = 'asc';
-
-                //Check for user option
-                if (descending) {
-                    order = 'desc';
-                }
-
-                //Initialize parameters for the server request
-                const pageDetails = {
-                    sort: 'time,' + order,
-                    size: numberLogs
-                };
-
-
-                //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit);
-            }
-
-
-            /**
-             * [Private]
-             * Initializes the live chart for displaying the most recent sensor values.
-             */
-            function initLiveChart() {
-                /**
-                 * Function that is called when the chart loads something
-                 */
-                function loadingStart() {
-                    //Show the waiting screen
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe({
-                        effect: 'bounce',
-                        text: 'Loading chart...',
-                        bg: 'rgba(255,255,255,0.85)'
-                    });
-                }
-
-                /**
-                 * Function that is called when the chart finished loading
-                 */
-                function loadingFinish() {
-                    //Hide the waiting screen for the case it was displayed before
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
-                }
-
-                /**
-                 * Function that checks whether the chart is allowed to update its data.
-                 * @returns {boolean} True, if the chart may update; false otherwise
-                 */
-                function isUpdateable() {
-                    return vm.deploymentState === 'RUNNING';
-                }
-
-                //Expose
-                vm.liveChart = {
-                    loadingStart: loadingStart,
-                    loadingFinish: loadingFinish,
-                    isUpdateable: isUpdateable,
-                    getData: retrieveComponentData
-                };
-            }
-
-            /**
-             * [Private]
-             *
-             * Initializes the historical chart for displaying all sensor values (up to a certain limit).
-             */
-            function initHistoricalChart() {
-                /**
-                 * Function that is called when the chart loads something
-                 */
-                function loadingStart() {
-                    //Show the waiting screen
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
-                        effect: 'bounce',
-                        text: 'Loading chart...',
-                        bg: 'rgba(255,255,255,0.85)'
-                    });
-                }
-
-                /**
-                 * Function that is called when the chart finished loading
-                 */
-                function loadingFinish() {
-                    //Hide the waiting screen for the case it was displayed before
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
-                }
-
-                //Expose
-                vm.historicalChart = {
-                    loadingStart: loadingStart,
-                    loadingFinish: loadingFinish,
-                    getData: retrieveComponentData
-                };
-            }
-
 
             /**
              * [Private]

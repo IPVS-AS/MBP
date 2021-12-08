@@ -1,11 +1,18 @@
 package de.ipvs.as.mbp.service.receiver;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Set;
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
+import de.ipvs.as.mbp.repository.DataModelTreeCache;
+import org.bson.Document;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
@@ -14,10 +21,8 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -33,6 +38,9 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
     //JSON key names
     private static final String JSON_COMPONENT_ID = "id";
     private static final String JSON_KEY_VALUE = "value";
+
+    // Cache of data model trees to provide fast supply
+    private DataModelTreeCache dataModelTreeCache;
 
     //Pattern for retrieving component types from message topics
     private static final Pattern COMPONENT_TYPES_PATTERN = Pattern.compile("^([a-zA-Z0-9_-]+)/.+");
@@ -60,6 +68,9 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
         this.sensorRepository = sensorRepository;
         this.deviceRepository = deviceRepository;
         this.monitoringOperatorRepository = monitoringOperatorRepository;
+
+        // Get the bean of the data model tree cache
+        this.dataModelTreeCache = DynamicBeanProvider.get(DataModelTreeCache.class);
     }
 
     /**
@@ -84,9 +95,11 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      *
      * @param topic       The topic under which the message was sent
      * @param mqttMessage The received value log message
+     * @throws JSONException  In case the message could not be parsed
+     * @throws ParseException In case a date value field could not be parsed
      */
     @Override
-    public void messageArrived(String topic, MqttMessage mqttMessage) {
+    public void messageArrived(String topic, MqttMessage mqttMessage) throws JSONException, ParseException {
         //Catch errors during message processing to avoid crashes of the receiver
         try {
             //Record current time
@@ -122,7 +135,21 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
             valueLog.setQos(qos);
             valueLog.setTime(time);
             valueLog.setIdref(componentID);
-            valueLog.setValue(json.getDouble(JSON_KEY_VALUE));
+            if (!componentType.toLowerCase().equals("monitoring")) {
+                // Validate the value object part of the json object and transfer the json to a document representation
+                valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                        // Retrieve the root node of the value json object which must be part of the mqtt message by convention
+                        json.getJSONObject(JSON_KEY_VALUE),
+                        // Get the data model tree of the component as this is needed to infer the right database types
+                        dataModelTreeCache.getDataModelOfComponent(componentID)
+                ));
+            } else {
+                // Extra case for monitoring operators as they don't have data models and are just expected to send numbers
+                double monitoringOperatorVal = json.getDouble(JSON_KEY_VALUE);
+                Document valueDoubleDoc = new Document();
+                valueDoubleDoc.append(JSON_KEY_VALUE, monitoringOperatorVal);
+                valueLog.setValue(valueDoubleDoc);
+            }
             valueLog.setComponent(componentType);
 
             //Notify all observers

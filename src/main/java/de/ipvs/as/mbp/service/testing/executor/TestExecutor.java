@@ -4,14 +4,20 @@ import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
+import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestReport;
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
+import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
+import de.ipvs.as.mbp.service.settings.SettingsService;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
+import org.bson.Document;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,13 +61,15 @@ public class TestExecutor {
     @Autowired
     private DeployerDispatcher deployerDispatcher;
 
+    @Autowired
+    private SettingsService settingsService;
+
 
     // List of all active Tests
     Map<String, TestDetails> activeTests = new HashMap<>();
     @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
     List<String> SIMULATOR_LIST;
 
-    private final String RERUN_IDENTIFIER;
     private final String TESTING_ACTUATOR;
     private final String CONFIG_SENSOR_NAME_KEY;
 
@@ -74,8 +83,6 @@ public class TestExecutor {
 
     public TestExecutor() throws IOException {
         propertiesService = new PropertiesService();
-        this.RERUN_IDENTIFIER =
-                propertiesService.getPropertiesString("testingTool.RerunIdentifier");
         this.TESTING_ACTUATOR =
                 propertiesService.getPropertiesString("testingTool.actuatorName");
         this.CONFIG_SENSOR_NAME_KEY =
@@ -112,25 +119,15 @@ public class TestExecutor {
         if (testDetailsOptional.isPresent()) {
             TestDetails test = testDetailsOptional.get();
             Map<String, TestDetails> activeTests = getActiveTests();
-            Map<String, LinkedHashMap<Long, Double>> list =
+            Map<String, LinkedHashMap<Long, Document>> list =
                     testAnalyzer.getTestValues();
 
-            if (useNewData) {
-                for (Sensor sensor : testSensors) {
-                    if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
-                        activeTests.put(sensor.getId(), test);
-                        list.remove(sensor.getId());
-                    }
 
-                }
-            } else {
-                for (Sensor sensor : testSensors) {
-                    if (sensor.getName().contains(RERUN_IDENTIFIER)) {
-                        activeTests.put(sensor.getId(), test);
-                        list.remove(sensor.getId());
-                    }
-                }
+            for (Sensor sensor : testSensors) {
+                    activeTests.put(sensor.getId(), test);
+                    list.remove(sensor.getId());
             }
+
 
             setActiveTests(activeTests);
             testAnalyzer.setTestValues(list);
@@ -146,33 +143,36 @@ public class TestExecutor {
      */
     public void deactivateTest(List<Sensor> testSensors, Boolean useNewData) {
         Map<String, TestDetails> activeTests = getActiveTests();
-        Map<String, LinkedHashMap<Long, Double>> list = testAnalyzer.getTestValues();
-
-        if (useNewData) {
-            for (Sensor sensor : testSensors) {
-                if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
-                    activeTests.remove(sensor.getId());
-                }
-            }
-        } else {
-            for (Sensor sensor : testSensors) {
-                if (sensor.getName().contains(RERUN_IDENTIFIER)) {
-                    activeTests.remove(sensor.getId());
-                }
-            }
-        }
+        Map<String, LinkedHashMap<Long, Document>> list = testAnalyzer.getTestValues();
 
         setActiveTests(activeTests);
         testAnalyzer.setTestValues(list);
     }
 
     /**
-     * Reruns a specific test execution with the same configurations an sensor values.
+     * Reruns a specific test execution with the same configurations and sensor values.
      *
      * @param test         tests to be repeated
      * @param testReportId test report with all needed information for the repetition
      */
     public void rerunTest(TestDetails test, String testReportId) {
+        // Get the current (old) status of the demonstration mode
+        Settings currSetting = settingsService.getSettings();
+
+        // Marker whether the demo mode should be set again to false after testing
+        boolean setDemoModeFalseAfterTest = false;
+
+        // Set the demo mode to true if it is not already set to true
+        if (!currSetting.isDemoMode()) {
+            setDemoModeFalseAfterTest = true;
+            currSetting.setDemoMode(true);
+            try {
+                settingsService.updateSettings(currSetting);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
+
         TestReport updatedReport = new TestReport();
         try {
             Optional<TestReport> oldReportOptional = testReportRepository.findById(testReportId);
@@ -184,7 +184,7 @@ public class TestExecutor {
                 if (testReportRepository.findById(reportId).isPresent()) {
                     updatedReport = testReportRepository.findById(reportId).get();
                     // add test and sensors to the activation list
-                    activateTest(updatedReport.getSensor(), test.getId(), false);
+                    activateTest(updatedReport.getSensor(), test.getId(), true);
 
                     // Enable rules that belong to the test
                     enableRules(test);
@@ -196,7 +196,7 @@ public class TestExecutor {
                     sensorRerunService(updatedReport, oldReport.getSimulationList());
 
                     // Get List of all simulated Values
-                    Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(reportId, test.getId(), false);
+                    Map<String, LinkedHashMap<Long, Document>> valueList = testAnalyzer.isFinished(reportId, test.getId(), false);
 
                     List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(updatedReport.getRules(), updatedReport.getSensor());
                     saveAmountRulesTriggered(reportId, rulesBefore);
@@ -212,7 +212,16 @@ public class TestExecutor {
             updatedReport.setSuccessful("ERROR DURING TEST");
             List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
             saveAmountRulesTriggered(updatedReport.getId(), rulesAfter);
-
+        } finally {
+            // Set the demo mode again to false if test finsihed or an error occured and it was set to false before the rerun
+            if (setDemoModeFalseAfterTest) {
+                currSetting.setDemoMode(false);
+                try {
+                    settingsService.updateSettings(currSetting);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -228,9 +237,12 @@ public class TestExecutor {
         TestReport testReport = new TestReport();
 
         // Get information to add
-        List<Sensor> rerunSensors = getRerunSensorsReport(test);
-        List<Rule> rerunRules = getRerunRulesReport(oldReport.getRules());
-        List<String> rerunRuleNames = getRerunRuleNamesReport(oldReport.getRuleNames());
+        //List<Sensor> rerunSensors = getRerunSensorsReport(test);
+        List<Sensor> rerunSensors = oldReport.getSensor();
+        //List<Rule> rerunRules = getRerunRulesReport(oldReport.getRules());
+        List<Rule> rerunRules = oldReport.getRules();
+        //List<String> rerunRuleNames = getRerunRuleNamesReport(oldReport.getRuleNames());
+        List<String> rerunRuleNames = oldReport.getRuleNames();
 
         // enrich the test report with the specific information
         testReport.setName(test.getName());
@@ -276,89 +288,65 @@ public class TestExecutor {
     }
 
     /**
-     * Returns a list of rule names for the rerun tests filtered by the rerun identifier.
-     *
-     * @param ruleNames list of all rule names of the test to be filtered
-     * @return list of all rerun rule names of the test
-     */
-    private List<String> getRerunRuleNamesReport(List<String> ruleNames) {
-        List<String> rerunRuleNames = new ArrayList<>();
-
-        for (String ruleName : ruleNames) {
-            rerunRuleNames.add(RERUN_IDENTIFIER + ruleName);
-        }
-        return rerunRuleNames;
-    }
-
-
-    /**
-     * Returns a list of rules for the rerun tests filtered by the rerun identifier.
-     *
-     * @param testRules list of all rules of the test to be filtered
-     * @return list of all rerun rules of the test
-     */
-    private List<Rule> getRerunRulesReport(List<Rule> testRules) {
-        List<Rule> rerunRules = new ArrayList<>();
-
-        for (Rule rule : testRules) {
-            if (ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()) {
-                rerunRules.add(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get());
-            }
-        }
-
-        return rerunRules;
-    }
-
-    /**
-     * Returns a list of sensors for the rerun tests filtered by the rerun identifier.
-     *
-     * @param testDetails test sensors to be repeated/executed
-     * @return list of sensors to be started for the rerun
-     */
-    private List<Sensor> getRerunSensorsReport(TestDetails testDetails) {
-        List<Sensor> rerunSensors = new ArrayList<>();
-
-        for (Sensor sensor : testDetails.getSensor()) {
-            if (sensor.getName().contains(RERUN_IDENTIFIER)) {
-                rerunSensors.add(sensor);
-            }
-        }
-
-        return rerunSensors;
-    }
-
-
-    /**
      * Reruns a specific test execution under the same conditions and with the same values.
      *
      * @param testReport     information about the test to be repeated
      * @param simulationList List of values generated during the test which should be repeated
      */
-    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Double>> simulationList) {
+    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Document>> simulationList) {
 
         IDeployer deployer = deployerDispatcher.getDeployer();
+        DemoDeployer demoDeployer = (DemoDeployer) deployer;
 
         for (Sensor sensor : testReport.getSensor()) {
-            List<ParameterInstance> parametersWrapper = new ArrayList<>();
-            if (!SIMULATOR_LIST.contains(sensor.getName()) &&
-                    sensor.getName().contains(RERUN_IDENTIFIER)) {
-                if (deployer.isComponentRunning(sensor)) {
-                    deployer.stopComponent(sensor);
-                }
-                for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : simulationList.entrySet()) {
-                    if (sensor.getName().contains(sensorValues.getKey())) {
-                        // Get parameter values for starting the sensors
-                        Map<String, ParameterInstance> parameterValues =
-                                createRerunParameters(sensorValues);
-                        parametersWrapper.add(parameterValues.get("interval"));
-                        parametersWrapper.add(parameterValues.get("value"));
-                    }
-                }
-                // Start rerun sensor
-                startSensors(sensor, parametersWrapper);
+
+            // Check if the component is still running and if yes stop it
+            if (demoDeployer.isComponentRunning(sensor)) {
+                demoDeployer.stopComponent(sensor);
             }
+
+            for (Map.Entry<String, LinkedHashMap<Long, Document>> sensorValues : simulationList.entrySet()) {
+                if (sensor.getName().contains(sensorValues.getKey())) {
+                    demoDeployer.addRerunValueLogsForComponent(sensor, getRerunQueueForValueLogs(sensorValues.getValue(), sensor));
+                }
+            }
+
+            startSensors(sensor, new ArrayList<>());
+        }
+    }
+
+    /**
+     * Transforms a Map of Long and Documents to a ValueLog and puts it into a queue so that
+     * the {@link DemoDeployer} can use this queue to resend old sensor data.
+     *
+     * @param toTransform The Map to transform to a queue.
+     * @param sensor      The sensor to which the data belongs
+     * @return A queue with ValueLogs
+     */
+    private Queue<ValueLog> getRerunQueueForValueLogs(Map<Long, Document> toTransform, Sensor sensor) {
+        Queue<ValueLog> retQueue = new LinkedList<>();
+
+        // Transform the toTransform map to a list for sorting purposes
+        List<Map.Entry<Long, Document>> sortedValueLogs = new ArrayList<>(toTransform.entrySet());
+
+        // Sort the queue based on the long entries (which are meant to be timestamps)
+        sortedValueLogs.sort(Comparator.comparingLong(Map.Entry::getKey));
+
+        // Fill the queue with ValueLogs
+        for (Map.Entry<Long, Document> e : sortedValueLogs) {
+            ValueLog newLog = new ValueLog();
+            newLog.setValue(e.getValue());
+            newLog.setComponent(sensor.getComponentTypeName());
+            newLog.setMessage("Testing tool rerun");
+            newLog.setTopic("sensor/" + sensor.getId());
+            newLog.setIdref(sensor.getId());
+            newLog.setQos(0);
+            newLog.setTime(Instant.now());
+
+            retQueue.add(newLog);
         }
 
+        return retQueue;
     }
 
 
@@ -379,12 +367,12 @@ public class TestExecutor {
             startTest(test);
 
             // Get List of all simulated Values
-            Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(reportId, test.getId(), true);
+            Map<String, LinkedHashMap<Long, Document>> valueList = testAnalyzer.isFinished(reportId, test.getId(), true);
 
             List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
             saveAmountRulesTriggered(reportId, rulesBefore);
             saveValues(test, reportId, valueList);
-            deactivateTest(test.getSensor(), true);
+            deactivateTest(test.getSensor(), false);
             testAnalyzer.testSuccess(test.getId(), reportId);
         } catch (Exception e) {
             testReport.setEndTestTimeNow();
@@ -566,8 +554,8 @@ public class TestExecutor {
      * @param testDetails executed test
      * @param valueList   generated value list
      */
-    private void saveValues(TestDetails testDetails, String reportId, Map<String, LinkedHashMap<Long, Double>> valueList) {
-        Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
+    private void saveValues(TestDetails testDetails, String reportId, Map<String, LinkedHashMap<Long, Document>> valueList) {
+        Map<String, LinkedHashMap<Long, Document>> valueListTest = new HashMap<>();
         Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
 
         if (testReportOptional.isPresent()) {
@@ -575,7 +563,7 @@ public class TestExecutor {
 
             for (Sensor sensor : testReport.getSensor()) {
                 if (valueList.get(sensor.getId()) != null) {
-                    LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
+                    LinkedHashMap<Long, Document> temp = valueList.get(sensor.getId());
                     valueListTest.put(sensor.getName(), temp);
                     testReport.setSimulationList(valueListTest);
                     testDetails.setSimulationList(valueListTest);
@@ -667,25 +655,25 @@ public class TestExecutor {
      * @return Map of parameter Instances to start the rerun sensor
      */
     public Map<String, ParameterInstance> createRerunParameters(
-            Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues) {
+            Map.Entry<String, LinkedHashMap<Long, Document>> sensorValues) {
         Map<String, ParameterInstance> parameterValues = new HashMap<>();
         ParameterInstance interval = new ParameterInstance();
         ParameterInstance value = new ParameterInstance();
 
         StringBuilder intervalString = new StringBuilder("[");
         StringBuilder valueString = new StringBuilder("[");
-        String comma = "-";
+        String comma = "||";
 
 
-        for (Iterator<Map.Entry<Long, Double>> iterator =
+        for (Iterator<Map.Entry<Long, Document>> iterator =
              sensorValues.getValue().entrySet().iterator();
              iterator.hasNext(); ) {
-            Map.Entry<Long, Double> intervalValues = iterator.next();
+            Map.Entry<Long, Document> intervalValues = iterator.next();
             if (!iterator.hasNext()) {
                 comma = "";
             }
             intervalString.append(intervalValues.getKey().toString()).append(comma);
-            valueString.append(intervalValues.getValue().toString()).append(comma);
+            valueString.append(intervalValues.getValue().toJson()).append(comma);
         }
 
         // complete Strings with bracket

@@ -43,6 +43,9 @@ public class DefaultTestingComponents {
     private final OperatorRepository operatorRepository;
 
     @Autowired
+    private final DataModelRepository dataModelRepository;
+
+    @Autowired
     private final ActuatorRepository actuatorRepository;
 
     @Autowired
@@ -87,7 +90,7 @@ public class DefaultTestingComponents {
     private final List<String> SENSOR_SIMULATORS = Arrays.asList("TESTING_TemperatureSensor", "TESTING_TemperatureSensorPl", "TESTING_HumiditySensor", "TESTING_HumiditySensorPl");
 
 
-    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, TestReportRepository testReportRepository, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
+    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, TestReportRepository testReportRepository, OperatorRepository operatorRepository, DataModelRepository dataModelRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
                                     SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
         this.testReportRepository = testReportRepository;
         // Get needed Strings out of the properties to create the testing components
@@ -102,6 +105,7 @@ public class DefaultTestingComponents {
 
         this.defaultTestComponentsWhiteList = defaultTestComponentsWhiteList;
         this.operatorRepository = operatorRepository;
+        this.dataModelRepository = dataModelRepository;
         this.actuatorRepository = actuatorRepository;
         this.deviceRepository = deviceRepository;
         this.sensorRepository = sensorRepository;
@@ -430,7 +434,11 @@ public class DefaultTestingComponents {
             // Delete all operators needed for the simulators via the prefix "TESTING_" that all testing components contains
             for (Operator operator : allOperators) {
                 if (operator.getName().contains(TEST_PREFIX)) {
+                    // Delete the operator
                     operatorRepository.delete(operator);
+                    // Delete the default data model connected to this operator
+                    dataModelRepository.delete(operator.getDataModel());
+
                 }
             }
             // Install all operators needed for the testing simulators

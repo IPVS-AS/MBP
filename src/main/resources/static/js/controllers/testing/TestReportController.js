@@ -11,6 +11,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         let testReport = null;
         const footerHeight = 287;
+
+        // The last position of the pdf file on which was written
         let lastPos = 0;
         let pageSize;
         let pageWidth;
@@ -28,7 +30,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          * @param testReport information about the test and the results
          */
         async function getPDF(testReport) {
-            const chart = await getChart();
+            //const chart = await getChart();
 
             // create a new PDF
             const doc = new jsPDF();
@@ -40,9 +42,11 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             getGeneralInfo(doc, testReport);
             await getSimulatorInfo(doc);
             await getRealSensorInfo(doc);
-            await getSensorChart(doc, chart);
+            //await getSensorChart(doc, chart);
             await getAllRuleInformation(doc);
             await getNextSteps(doc, testReport);
+            await addSensorValueInformationToPDF(doc);
+
 
             addFooters(doc);
             doc.save(testReport.id + ".pdf");
@@ -53,6 +57,8 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          * [Private]
          * Creates a png image of the chart shown in the modal of the test report, to be able to add it to the pdf.
          */
+
+        /*
         function getChart() {
             const options = {
                 quality: 0.95
@@ -65,6 +71,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                     });
             })
         }
+        */
 
 
         /**
@@ -269,6 +276,83 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         }
 
         /**
+         * Returns a object representation of the simulation test data which is needed for the generation
+         * of the report pdf.
+         */
+        async function getAllTestingSimulationValues() {
+            var tables = [];
+
+            // Create a table  object for each sensor simulation values
+            for (var i = 0; i < $scope.simulationValues.length; i++) {
+
+                // Generate the rows
+                var rows = [];
+                for (const simData of $scope.simulationValues[i].data) {
+                    var timeValuePair = [];
+                    timeValuePair.push(simData[0], angular.toJson(simData[1], 0));
+                    rows.push(timeValuePair);
+                }
+
+                tables.push({
+                    sensorName: $scope.simulationValues[i].name,
+                    tableHeader: ["Time", "Value [Sensor: " + $scope.simulationValues[i].name + "]"],
+                    tableRowData: rows
+                })
+            }
+
+            return tables;
+        }
+
+        /**
+         * Adds all testing sensor values to the pdf.
+         *
+         * @param the pdf doc to which the data should be added
+         */
+        async function addSensorValueInformationToPDF(doc) {
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+
+            const triggerRulesInfo = doc.autoTableHtmlToJson(document.getElementById("chart"));
+            const sensorValText = doc.splitTextToSize("Sensor values during the test", pageWidth - 35, {});
+
+            // Adds the header of the rule information
+            addPage(lastPos, doc)
+            await doc.text(sensorValText, 14, lastPos)
+            lastPos += 15;
+
+            var tableData = await getAllTestingSimulationValues();
+
+            for (var i = 0; i < tableData.length; i++) {
+                // Add a header naming the sensor
+
+
+                // Adds the table with the detailed information about the triggered rules.
+                const headerData = tableData[i].tableHeader;
+                const bodyData = tableData[i].tableRowData;
+
+                var addSpace = 5;
+                if (i == 0) {
+                    addSpace = 20;
+                }
+                doc.autoTable(headerData, bodyData, {
+                    startY: doc.autoTableEndPosY() + addSpace,
+                    headerStyles: {
+                        fillColor: [0, 190, 255]
+                    },
+                    theme: 'striped',
+                    bodyStyles: {valign: 'top'},
+                    styles: {overflow: 'linebreak', columnWidth: 'wrap', fontSize: 9},
+                    columnStyles: {
+                        0: {columnWidth: 'wrap'},
+                        1: {columnWidth: 'auto'},
+                    }
+                })
+                lastPos = doc.autoTableEndPosY();
+            }
+
+        }
+
+        /**
          * [Private]
          *
          * Adds the chart with the generated sensor data during the test.
@@ -276,12 +360,16 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          * @param doc to which the chart should be added
          * @param chart png image of the chart
          */
+
+        /*
         async function getSensorChart(doc, chart) {
             const dimensionChart = await getImageDimensions(chart);
             addPage(lastPos, doc)
             doc.addImage(chart, 'PNG', 14, lastPos, dimensionChart.w / 5, dimensionChart.h / 5, "historical chart", "NONE", 0)
             lastPos = (dimensionChart.h / 5) + lastPos
         }
+        */
+
 
         /**
          * [Private]
@@ -388,7 +476,18 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                     ruleInfo.push(testReport.amountRulesTriggered[info.name]);
                 }
                 if ((info.name in testReport.triggerValues)) {
-                    ruleInfo.push(testReport.triggerValues[info.name].toString());
+
+                    // Convert the trigger values to a string (json) representation to be printed to a table
+                    var valueString = "";
+                    var values = testReport.triggerValues[info.name];
+                    for (var i = 0; i < values.length; i++) {
+                        valueString += "*  " + angular.toJson(values[i], 0);
+                        if (i != values.length - 1) {
+                            // Add line breaks if its not the last value entry
+                            valueString += "\n\n";
+                        }
+                    }
+                    ruleInfo.push(valueString);
 
                 } else {
                     ruleInfo.push("-")
@@ -430,7 +529,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 lastPos = lastPos + 5;
 
             }
-            
+
         }
 
         /**
@@ -479,6 +578,19 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
 
         }
 
+        /**
+         * [public]
+         *
+         * Converts a angular modified javascript object to a "normal" js object by removing angular attributes
+         * like $$hashkey. This is needed within e.g. ng-repeat statements where objects get iterated.
+         *
+         * @param obj js object
+         * @return a copy of the obj without angular specific keys
+         */
+        $scope.convertAngularJsToJs = function (obj) {
+            const clone = JSON.parse(JSON.stringify(obj))
+            return angular.fromJson(angular.toJson(clone));
+        }
 
         // convert all needed information for the specific test report and open the modal
         $scope.openReport = function (report) {
@@ -511,10 +623,11 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         /**
          * [Private]
          *
-         * Convert the sensor values generated during the test to add them to the chart for the report.
+         * Convert the sensor values generated during the test to add them to the sensor value table for the report.
          * @param response
          */
         function convertSimulationValues(response) {
+
             let simulationValues = [];
 
             angular.forEach(response, function (timeValue, sensorName) {
@@ -523,43 +636,15 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                     data: timeValue
                 });
             });
-            getReportChart(simulationValues);
-        }
 
-        /**
-         * [Private]
-         *
-         * Creates the charts for the test reports with the generated sensor values during the test.
-         * @param dataSeries
-         */
-        function getReportChart(dataSeries) {
-            Highcharts.chart('reportChart', {
-                    chart: {
-                        type: 'line',
-                        zoomType: 'xy'
-                    }, title: {
-                        text: ''
-                    },
-                    xAxis: {
-                        type: 'datetime'
-                    },
-
-                    tooltip: {
-                        valueDecimals: 2,
-                        valuePrefix: '',
-                    },
-                    legend: {
-                        layout: 'horizontal',
-                        align: 'center',
-                        verticalAlign: 'bottom',
-                        x: 0,
-                        y: 0,
-                        showInLegend: true
-                    },
-                    series: dataSeries
+            // Convert the posix time long to a user-readable date format
+            for (var i = 0; i < simulationValues.length; i++) {
+                for (var j = 0; j < simulationValues[i].data.length; j++) {
+                    simulationValues[i].data[j][0] = new Date(simulationValues[i].data[j][0]).toLocaleString();
                 }
-            )
+            }
 
+            $scope.simulationValues = simulationValues;
         }
 
         /**
@@ -673,6 +758,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         //Expose public methods
         return {
             openReport: $scope.openReport,
+            convertAngularJsToJs: $scope.convertAngularJsToJs,
             getPDF: getPDF
 
         }

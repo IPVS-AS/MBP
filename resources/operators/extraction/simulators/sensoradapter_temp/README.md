@@ -27,3 +27,5 @@ The following parameters need to be provided on deployment:
  - `stop.sh`: This file stops the execution of the jar file.
  
  - `TempSim.jar`: This jar file contains a MQTT client, which publishes the simulated sensor data to a configured topic on the MBP. There are two events to be simulated: **temperature rise** and **temperature drop**. These events can be combined with an anomaly. You can choose between the following: **outlier**, **missing values**, **wrong value type**. 
+
+ - `dataModel.json`: This file contains a data model definition which can be used for the creation of a respective operator entity in the MBP.

@@ -1,0 +1,21 @@
+{
+  "name": "DM_LK-sound_raspberry-pi",
+  "treeNodes": [
+    {
+      "name": "sound-avg-val",
+      "type": "double",
+      "parent": "RootObj",
+      "children": []
+    },
+    {
+      "name": "RootObj",
+      "description": "",
+      "type": "object",
+      "unit": "",
+      "parent": "",
+      "children": [
+        "sound-avg-val"
+      ]
+    }
+  ]
+}

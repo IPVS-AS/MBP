@@ -25,7 +25,7 @@ def main(argv):
             #############################
             
             # send data to the MBP
-            mbp.send_data(value)
+            mbp.send_data("{\"value\":" + str(value) + "}")
             
             # waits a time interval before sending new data
             time.sleep(INTERVAL_BETWEEN_SENDING_DATA)

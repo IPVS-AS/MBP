@@ -814,7 +814,8 @@
                                 </h2>
                             </div>
                             <div class="body">
-                                <table id="informationRealSensors" class="table table-hover" st-table="displayedCollection">
+                                <table id="informationRealSensors" class="table table-hover"
+                                       st-table="displayedCollection">
                                     <thead>
                                     <tr>
                                         <th>Name</th>
@@ -855,7 +856,52 @@
                                 </h2>
                             </div>
                             <div class="body">
-                                <div id="reportChart"></div>
+                                <!-- Display tables for all sensor values during the test -->
+                                <div id="accordion">
+                                    <div ng-repeat="simVals in simulationValues">
+                                        <div class="card deployment-card" style="margin-bottom: 10px;">
+                                            <div class="header" id="heading-{{$index}}"
+                                                 style="padding-top: 0px;padding-bottom: 0px;padding-left: 0px;">
+                                                <button class="btn btn-link collapsed" data-toggle="collapse"
+                                                        data-target="#collapse-{{$index}}" aria-expanded="false"
+                                                        aria-controls="collapse-{{$index}}">
+                                                    <h5 style="margin-top: 10px;">
+                                                        {{simVals.name}}
+                                                    </h5>
+                                                </button>
+                                            </div>
+                                            <div id="collapse-{{$index}}" class="collapse"
+                                                 aria-labelledby="heading-{{$index}}"
+                                                 data-parent="#accordion">
+                                                <div class="body" style="max-height: 350px;overflow: scroll;overflow-x: hidden;">
+                                                    <table class="table table-hover" >
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Time</th>
+                                                            <th>Data</th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr ng-repeat="simData in simVals.data">
+                                                            <td>
+                                                                {{simData[0]}}
+                                                            </td>
+                                                            <td style="padding-bottom: 0px;">
+                                                                <ul class="list-group" style="margin-bottom: 10px;">
+                                                                    <li class="list-group-item">
+                                                                        <json-formatter json="simData[1]"
+                                                                                        open="0"></json-formatter>
+                                                                    </li>
+                                                                </ul>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -936,7 +982,17 @@
                                             </a>
                                             <div id="triggerValues-{{rule.id}}" class="collapse">
                                                 <div ng-repeat=" values in triggerValues | filter:{ruleName:rule.name}:true">
-                                                    <code>{{values.triggerValues.join(", ")}}</code>
+                                                    <ul class="list-group" style="margin-bottom: 10px;">
+                                                        <div ng-repeat="value in values.triggerValues">
+                                                            <li class="list-group-item">
+                                                                <json-formatter json="value" open="0"></json-formatter>
+                                                                <!--<json-formatter
+                                                                        json="$parent.testReportCtrl.convertAngularJsToJs(value)"
+                                                                        open="0"></json-formatter>-->
+                                                            </li>
+                                                        </div>
+                                                    </ul>
+                                                    <!--<code>{{values.triggerValues.join(", ")}}</code>-->
                                                 </div>
                                             </div>
                                         </td>
@@ -1020,59 +1076,13 @@
 </div>
 <!-- #END# Modal -->
 
+<!-- Sensor visualization charts -->
 <div ng-repeat="sensor in ctrl.sensorList">
-    <!-- Live Values Card -->
-    <div class="row clearfix">
-        <div class="col-lg-12">
-            <div class="card live-chart-card animate-show-hide" ng-show="testingChartCtrl.deploymentState=='RUNNING'">
-                <div class="header">
-                    <h2>
-                        Live sensor values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
-                    </h2>
-                </div>
-
-
-                <div class="body">
-                    <live-chart loading-start="testingChartCtrl.liveChart.loadingStart()"
-                                loading-finish="testingChartCtrl.liveChart.loadingFinish()"
-                                get-data="testingChartCtrl.liveChart.getData(numberLogs, descending, '', sensor)"
-                                is-updateable="testingChartCtrl.liveChart.isUpdateable()"
-                                unit="{{testingChartCtrl.displayUnit}}">
-                    </live-chart>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Historical Values Card -->
-    <div class="row clearfix" ng-init="testingChartCtrl.specifyChart(sensor)">
-        <div class="col-lg-12">
-            <div class="card historical-chart-card">
-                <div class="header">
-                    <h2>
-                        Historical sensor values: {{sensor.name}}
-                    </h2>
-                    <ul class="header-dropdown m-r--5">
-                        <li>
-                            <a ng-click="historicalChartApi.updateChart()" class="clickable">
-                                <i class="material-icons">refresh</i>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="body">
-
-                    <historical-chart api="historicalChartApi"
-                                      loading-start="testingChartCtrl.historicalChart.loadingStart()"
-                                      loading-finish="testingChartCtrl.historicalChart.loadingFinish()"
-                                      get-data="testingChartCtrl.historicalChart.getData(numberLogs, descending, unit, sensor)"
-                                      unit=" ">
-                    </historical-chart>
-                </div>
-            </div>
-        </div>
-    </div>
+    <customizable-chart-card component-data="sensor"
+                             instance-id="{{$index}}"
+                             historical-chart-api="historicalChartApi"
+                             deployment-state="testingChartCtrl.deploymentState"
+    ></customizable-chart-card>
 </div>
 
 
