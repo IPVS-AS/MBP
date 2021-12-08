@@ -4,8 +4,6 @@
 
 /**
  * Directive which creates a table for displaying descriptive statistics for value logs of a certain component.
- *
- * @author Jan
  */
 app.directive('valueLogStats', ['$interval', function ($interval) {
     //Time interval with that the value statistics are supposed to be refreshed
@@ -18,9 +16,11 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
      * @param element Elements of the directive
      * @param attrs Attributes of the directive
      */
-    var link = function (scope, element, attrs) {
+    let link = function (scope, element, attrs) {
+
+
         //Stores the interval object for regular updates
-        var updateInterval = null;
+        let updateInterval = null;
 
         //Attribute in which the statistics data is stored
         scope.statisticsData = {};
@@ -76,6 +76,49 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             }
         }
 
+        /**
+         * [public]
+         * Converts epoch time to a date string
+         * @param timeToConvert
+         * @return {string} The date string
+         */
+        function convertTime(timeToConvert = 0) {
+            let time = timeToConvert.epochSecond * 1000;
+            time = dateToString(new Date(time));
+            return time;
+        }
+
+        scope.getTimeString = convertTime;
+
+        /**
+         * [Private]
+         * Converts a javascript date object to a human-readable date string in the "dd.mm.yyyy hh:mm:ss" format.
+         *
+         * @param date The date object to convert
+         * @returns The generated date string in the corresponding format
+         */
+        function dateToString(date) {
+            //Retrieve all properties from the date object
+            let year = date.getFullYear();
+            let month = '' + (date.getMonth() + 1);
+            let day = '' + date.getDate();
+            let hours = '' + date.getHours();
+            let minutes = '' + date.getMinutes();
+            let seconds = '' + date.getSeconds();
+
+            //Add a leading zero (if necessary) to all properties except the year
+            let values = [day, month, hours, minutes, seconds];
+            for (let i = 0; i < values.length; i++) {
+                if (values[i].length < 2) {
+                    values[i] = '0' + values[i];
+                }
+            }
+
+            //Generate and return the date string
+            return ([values[0], values[1], year].join('.')) +
+                ' ' + ([values[2], values[3], values[4]].join(':'));
+        }
+
         //Watch the unit parameter
         scope.$watch(function () {
             return scope.unit;
@@ -106,43 +149,13 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             '<td>{{statisticsData.numberLogs}}</td>' +
             '</tr>' +
             '<tr>' +
-            '<th>Average:</th>' +
-            '<td>{{statisticsData.average}}&nbsp;{{unit}}</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<th>Variance:</th>' +
-            '<td>{{statisticsData.variance}}&nbsp;{{unit ? "(" + unit + ")&sup2;" : ""}}</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<th>Standard deviation:</th>' +
-            '<td>{{statisticsData.standardDeviation}}&nbsp;{{(unit)}}</td>' +
-            '</tr>' +
-            '<tr>' +
             '<th>First value:</th>' +
-            '<td><button uib-popover="{{statisticsData.firstLog.message}}"' +
-            'popover-title="{{statisticsData.firstLog.date}}" type="button"' +
-            'class="btn btn-default">{{statisticsData.firstLog.value}}</button>' +
+            '<td>{{getTimeString(statisticsData.firstLog.time)}}<json-formatter json="statisticsData.firstLog.value" open="1"></json-formatter></td>' +
             '<span>&nbsp;{{(unit)}}</span></td>' +
             '</tr>' +
             '<tr>' +
             '<th>Last value:</th>' +
-            '<td><button uib-popover="{{statisticsData.lastLog.message}}"' +
-            'popover-title="{{statisticsData.lastLog.date}}" type="button"' +
-            'class="btn btn-default">{{statisticsData.lastLog.value}}</button>' +
-            '<span>&nbsp;{{(unit)}}</span></td>' +
-            '</tr>' +
-            '<tr>' +
-            '<th>Minimum value:</th>' +
-            '<td><button uib-popover="{{statisticsData.minimumLog.message}}"' +
-            'popover-title="{{statisticsData.minimumLog.date}}" type="button"' +
-            'class="btn btn-default">{{statisticsData.minimumLog.value}}</button>' +
-            '<span>&nbsp;{{(unit)}}</span></td>' +
-            '</tr>' +
-            '<tr>' +
-            '<th>Maximum value:</th>' +
-            '<td><button uib-popover="{{statisticsData.maximumLog.message}}"' +
-            'popover-title="{{statisticsData.maximumLog.date}}" type="button"' +
-            'class="btn btn-default">{{statisticsData.maximumLog.value}}</button>' +
+            '<td>{{getTimeString(statisticsData.lastLog.time)}}<json-formatter json="statisticsData.lastLog.value" open="1"></json-formatter></td>' +
             '<span>&nbsp;{{(unit)}}</span></td>' +
             '</tr>' +
             '</tbody>' +

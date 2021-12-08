@@ -12,10 +12,12 @@ import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class TestAnalyzer implements ValueLogReceiverObserver {
@@ -59,7 +61,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
 
     // List of all active Tests/testValues
-    Map<String, LinkedHashMap<Long, Double>> testValues = new HashMap<>();
+    Map<String, LinkedHashMap<Long, Document>> testValues = new HashMap<>();
 
 
     /**
@@ -67,7 +69,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      *
      * @return list of test values
      */
-    public Map<String, LinkedHashMap<Long, Double>> getTestValues() {
+    public Map<String, LinkedHashMap<Long, Document>> getTestValues() {
         return testValues;
     }
 
@@ -76,7 +78,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      *
      * @param testValues list of test values
      */
-    public void setTestValues(Map<String, LinkedHashMap<Long, Double>> testValues) {
+    public void setTestValues(Map<String, LinkedHashMap<Long, Document>> testValues) {
         this.testValues = testValues;
     }
 
@@ -92,11 +94,11 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             return;
         }
         if (!testValues.containsKey(valueLog.getIdref())) {
-            LinkedHashMap<Long, Double> newList = new LinkedHashMap<>();
+            LinkedHashMap<Long, Document> newList = new LinkedHashMap<>();
             newList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
             testValues.put(valueLog.getIdref(), newList);
         } else {
-            Map<Long, Double> oldList = testValues.get(valueLog.getIdref());
+            Map<Long, Document> oldList = testValues.get(valueLog.getIdref());
             oldList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
         }
     }
@@ -124,7 +126,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param reportId Id of the the report in which to save the information of the test end time
      * @return value-list of the simulated Sensor
      */
-    public Map<String, LinkedHashMap<Long, Double>> isFinished(String reportId, String testId, Boolean useNewData) {
+    public Map<String, LinkedHashMap<Long, Document>> isFinished(String reportId, String testId, Boolean useNewData) {
         boolean response = true;
         //Try to find specific test report and test
         Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
@@ -158,7 +160,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param ruleNames        Names of all rules regarding to the test
      * @return String information about the success
      */
-    public String successCalc(TestDetails test, Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
+    public String successCalc(TestDetails test, Map<String, List<Document>> triggerValuesMap, List<String> ruleNames) {
         String success = "Not Successful";
         boolean triggerRules = test.isTriggerRules();
 
@@ -181,7 +183,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param ruleNames names of the rules to be triggered during the test
      * @return if test was successful or not
      */
-    private String compareTriggeredRules(Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
+    private String compareTriggeredRules(Map<String, List<Document>> triggerValuesMap, List<String> ruleNames) {
         String success = "Not Successful";
         if (triggerValuesMap.size() == ruleNames.size()) {
             for (String ruleName : ruleNames) {
@@ -213,7 +215,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
             // Calculate report information
             List<String> ruleNames = getRuleNames(testReport);
-            Map<String, List<Double>> triggerValues = getTriggerValues(reportId);
+            Map<String, List<Document>> triggerValues = getTriggerValues(reportId);
             List<String> rulesExecuted = getRulesExecuted(triggerValues);
             String successResponse = successCalc(test, triggerValues, ruleNames);
 
@@ -255,8 +257,8 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      *
      * @return List of trigger-values
      */
-    public Map<String, List<Double>> getTriggerValues(String reportId) {
-        Map<String, List<Double>> testValues = new HashMap<>();
+    public Map<String, List<Document>> getTriggerValues(String reportId) {
+        Map<String, List<Document>> testValues = new HashMap<>();
 
         //Try to find specific test report
         Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
@@ -296,22 +298,33 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param triggerID trigger id's of the rules to be observed
      * @return list of trigger values
      */
-    private  Map<String, List<Double>> extractTriggerValues(Map<String, List<Double>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
+    private  Map<String, List<Document>> extractTriggerValues(Map<String, List<Document>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
         // Get all trigger values for  the test rules between start and end time
         for (int i = 0; i < ruleNames.size(); i++) {
-            List<Double> values = new ArrayList<>();
+            List<Document> values = new ArrayList<>();
             String ruleName = ruleNames.get(i);
             if (testRepo.findAllByTriggerId(triggerID.get(i)) != null) {
                 // Only check the list of trigger values of the triggers included in the test
                 List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
                 for (Testing testing : test) {
                     if (testing.getRule().contains(ruleName)) {
-                        LinkedHashMap<String, Double> timeTriggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
-                        LinkedHashMap<String, Long> timeTriggerValMap = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
-                        long timeTriggerVal = timeTriggerValMap.get("time");
+                        long timeTriggerVal = 0;
+
+                        // Get all value documents that belong to the triggered rule as well as a timestamp
+                        List<Document> documentsForThisRule = new ArrayList<>();
+                        for (Map.Entry<String, ValueLog> e : testing.getValueLogEventNameMap().entrySet()) {
+                            documentsForThisRule.add(e.getValue().getValue());
+                            if (timeTriggerVal == 0) {
+                                timeTriggerVal = e.getValue().getTime().getEpochSecond();
+                            }
+                        }
+
                         // check if trigger value occurred during the test
                         if (timeTriggerVal >= startTime && timeTriggerVal <= endTime) {
-                            values.add(timeTriggerValue.get("value"));
+                            /* TODO: Currently all trigger values are stored in a list. It would be make more sense if...
+                             * for each trigger value the event name is mapped to the trigger value
+                             */
+                            values.addAll(testing.getValueLogEventNameMap().values().stream().map(ValueLog::getValue).collect(Collectors.toList()));
                         }
                     }
                 }
@@ -365,7 +378,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param triggerValues map of all trigger values of a specific test
      * @return a list of all executed rules
      */
-    public List<String> getRulesExecuted(Map<String, List<Double>> triggerValues) {
+    public List<String> getRulesExecuted(Map<String, List<Document>> triggerValues) {
 
         List<String> executedRules = new ArrayList<>();
         triggerValues.forEach((k, v) -> executedRules.add(k));

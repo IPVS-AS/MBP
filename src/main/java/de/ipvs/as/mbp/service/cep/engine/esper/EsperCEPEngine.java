@@ -129,7 +129,7 @@ public class EsperCEPEngine implements CEPEngine {
             CEPPrimitiveDataTypes fieldType = eventFields.get(fieldName);
 
             //Append field name and its type to the query
-            queryBuilder.append(fieldName);
+            queryBuilder.append("`" + fieldName + "`");
             queryBuilder.append(" ");
             queryBuilder.append(fieldType.getName());
 

@@ -1,6 +1,6 @@
 'use strict';
 
-let app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'smart-table', 'ui.bootstrap', 'ngFileUpload', 'thatisuday.dropzone']);
+let app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'smart-table', 'ui.bootstrap', 'ngFileUpload', 'thatisuday.dropzone', 'jsonFormatter']);
 
 app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvider', 'dropzoneOpsProvider',
     function ($provide, $routeProvider, $locationProvider, $resourceProvider, dropzoneOpsProvider) {
@@ -402,11 +402,32 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     operatorList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('operators');
                     }],
+                    dataModelList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('data-models', 'dataModels');
+                    }],
                     addOperator: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'operators');
                     }],
                     deleteOperator: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.deleteOne, 'operators');
+                    }]
+                }
+            })
+
+            //Data model lists
+            .when(viewPrefix + '/data-models', {
+                category: 'data-models',
+                templateUrl: 'templates/data-models',
+                controller: 'DataModelListController as ctrl',
+                resolve: {
+                    dataModelList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('data-models', 'dataModels');
+                    }],
+                    addDataModel: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'data-models');
+                    }],
+                    deleteDataModel: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'data-models');
                     }]
                 }
             })
@@ -423,6 +444,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     parameterTypesList: () => parameterTypes,
                     monitoringOperatorList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('monitoring-operators');
+                    }],
+                    dataModelList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('data-models', 'dataModels');
                     }],
                     addMonitoringOperator: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'monitoring-operators');

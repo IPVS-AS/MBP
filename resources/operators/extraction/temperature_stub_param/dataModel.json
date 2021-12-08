@@ -1,0 +1,21 @@
+{
+  "name": "DM_temperature_stub_param",
+  "treeNodes": [
+    {
+      "name": "value",
+      "type": "double",
+      "parent": "RootObj",
+      "children": []
+    },
+    {
+      "name": "RootObj",
+      "description": "",
+      "type": "object",
+      "unit": "",
+      "parent": "",
+      "children": [
+        "value"
+      ]
+    }
+  ]
+}

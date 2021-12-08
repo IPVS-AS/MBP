@@ -1,12 +1,15 @@
 package de.ipvs.as.mbp.domain.testing;
 
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Document
@@ -20,9 +23,20 @@ public class Testing  {
 
     private CEPOutput output;
 
+    // Stores all ValueLogs for each event which are part of the rule specified by the RuleTrigger.
+    private Map<String, ValueLog> valueLogEventNameMap;
+
     private Set<String> rule;
 
     private static final String COMPONENT_TYPE_NAME = "testing-tool";
+
+    public Map<String, ValueLog> getValueLogEventNameMap() {
+        return valueLogEventNameMap;
+    }
+
+    public void setValueLogEventNameMap(Map<String, ValueLog> valueLogEventNameMap) {
+        this.valueLogEventNameMap = valueLogEventNameMap;
+    }
 
     /**
      * Returns the rule name the entry belongs to.

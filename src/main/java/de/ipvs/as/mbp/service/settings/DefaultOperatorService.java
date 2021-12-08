@@ -1,22 +1,27 @@
 package de.ipvs.as.mbp.service.settings;
 
-import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.ipvs.as.mbp.domain.data_model.DataModel;
+import de.ipvs.as.mbp.domain.data_model.DataModelCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.OperatorCreateValidator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterType;
-import de.ipvs.as.mbp.error.MBPException;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.repository.DataModelRepository;
 import de.ipvs.as.mbp.repository.OperatorRepository;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.ServletContext;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -41,15 +46,21 @@ public class DefaultOperatorService {
     @Autowired
     private OperatorCreateValidator operatorCreateValidator;
 
-    private static final String DESCRIPTOR_FILE = "operator.json";
+    @Autowired
+    private DataModelRepository dataModelRepository;
 
+    @Autowired
+    private DataModelCreateValidator dataModelCreateValidator;
+
+    private static final String DESCRIPTOR_FILE_OPERATOR_JSON = "operator.json";
+
+    private static final String DESCRIPTOR_FILE_OPERATOR_DATA_MODEL = "dataModel.json";
 
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
      */
     public void addDefaultOperators(List<String> whiteList) {
-
 
         //Remembers if an operator was inserted
         boolean inserted = false;
@@ -66,7 +77,7 @@ public class DefaultOperatorService {
             Set<String> operatorContent = servletContext.getResourcePaths(operatorPath);
 
             //Build path of descriptor
-            String descriptorPath = operatorPath + "/" + DESCRIPTOR_FILE;
+            String descriptorPath = operatorPath + "/" + DESCRIPTOR_FILE_OPERATOR_JSON;
 
             //Check if there is a descriptor file, otherwise skip the operator
             if (operatorContent == null || !operatorContent.contains(descriptorPath)) {
@@ -94,6 +105,9 @@ public class DefaultOperatorService {
 
                 //Flag operator as default operator
                 newOperator.setDefaultEntity(true);
+
+                // Set operator data model
+                newOperator.setDataModel(getDataModelFromServletContext(operatorPath + "/" + DESCRIPTOR_FILE_OPERATOR_DATA_MODEL));
 
                 //Get parameters
                 JSONArray parameterArray = descriptorJSON.optJSONArray("parameters");
@@ -171,10 +185,37 @@ public class DefaultOperatorService {
 
 
             } catch (Exception e) {
+                System.out.println(newOperator.getName());
                 e.printStackTrace();
             }
         }
-
-
     }
+
+    /**
+     * Creates a data model entity based on a {@link ServletContext} json file.
+     *
+     * @param descriptorPath Path to the dataModel.json
+     * @return The {@link DataModel} created from the json file.
+     * @throws JSONException           If the POJO mapping JSON --> DataModel.class fails.
+     * @throws EntityNotFoundException If the writing to the database fails.
+     */
+    private DataModel getDataModelFromServletContext(String descriptorPath) throws IOException, EntityNotFoundException {
+        //Read descriptor file
+        InputStream stream = servletContext.getResourceAsStream(descriptorPath);
+        String descriptorContent = IOUtils.toString(stream, StandardCharsets.UTF_8);
+
+        // JSON to POJO mapping using Jackson to retrieve the data model
+        ObjectMapper objectMapper = new ObjectMapper();
+        DataModel dataModel = objectMapper.readValue(descriptorContent, DataModel.class);
+        // Flag the data model as default as no user created it
+        dataModel.setDefaultEntity(true);
+
+        // Validate the data model (which also calls some necessary methods for the proper data model instantiation
+        dataModelCreateValidator.validateCreatable(dataModel);
+        // Add the dataModel entity to the mongoDB repository
+        dataModelRepository.save(dataModel);
+
+        return dataModel;
+    }
+
 }

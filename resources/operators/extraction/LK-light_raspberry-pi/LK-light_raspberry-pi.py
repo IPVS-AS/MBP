@@ -24,7 +24,7 @@ def main(argv):
       # retrieve sensor value
       received_value = reader.read_light()
       # send data to the MBP
-      mbp.send_data(float(received_value))
+      mbp.send_data(json.dumps({"light-val": float(received_value)}))
       # waits a time interval before sending new data
       time.sleep(int(interval))
   except:

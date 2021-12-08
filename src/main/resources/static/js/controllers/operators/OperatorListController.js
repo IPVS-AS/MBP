@@ -1,9 +1,11 @@
 /* global app */
 
 app.controller('OperatorListController',
-    ['$scope', '$rootScope', '$controller', '$q', 'operatorList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
-        function ($scope, $rootScope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
+    ['$scope', '$rootScope', '$controller', '$q', 'operatorList', 'dataModelList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
+        function ($scope, $rootScope, $controller, $q, operatorList, dataModelList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
             let vm = this;
+
+            vm.dataModelList = dataModelList;
 
             // Constant list of the operators for the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = {

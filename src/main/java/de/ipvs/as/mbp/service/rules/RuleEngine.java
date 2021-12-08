@@ -3,14 +3,18 @@ package de.ipvs.as.mbp.service.rules;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.Testing;
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.TestRepository;
+import de.ipvs.as.mbp.repository.ValueLogRepository;
 import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQueryValidation;
 import de.ipvs.as.mbp.service.cep.trigger.CEPTriggerService;
+import de.ipvs.as.mbp.service.cep.trigger.CEPValueLogCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.*;
 
 /**
@@ -29,6 +33,12 @@ public class RuleEngine {
     private final Map<RuleTrigger, Set<Rule>> triggerMap;
 
     private final TestRepository testRepo;
+
+    @Autowired
+    private CEPValueLogCache cepValueLogCache;
+
+    @Autowired
+    private ValueLogRepository valueLogRepository;
 
     /**
      * Initializes the rule engine component and activates all already enabled rules.
@@ -165,7 +175,21 @@ public class RuleEngine {
             testing.setTrigger(ruleTrigger);
             testing.setOutput(output);
             testing.setRule(ruleNames);
+            Map<String, String> eventTypeComponentIDMap = ruleTrigger.getEventNameToComponentMapping();
+            Map<String, ValueLog> valueLogEventNameMap = new HashMap<>();
 
+            // Get the ValueLogs of the respective event and save them to Testing
+            for (Map.Entry<String, String> e : eventTypeComponentIDMap.entrySet()) {
+                Instant time = Instant.ofEpochMilli((Long) ((Map<Object, Object>) output.getOutputMap().get(e.getKey())).get("time"));
+                ValueLog valueLogToRetrieve = cepValueLogCache.getValueLog(e.getValue(), time);
+
+                if (valueLogToRetrieve == null) {
+                    // If the cache does not contain the entry it should be alraedy in the database --> get it from there
+                    valueLogToRetrieve = valueLogRepository.findByIdRefAndTimeStamp(e.getValue(), time);
+                }
+                valueLogEventNameMap.put(e.getKey(), valueLogToRetrieve);
+            }
+            testing.setValueLogEventNameMap(valueLogEventNameMap);
 
             testRepo.insert(testing);
             ruleExecutor.executeRule(rule, output);

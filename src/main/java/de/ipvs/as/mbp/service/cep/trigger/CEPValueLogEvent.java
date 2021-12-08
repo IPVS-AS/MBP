@@ -2,8 +2,10 @@ package de.ipvs.as.mbp.service.cep.trigger;
 
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEvent;
+import org.bson.Document;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
  * CEP event wrapping a value log that was received for a certain component. This event may be used in order to be
@@ -18,8 +20,9 @@ public class CEPValueLogEvent extends CEPEvent {
      * Creates a new CEP value log event from a given value log.
      *
      * @param valueLog The value log to use
+     * @param parsedLog
      */
-    CEPValueLogEvent(ValueLog valueLog) {
+    CEPValueLogEvent(ValueLog valueLog, Map<String, Object> parsedLog) {
         super();
 
         //Sanity check
@@ -28,18 +31,26 @@ public class CEPValueLogEvent extends CEPEvent {
         }
         this.valueLog = valueLog;
 
-        //Convert value string of value log to double
-        double value = valueLog.getValue();
-
         //Get Instant object from value log
         Instant time = valueLog.getTime();
 
-        //Get epoch seconds
-        long unixSeconds = time.getEpochSecond();
+        //Get epoch millis
+        long unixMillis = time.toEpochMilli();
 
-        //Set event fields
-        this.addValue("value", value);
-        this.addValue("time", unixSeconds);
+        if (this.valueLog.getComponent().equals("MONOTORING") || this.valueLog.getComponent().equals("DEVICE")) {
+            // Set event fields for monitoring operators and devices which aren't expected to have data models
+            double value = ((Document) valueLog.getValue().get("value")).getDouble("value");
+            this.addValue("value", value);
+            this.addValue("time", unixMillis);
+            return;
+        }
+
+        this.addValue("time", unixMillis);
+
+        // Set event fields for actuator and sensor components
+        for (Map.Entry<String, Object> entry : parsedLog.entrySet()) {
+            this.addValue(entry.getKey(), entry.getValue());
+        }
     }
 
     /**

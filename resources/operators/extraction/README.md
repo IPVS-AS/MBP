@@ -11,14 +11,15 @@ The expected message structure by the MBP is a json-formatted string with the fo
 {
 	"component": "SENSOR", 
 	"id": "596cafaa6c0ccd5d29da0e90", 
-	"value": 20
+	"value": {"temperature:" 20}
 }
 ```
+The `value` key can have an arbitrary JSON object as value. However the structure of this JSON object must be registered to the MBP by creating a data model entity.
 
 The following shows a command line example using the paho MQTT client to send sensor data to the MBP: 
 
 ```bash
-$ mosquitto_pub.exe -t 'sensor/596cafaa6c0ccd5d29da0e90' -m '{"component":"SENSOR","id":"596cafaa6c0ccd5d29da0e90","value":20}'
+$ mosquitto_pub.exe -t 'sensor/596cafaa6c0ccd5d29da0e90' -m '{"component":"SENSOR","id":"596cafaa6c0ccd5d29da0e90","value": {"temperature:" 20}}'
 ```
 
 
@@ -29,6 +30,7 @@ $ mosquitto_pub.exe -t 'sensor/596cafaa6c0ccd5d29da0e90' -m '{"component":"SENSO
 
 - [Adafruit_DHT-temperature_raspberry-pi](Adafruit_DHT-temperature_raspberry-pi) :thermometer: :droplet: : scripts to extract sensor data from a DHT sensor. 
 - [bosch-xdk_mqtt-gateway](bosch-xdk_mqtt-gateway) :thermometer: :partly_sunny: :droplet: : operator scripts to extract sensor data from Bosch XDK devices.
+- [complex_iot_data_stub](complex_iot_data_stub) :sensor:: operator scripts using a more complex data model demonstrating the complex IoT data capabilities of the MBP.
 - [LK-light_raspberry-pi](LK-light_raspberry-pi) :partly_sunny:: operator scripts to extract sensor data from a LK light sensor.
 - [LK-temperature_raspberry-pi](LK-temperature_raspberry-pi) :thermometer:: operator scripts to extract sensor data from a LK temperature sensor.
 - [LK-sound_raspberry-pi](LK-sound_raspberry-pi) :microphone:: operator scripts to extract sensor data from a LK sound sensor.

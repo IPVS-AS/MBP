@@ -9,7 +9,6 @@ import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.security.SecurityUtils;
 import de.ipvs.as.mbp.service.testing.TestEngine;
-import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,9 +48,6 @@ public class UserService {
 
     @Autowired
     private TestEngine testEngine;
-
-    @Autowired
-    private TestRerunService testRerunService;
 
     @Autowired
     private SensorRepository sensorRepository;
@@ -184,7 +180,6 @@ public class UserService {
             // Check whether entity actually can be deleted (may still be in use)
             userEntityService.requireDeletable(entity);
             // Delete test-related data
-            testRerunService.deleteRerunComponents(entity);
             testEngine.deleteAllReports(entity.getId());
             // Everything checks out -> delete the entity in the database
             testDetailsRepository.deleteById(entity.getId());
