@@ -87,7 +87,7 @@ public class UserEntityService {
      * @param repository the repository to retrieve the user entity from.
      * @param entityId   the id of the {@link UserEntity}.
      * @return the {@link UserEntity} if it exists.
-     * @throws EntityNotFoundException
+     * @throws EntityNotFoundException In case the entity could not be found
      */
     public <E extends UserEntity> E getForId(UserEntityRepository<E> repository, String entityId) throws EntityNotFoundException {
         // Retrieve the entity from the database
@@ -118,8 +118,8 @@ public class UserEntityService {
      *                      of the requesting user required to evaluate the policies.
      * @return the {@link UserEntity} if it exists and the user is either the owner or has been granted reading access
      * to it via a corresponding {@link ACPolicy}.
-     * @throws EntityNotFoundException
-     * @throws MissingPermissionException
+     * @throws EntityNotFoundException In case the entity could not be found
+     * @throws MissingPermissionException In case of missing permissions
      */
     public <E extends UserEntity> E getForIdWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the entity from the database
@@ -249,8 +249,8 @@ public class UserEntityService {
      * @param entityId      the id of the {@link UserEntity}.
      * @param accessRequest the {@link ACAccessRequest} containing the contextual information
      *                      of the requesting user required to evaluate the policies.
-     * @throws EntityNotFoundException
-     * @throws MissingPermissionException
+     * @throws EntityNotFoundException In case the entity could not be found
+     * @throws MissingPermissionException In case of missing permissions
      */
     public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the entity from the database
