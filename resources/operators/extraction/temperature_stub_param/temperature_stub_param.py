@@ -112,7 +112,7 @@ def main(argv):
          # send message, topic: temperature
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
          outputValue = random.choice([20.0, 20.5, 21.0, 22.0, 22.5, 25.5, 30.0, 30.1, 31.5, 29.9, 35.0])
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % (outputValue) }
+         msg_pub = {"component": component.upper(), "id": component_id, "value": {"value": outputValue}}
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 

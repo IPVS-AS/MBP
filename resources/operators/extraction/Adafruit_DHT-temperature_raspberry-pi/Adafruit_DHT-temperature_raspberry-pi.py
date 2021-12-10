@@ -129,7 +129,7 @@ def main(argv):
 
          # measured_temp = aiReader.getTemperature(temp_adc_channel)
          
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_temp)}
+         msg_pub = {"component": component.upper(), "id": component_id, "value": {"temperature": measured_temp}}
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
 
          time.sleep(measureInterval)

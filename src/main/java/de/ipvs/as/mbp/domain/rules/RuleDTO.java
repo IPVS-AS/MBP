@@ -19,11 +19,23 @@ public class RuleDTO extends UserEntityRequestDTO {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getTrigger() {
         return trigger;
     }
 
+    public void setTrigger(String trigger) {
+        this.trigger = trigger;
+    }
+
     public List<String> getActions() {
         return actions;
+    }
+
+    public void setActions(List<String> actions) {
+        this.actions = actions;
     }
 }

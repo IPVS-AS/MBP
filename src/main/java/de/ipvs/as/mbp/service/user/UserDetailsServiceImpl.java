@@ -13,7 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 /**
- * Load a user from the database.
+ * Loads a user from the database.
  */
 @Component
 public class UserDetailsServiceImpl implements UserDetailsService {

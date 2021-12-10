@@ -23,6 +23,9 @@ public interface UserEntityRepository<T extends UserEntity> extends MongoReposit
     @Query("{ 'owner.id' : :#{#ownerId} }")
     List<T> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 
+    @Query("{ 'owner.id' : :#{#ownerId} }")
+    List<T> findByOwner(@Param("ownerId") String ownerId);
+
     @Query(value = "{ 'name' : :#{#name} }", exists = true)
     boolean existsByName(@Param("name") String name);
 

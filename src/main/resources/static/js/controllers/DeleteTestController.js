@@ -42,7 +42,6 @@ app.controller('DeleteTestController', ['deleteItem', '$rootScope', 'confirmDele
             });
 
             //Create deletion request and return the resulting promise
-            console.log(deleteItem(vm.item.id))
             return deleteItem(vm.item.id).then(
                 function (data) {
                     //Success

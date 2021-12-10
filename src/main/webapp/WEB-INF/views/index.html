@@ -87,29 +87,24 @@
     <!-- GitHub Fork Ribbon -->
     <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
 
+    <!-- jsonFormatter css -->
+    <link th:href="@{/plugins/json-formatter/json-formatter.min.css}" rel="stylesheet"/>
+
+    <!-- Leaflet (OSM javascript library) -->
+    <link th:href="@{/plugins/leaflet/css/leaflet.css}" rel="stylesheet"/>
+
     <!-- Openlayers -->
     <link th:href="@{/plugins/openlayers/openlayers.min.css}" rel="stylesheet"/>
     <link th:href="@{/plugins/openlayers/geocoder.min.css}" rel="stylesheet"/>
 
-    <!-- Custom Css -->
+    <!-- Custom -->
     <link th:href="@{/css/style.css}" rel="stylesheet">
     <link th:href="@{/css/style_additional.css}" rel="stylesheet">
     <link th:href="@{/css/discovery.css}" rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
-
-
-    <script src="path/to/dom-to-image-more.min.js"/>
-    <script>
-        domtoimage.toPng(node)
-        //...
-    </script>
-
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
+
 <!-- Progress bar for HTTP requests -->
 <div id="requestLoadingBar" class="progress" ng-show="ctrl.loadingBarDisplay">
     <div class="progress-bar progress-bar-primary progress-bar-striped active" role="progressbar">
@@ -131,7 +126,7 @@
             <a class="navbar-brand" href="./">MBP: A Platform for Managing IoT Environments</a>
         </div>
         <div style="float: right">
-            <a class="navbar-brand" href="./login" ng-show="loggedIn">
+            <a class="navbar-brand" th:href="@{/logout}" target="_parent" ng-show="loggedIn">
                 <i class="material-icons">power_settings_new</i>
                 <span>Logout</span>
             </a>
@@ -221,6 +216,9 @@
                     </li>
                     <li>
                         <a href="view/monitoring-operators" menu-item="menu-item">Monitoring Operators</a>
+                    </li>
+                    <li>
+                        <a href="view/data-models" menu-item="menu-item">Data Models</a>
                     </li>
                 </ul>
             </li>
@@ -399,20 +397,32 @@
 <!-- CryptoJS -->
 <script th:src="@{/plugins/cryptojs/cryptojs.min.js}"></script>
 
-<!-- Openlayers -->
+<!-- JsonPath -->
+<script th:src="@{/plugins/jsonpath/index-browser-umd.min.js}"></script>
+
+<!-- Angular jsonFormatter plugin -->
+<script th:src="@{/plugins/json-formatter/json-formatter.min.js}"></script>
+
+<!-- JSPDF -->
+<script th:src="@{/plugins/jspdf/jspdf.umd.min.js}"></script>
+<script th:src="@{/plugins/jspdf/jspdf.plugin.autotable.min.js}"></script>
+
+<!-- Leaflet (Open-Street-Map javascript library) -->
+<script th:src="@{/plugins/leaflet/leaflet.js}"></script>
+
+<!-- OpenLayers -->
 <script th:src="@{/plugins/openlayers/openlayers.min.js}"></script>
 <script th:src="@{/plugins/openlayers/geocoder.min.js}"></script>
 
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>
-<script th:src="@{/js/services/SessionService.js}"></script>
 <script th:src="@{/js/services/FileReader.js}"></script>
 <script th:src="@{/js/services/KeyPairService.js}"></script>
 <script th:src="@{/js/services/DeviceService.js}"></script>
 <script th:src="@{/js/services/ComponentService.js}"></script>
 <script th:src="@{/js/services/OperatorService.js}"></script>
+<script th:src="@{/js/services/DataModelService.js}"></script>
 <script th:src="@{/js/services/MonitoringService.js}"></script>
-<script th:src="@{/js/services/AuthenticationService.js}"></script>
 <script th:src="@{/js/services/UserService.js}"></script>
 <script th:src="@{/js/services/EnvModelService.js}"></script>
 <script th:src="@{/js/services/UnitService.js}"></script>
@@ -438,11 +448,16 @@
 <script th:src="@{/js/directives/ngDropzone.js}"></script>
 <script th:src="@{/js/directives/refreshTable.js}"></script>
 <script th:src="@{/js/directives/units/UnitInput.js}"></script>
-<script th:src="@{/js/directives/charts/LiveChart.js}"></script>
-<script th:src="@{/js/directives/charts/HistoricalChart.js}"></script>
+<script th:src="@{/js/directives/charts/line-chart/LiveChart.js}"></script>
+<script th:src="@{/js/directives/charts/line-chart/HistoricalChart.js}"></script>
+<script th:src="@{/js/directives/charts/geo-map/LiveGeoMapChart.js}"></script>
+<script th:src="@{/js/directives/charts/geo-map/HistoricalGeoMapChart.js}"></script>
 <script th:src="@{/js/directives/env-models/EnvModelTool.js}"></script>
 <script th:src="@{/js/directives/stats/ValueLogStats.js}"></script>
 <script th:src="@{/js/directives/triggers/CEPQueryEditor.js}"></script>
+<script th:src="@{/js/directives/json-path-ui/jsonPathInput.js}"></script>
+<script th:src="@{/js/directives/model-data/dmInput.js}"></script>
+<script th:src="@{/js/directives/charts/customizable-chart-card/CustomizableChartCard.js}"></script>
 <script th:src="@{/js/directives/maps/LocationDrawerMap.js}"></script>
 <script th:src="@{/js/directives/maps/LocationMarkerMap.js}"></script>
 
@@ -461,10 +476,12 @@
 <script th:src="@{/js/controllers/testing/TestingListController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingDetailsController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingChartController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestReportController.js}"></script>
 
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
 <script th:src="@{/js/controllers/operators/OperatorListController.js}"></script>
+<script th:src="@{/js/controllers/data-models/DataModelListController.js}"></script>
 <script th:src="@{/js/controllers/monitoring-operators/MonitoringOperatorListController.js}"></script>
 <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>

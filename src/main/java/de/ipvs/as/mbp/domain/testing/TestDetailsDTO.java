@@ -27,24 +27,47 @@ public class TestDetailsDTO extends UserEntityRequestDTO {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public boolean getTriggerRules() {
         return triggerRules;
+    }
+
+    public void setTriggerRules(boolean triggerRules) {
+        this.triggerRules = triggerRules;
     }
 
     public List<String> getType() {
         return type;
     }
 
+    public void setType(List<String> type) {
+        this.type = type;
+    }
+
     public List<String> getRuleNames() {
         return ruleNames;
+    }
+
+    public void setRuleNames(List<String> ruleNames) {
+        this.ruleNames = ruleNames;
     }
 
     public boolean isUseNewData() {
         return useNewData;
     }
 
+    public void setUseNewData(boolean useNewData) {
+        this.useNewData = useNewData;
+    }
 
     public List<List<ParameterInstance>> getConfig() {
         return config;
+    }
+
+    public void setConfig(List<List<ParameterInstance>> config) {
+        this.config = config;
     }
 }

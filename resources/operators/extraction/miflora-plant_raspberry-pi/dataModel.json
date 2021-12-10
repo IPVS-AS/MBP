@@ -1,0 +1,21 @@
+{
+  "name": "DM_miflora-plant_raspberry-pi",
+  "treeNodes": [
+    {
+      "name": "value",
+      "type": "double",
+      "parent": "RootObj",
+      "children": []
+    },
+    {
+      "name": "RootObj",
+      "description": "",
+      "type": "object",
+      "unit": "",
+      "parent": "",
+      "children": [
+        "value"
+      ]
+    }
+  ]
+}

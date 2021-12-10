@@ -55,7 +55,7 @@ public class SettingsService {
     @Value("${git.commit.id.abbrev}")
     private String commitID;
 
-    @Value("${git.commit.time")
+    @Value("${git.commit.time}")
     private String commitTime;
 
     /**

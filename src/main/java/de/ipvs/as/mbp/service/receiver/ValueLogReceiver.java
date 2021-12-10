@@ -8,10 +8,7 @@ import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
-import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.DeviceRepository;
-import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
-import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
@@ -20,11 +17,39 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Set;
+
+import de.ipvs.as.mbp.DynamicBeanProvider;
+import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
+import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
+import de.ipvs.as.mbp.repository.DataModelTreeCache;
+import org.bson.Document;
+import de.ipvs.as.mbp.repository.ActuatorRepository;
+import de.ipvs.as.mbp.repository.DeviceRepository;
+import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
+import de.ipvs.as.mbp.repository.SensorRepository;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Background service that receives incoming value log messages from the publish-subscribe-based messaging service.
@@ -56,6 +81,9 @@ public class ValueLogReceiver {
     private final MonitoringOperatorRepository monitoringOperatorRepository;
     private final DynamicDeploymentRepository dynamicDeploymentRepository;
 
+    // Cache of data model trees to provide fast supply
+    private DataModelTreeCache dataModelTreeCache;
+
     /**
      * Initializes the value log receiver service.
      *
@@ -65,18 +93,21 @@ public class ValueLogReceiver {
      * @param deviceRepository             Repository in which the {@link Device}s are stored
      * @param monitoringOperatorRepository Repository in which the {@link MonitoringOperator}s are stored
      * @param dynamicDeploymentRepository  Repository in which the {@link DynamicDeployment}s are stored
+     * @param dataModelTreeCache           Cache of data model trees
      */
     @Autowired
     public ValueLogReceiver(PubSubService pubSubService, ActuatorRepository actuatorRepository,
                             SensorRepository sensorRepository, DeviceRepository deviceRepository,
                             MonitoringOperatorRepository monitoringOperatorRepository,
-                            DynamicDeploymentRepository dynamicDeploymentRepository) {
+                            DynamicDeploymentRepository dynamicDeploymentRepository,
+                            DataModelTreeCache dataModelTreeCache) {
         //Store component references
         this.actuatorRepository = actuatorRepository;
         this.sensorRepository = sensorRepository;
         this.deviceRepository = deviceRepository;
         this.monitoringOperatorRepository = monitoringOperatorRepository;
         this.dynamicDeploymentRepository = dynamicDeploymentRepository;
+        this.dataModelTreeCache = dataModelTreeCache;
 
         //Initialize the set of observers
         observerSet = new HashSet<>();
@@ -177,8 +208,24 @@ public class ValueLogReceiver {
             valueLog.setMessage(message.toString());
             valueLog.setTime(time);
             valueLog.setIdref(componentID);
-            valueLog.setValue(message.getDouble(JSON_KEY_VALUE));
             valueLog.setComponent(componentType);
+
+            //Differentiate between ordinary value logs and monitoring value logs
+            if (!componentType.equalsIgnoreCase("monitoring")) {
+                // Validate the value object part of the json object and transfer the json to a document representation
+                valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                        // Retrieve the root node which must be part of the mqtt message by convention
+                        message.getJSONObject(JSON_KEY_VALUE),
+                        // Get the data model tree of the component as this is needed to infer the right database types
+                        dataModelTreeCache.getDataModelOfComponent(componentID)
+                ));
+            } else {
+                // Extra case for monitoring operators as they do not have data models and just send doubles
+                double monitoringOperatorVal = message.getDouble(JSON_KEY_VALUE);
+                Document valueDoubleDoc = new Document();
+                valueDoubleDoc.append(JSON_KEY_VALUE, monitoringOperatorVal);
+                valueLog.setValue(valueDoubleDoc);
+            }
 
             //Notify all observers
             notifyValueLogObservers(valueLog);
@@ -242,7 +289,7 @@ public class ValueLogReceiver {
 
             //Check compatibility between monitoring operator and device
             return monitoringOperator.get().isCompatibleWith(device.get().getComponentType());
-        } else if (componentType.toLowerCase().equals(new DynamicDeployableComponent().getComponentTypeName())) {
+        } else if (componentType.equalsIgnoreCase(new DynamicDeployableComponent().getComponentTypeName())) {
             //Component is dynamic deployment, check if it exists
             return dynamicDeploymentRepository.existsById(componentID);
         }

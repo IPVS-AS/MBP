@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.hateoas.server.core.Relation;
 
 /**
- * This {@link IACModifyingEffect effect} manipulates the accuracy of a {@link Double} value.
+ * This  manipulates the accuracy of a {@link Double} value.
  * 
  * @author Jakob Benz
  */
@@ -49,8 +49,12 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	
 	@Override
 	public ValueLog apply(ValueLog valueLog) {
-		return valueLog.setValue(apply(valueLog.getValue()));
+		// TODO NOT SUPPORTED AT THE MOMENT
+		//return valueLog.setValue(apply(valueLog.getValue()));
+		return valueLog.setValue(new org.bson.Document());
 	}
+
+
 	
 	// - - -
 

@@ -1,0 +1,21 @@
+{
+  "name": "DM_LK-temperature_raspberry-pi",
+  "treeNodes": [
+    {
+      "name": "temperature",
+      "type": "double",
+      "parent": "RootObj",
+      "children": []
+    },
+    {
+      "name": "RootObj",
+      "description": "",
+      "type": "object",
+      "unit": "",
+      "parent": "",
+      "children": [
+        "temperature"
+      ]
+    }
+  ]
+}

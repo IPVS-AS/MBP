@@ -168,13 +168,12 @@ app.controller('ActuatorListController',
              */
             $scope.hideSimulators = function () {
                 return function (item) {
-                    if (item.name.indexOf("TESTING_") === -1){
+                    if (item.name.indexOf("TESTING_") === -1) {
                         return true;
                     }
                     return false;
                 };
             };
-
 
             //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {

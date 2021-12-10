@@ -14,19 +14,13 @@ app.controller('TestingController',
                 TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
                 HUMIDITY: 'TESTING_HumiditySensor',
                 HUMIDITY_PL: 'TESTING_HumiditySensorPl',
-                ACCELERATION: 'TESTING_AccelerationSensor',
-                ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
-                GPS: 'TESTING_GPSSensor',
-                GPS_PL: 'TESTING_GPSSensorPl'
             };
 
-            const TESTING_DEVICE = "TESTING_Device";
-            const TESTING_ACTUATOR = "TESTING_Actuator";
-            const RERUN_OPERATOR = "RERUN_OPERATOR";
+            const RERUN_IDENTIFIER = 'RERUN_';
 
 
             const vm = this;
-            vm.ruleList = ruleList;
+            vm.ruleList = [];
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
             //Settings objects that contains application settings for this page
@@ -49,201 +43,29 @@ app.controller('TestingController',
                 }
 
 
-                // Check the registration of the different testing components
-                getTestDevice();
-                checkActuatorReg();
-                angular.forEach(SIMULATOR_LIST, function (value) {
-                    checkSensorReg(String(value));
-                });
+                checkSensorReg();
                 getRealSensors();
-                // Check the registration of the rerun operator for test repetition
-                getRerunOperator();
+                ruleListSelection();
 
 
-                $scope.availableSensors = vm.availableSensors;
                 $scope.realSensorList = vm.realSensorList;
+                $scope.availableSensors = vm.availableSensors;
 
-                //Interval for updating sensor states on a regular basis
-                const interval = $interval(function () {
-                    //    getTestDevice();
-                    checkActuatorReg();
-                    checkSensorReg();
-                }, 5 * 60 * 1000);
 
                 //Refresh test select picker when the modal is opened
                 $('.modal').on('shown.bs.modal', function () {
                     $('.selectpicker').selectpicker('refresh');
                 });
 
-                //Cancel interval on route change
-                $scope.$on('$destroy', function () {
-                    $interval.cancel(interval);
-                });
             })();
 
 
-            /**
-             * [Public]
-             *
-             * Performs a server request in order to start a test given by its id.
-             *
-             * @param testId
-             */
-            function executeTest(testId) {
-                TestService.executeTest(testId)
-            }
+            function ruleListSelection() {
+                angular.forEach(ruleList, function (rule) {
+                    if (!rule.name.includes(RERUN_IDENTIFIER)) {
+                        vm.ruleList.push(rule);
 
-            /**
-             * [Public]
-             *
-             * Performs a server request in order to stop a test given by its id.
-             *
-             * @param testId
-             */
-            function stopTest(testId) {
-                TestService.stopTest(testId);
-            }
-
-
-            /**
-             * [Public]
-             *
-             * Sends a server request to find out if a test report is available for the specific test.
-             *
-             * @param testId
-             * @param testName
-             */
-
-            function checkReportExists(testId, testName) {
-                TestService.pdfExists(testId).then(function (response) {
-                    switch (response.data) {
-                        case "true":
-                            document.getElementById(testName).disabled = false;
-                            break;
-                        case "false":
-                            document.getElementById(testName).disabled = true;
-                            break;
                     }
-                });
-            }
-
-
-            /**
-             * [Public]
-             *
-             * Check if Test-Device is already registered or not.
-             */
-            function getTestDevice() {
-                // go through every registered device and search for the test device
-                HttpService.getAll('devices').then(function (deviceList) {
-                    $scope.device = "NOT_REGISTERED";
-
-                    angular.forEach(deviceList, function (device) {
-
-                        if (device.name === TESTING_DEVICE) {
-                            $scope.device = "REGISTERED";
-
-                        } else {
-                            $scope.device = "NOT_REGISTERED";
-
-                        }
-                    })
-                });
-            }
-
-            /**
-             * [Public]
-             *
-             * Check if the rerun operator for a test repetition is already registered.
-             */
-            function getRerunOperator() {
-                // go through every registered adapter and search for the test rerun adapter
-                HttpService.getAll('operators').then(function (adaptersList) {
-                    $scope.rerunOperator = "NOT_REGISTERED";
-
-                    angular.forEach(adaptersList, function (adapters) {
-
-                        if (adapters.name === RERUN_OPERATOR) {
-                            $scope.rerunOperator = "REGISTERED";
-
-                        } else {
-
-                            $scope.rerunOperator = "NOT_REGISTERED";
-                        }
-                    })
-
-                });
-            }
-
-            /**
-             * [Public]
-             *
-             * Server request for the registration of the Rerun Operator.
-             */
-            function registerRerunOperator() {
-                TestService.registerRerunOperator().success(function success() {
-                    getRerunOperator();
-                    //Notify the user
-                    NotificationService.notify('Entity successfully created.', 'success')
-                }).catch(function onError() {
-                    //Notify the user
-                    NotificationService.notify('Error during creation of the Rerun Operator.', 'error')
-                });
-            }
-
-            /**
-             * [Public]
-             *
-             * Register Test Device and update the registered status.
-             */
-            function registerTestDevice() {
-                TestService.registerTestDevice().then(function success() {
-                    getTestDevice();
-                    //Notify the user
-                    NotificationService.notify('Entity successfully created.', 'success')
-                }).catch(function onError() {
-                    //Notify the user
-                    NotificationService.notify('Error during creation of the Rerun Operator.', 'error')
-                });
-
-            }
-
-            /**
-             * [Public]
-             *
-             * Check if Actuator simulator is already registered or not.
-             */
-            function checkActuatorReg() {
-                // go through every registered actuator and search for the testing actuator
-                HttpService.getAll('actuators').then(function (actuatorList) {
-                    $scope.testingActuator = "NOT_REGISTERED";
-                    angular.forEach(actuatorList, function (actuator) {
-                        if (actuator.name === TESTING_ACTUATOR) {
-                            $scope.testingActuator = "REGISTERED";
-                        } else {
-                            $scope.testingActuator = "NOT_REGISTERED";
-                        }
-                    });
-                });
-            }
-
-
-            /**
-             * [Public]
-             *
-             * Register the Actuator-Simulator for the Test of IoT-Applications.
-             */
-            function registerTestingActuator() {
-                TestService.registerTestActuator().then(function () {
-                    checkActuatorReg();
-                    //Notify the user
-                    NotificationService.notify('Entity successfully created.', 'success')
-                }).catch(function onError() {
-                    //Notify the user
-                    NotificationService.notify('Error during creation of the Testing Actuator.', 'error')
-                    checkActuatorReg();
-
-
                 });
 
             }
@@ -257,48 +79,17 @@ app.controller('TestingController',
              * @param sensorSimulator to be checked
              */
 
-            function checkSensorReg(sensorSimulator) {
-                let registered = "NOT_REGISTERED";
+            function checkSensorReg() {
                 // go through every registered sensor and search for the sensor simulator
-                HttpService.getAll('sensors').then(function (sensorList) {
-                        if (sensorList.length > 0) {
-                            angular.forEach(sensorList, function (sensor) {
-                                if (sensor.name == sensorSimulator) {
-                                    registered = "REGISTERED";
-                                    vm.availableSensors.push(sensorSimulator);
-                                }
-                            })
+                if (sensorList.length > 0) {
+                    angular.forEach(sensorList, function (sensor) {
+                        if (Object.values(SIMULATOR_LIST).indexOf(sensor.name) > -1) {
+                            vm.availableSensors.push(sensor.name);
                         }
-                        // define the scope variable for the sensor simulators for the view
-                        switch (sensorSimulator) {
-                            case SIMULATOR_LIST.TEMPERATURE:
-                                $scope.temp = registered;
-                                break;
-                            case SIMULATOR_LIST.TEMPERATURE_PL:
-                                $scope.tempPl = registered;
-                                break;
-                            case SIMULATOR_LIST.HUMIDITY:
-                                $scope.hum = registered;
-                                break;
-                            case SIMULATOR_LIST.HUMIDITY_PL:
-                                $scope.humPl = registered;
-                                break;
-                            case SIMULATOR_LIST.GPS:
-                                $scope.gps = registered;
-                                break;
-                            case SIMULATOR_LIST.GPS_PL:
-                                $scope.gpsPl = registered;
-                                break;
-                            case SIMULATOR_LIST.ACCELERATION:
-                                $scope.acc = registered;
-                                break;
-                            case SIMULATOR_LIST.ACCELERATION_PL:
-                                $scope.accPl = registered;
-                                break;
-                        }
-                    }
-                );
+                    })
+                }
             }
+
 
             /**
              * [Private]
@@ -310,12 +101,12 @@ app.controller('TestingController',
                     let realSensor = true;
                     // Check if sensor is a sensor simulator
                     angular.forEach(SIMULATOR_LIST, function (simulator) {
-                        if (simulator == sensor.name) {
+                        if (simulator === sensor.name) {
                             realSensor = false;
                         }
                     });
 
-                    if (sensor.name.includes("RERUN_")) {
+                    if (sensor.name.includes(RERUN_IDENTIFIER)) {
                         realSensor = false;
                     }
 
@@ -326,33 +117,6 @@ app.controller('TestingController',
                 });
             }
 
-
-            /**
-             * [Public]
-             *
-             * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
-             */
-            function registerOneDimSensor(sensor) {
-                TestService.registerOneDimSensor(sensor).then(function () {
-                    //Notify the user
-                    NotificationService.notify('Entity successfully created.', 'success')
-                    checkSensorReg(sensor);
-                }, function () {
-                    //Notify the user
-                    NotificationService.notify('Error during creation of the Sensor Simulator.', 'error')
-                    checkSensorReg(sensor);
-                });
-                checkSensorReg(sensor);
-
-
-            }
-
-            /**
-             * Register the three dimensional Sensor-Simulators for the Test of IoT-Applications.
-             */
-            function registerThreeDimSensor(sensor) {
-                // TODO
-            }
 
             /**
              * [Public]
@@ -399,19 +163,6 @@ app.controller('TestingController',
                     document.getElementById("addRealSensor").innerHTML = '';
                     document.getElementById("addRealSensor").innerHTML = '<i class="material-icons">add</i>';
                 }
-            }
-
-
-            /**
-             * [Public]
-             *
-             * Sends a server request in order to open a window for downloading/open the specific test report
-             *
-             * @param testID ID of the test for which the test report should be opened.
-             * @param endtimeUnix end time of the test to identify the specific report for the specific test
-             */
-            function downloadPDF(testID, endtimeUnix) {
-                TestService.downloadReport(testID, endtimeUnix);
             }
 
 
@@ -466,27 +217,6 @@ app.controller('TestingController',
             }
 
 
-            /**
-             * [Public]
-             *
-             * Sends a server request in order to edit the configurations of the test "useNewData",
-             * so that the latest values of a specific test are reused in the new execution or not
-             *
-             * @param testId
-             * @param useNewData
-             */
-            function editConfig(testId, useNewData) {
-                let useNewDataConfig;
-                if (useNewData === true) {
-                    useNewDataConfig = "false";
-                } else if (useNewData === false) {
-                    useNewDataConfig = "true";
-                }
-                TestService.editConfig(testId, useNewDataConfig);
-
-            }
-
-
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 testListCtrl: $controller('ItemListController as testListCtrl',
@@ -500,10 +230,13 @@ app.controller('TestingController',
                         entity: 'test',
                         addItem: function (data) {
                             let selectedSensorsReal = vm.selectedRealSensor;
+                            let selectedSimulators = vm.selectedSensors;
+
                             let parameterValuesReal = vm.parameterVal;
 
 
-                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
+
+                            const newTestObject = TestService.getTestData(selectedSimulators, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
 
 
                             return addTest(newTestObject);
@@ -518,20 +251,7 @@ app.controller('TestingController',
 
                 accessControlPolicyList: accessControlPolicyList,
 
-                executeTest: executeTest,
-                editConfig: editConfig,
-                stopTest: stopTest,
-                downloadPDF: downloadPDF,
-                checkReportExists: checkReportExists,
-                getTestDevice: getTestDevice,
-                getRerunOperator: getRerunOperator,
-                registerRerunOperator: registerRerunOperator,
-                registerTestDevice: registerTestDevice,
-                checkSensorReg: checkSensorReg,
-                registerOneDimSensor: registerOneDimSensor,
-                registerThreeDimSensor: registerThreeDimSensor,
-                checkActuatorReg: checkActuatorReg,
-                registerTestingActuator: registerTestingActuator,
+
                 addSimulators: addSimulators,
                 addRealSensor: addRealSensor,
             });

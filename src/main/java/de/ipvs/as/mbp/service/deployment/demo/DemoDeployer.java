@@ -1,21 +1,30 @@
 package de.ipvs.as.mbp.service.deployment.demo;
 
 import de.ipvs.as.mbp.domain.component.Component;
+import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.error.DeploymentException;
+import de.ipvs.as.mbp.repository.DataModelTreeCache;
 import de.ipvs.as.mbp.service.deployment.ComponentState;
 import de.ipvs.as.mbp.service.deployment.DeviceState;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
+import de.ipvs.as.mbp.service.receiver.ValueLogReceiveVerifier;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
+import org.bson.Document;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.json.JsonObject;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -36,8 +45,14 @@ public class DemoDeployer implements IDeployer {
     //Map (component --> state) of deployed components and their deployment state
     private final Map<Component, ComponentState> deployedComponents = new HashMap<>();
 
+    // Map (component --> ValueLog queue) of predefined value logs which should be sent by a component (rerun feature)
+    private final Map<Component, Queue<ValueLog>> rerunValueLogs = new HashMap<>();
+
     @Autowired
     private ValueLogReceiver valueLogReceiver;
+
+    @Autowired
+    private DataModelTreeCache dataModelCache;
 
     /**
      * Retrieves the current deployment state of a given component.
@@ -166,6 +181,7 @@ public class DemoDeployer implements IDeployer {
 
         //"Undeploy" component
         deployedComponents.remove(component);
+        rerunValueLogs.remove(component);
     }
 
     /**
@@ -220,20 +236,66 @@ public class DemoDeployer implements IDeployer {
     }
 
     /**
+     * Adds {@link ValueLog}s to the sending queue of ValueLogs to enable a dynamic configuration of ValueLogs
+     * which should be sent by a certain component if it is started. Overwrites old entries.
+     *
+     * @param component       The component of which the ValueLogs to sent should be defined
+     * @param valueLogsToSend A FIFO queue of ValueLogs which should be sent to the ValueLogReceiver
+     */
+    public void addRerunValueLogsForComponent(Component component, Queue<ValueLog> valueLogsToSend) {
+        rerunValueLogs.put(component, valueLogsToSend);
+    }
+
+    /**
+     * Checks whether there are certain scheduled ValueLogs for a component which are not
+     * randomly generated.
+     *
+     * @param component The component of which to check the scheduled ValueLog status.
+     * @return True if there are certain value logs scheduled for this component.
+     */
+    private boolean checkIfRerunValueLogsAreScheduledForComponent(Component component) {
+        if (!rerunValueLogs.containsKey(component)) {
+            return false;
+        } else {
+            return !rerunValueLogs.get(component).isEmpty();
+        }
+    }
+
+    /**
      * Generates value logs for the running components with a fixed time interval.
      */
     @Scheduled(fixedDelay = VALUE_LOG_INTERVAL)
     private void generateValueLogs() {
         //Stream the deployed components and filter for running ones
         deployedComponents.keySet().stream().filter(c -> ComponentState.RUNNING.equals(deployedComponents.get(c))).forEach(component -> {
-            //Create new value log for the current component
+
             ValueLog valueLog = new ValueLog();
-            valueLog.setTime(Instant.now());
-            valueLog.setIdref(component.getId());
-            valueLog.setComponent(component.getComponentTypeName());
-            valueLog.setTopic(component.getTopicName());
-            valueLog.setMessage("Randomly generated");
-            valueLog.setValue(generateValueLogValue());
+
+            if (checkIfRerunValueLogsAreScheduledForComponent(component)) {
+                valueLog = rerunValueLogs.get(component).poll();
+                valueLog.setTime(Instant.now());
+            } else {
+                //Create new value log for the current component
+                valueLog.setTime(Instant.now());
+                valueLog.setIdref(component.getId());
+                valueLog.setComponent(component.getComponentTypeName());
+                valueLog.setTopic(component.getTopicName());
+                valueLog.setMessage("Randomly generated");
+
+                // Get the data model of the component to generate a fitting value
+                DataModelTree dataModel = dataModelCache.getDataModelOfComponent(component.getId());
+
+                // Get example json payload from the data model, parse it to a document and set it as value log value
+                try {
+                    JSONObject jsonValue = new JSONObject(dataModel.getJSONExample());
+                    valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                            jsonValue.getJSONObject("value"),
+                            dataModel
+                    ));
+                } catch (JSONException | ParseException e) {
+                    e.printStackTrace();
+                }
+            }
 
             //Inject value log into the receiver component
             valueLogReceiver.injectValueLog(valueLog);
@@ -245,12 +307,17 @@ public class DemoDeployer implements IDeployer {
      *
      * @return The generated random value
      */
-    private double generateValueLogValue() {
+    private Document generateValueLogValue() {
         //Generate random double
         double value = ThreadLocalRandom.current().nextDouble(VALUE_LOG_MIN, VALUE_LOG_MAX);
-
         //Round the generated value to two decimals
-        return Math.round(value * 1.0e2) / 1.0e2;
+        value = Math.round(value * 1.0e2) / 1.0e2;
+
+        // Store the value in a document
+        Document retDocument = new Document();
+        retDocument.append("value", value);
+
+        return retDocument;
     }
 
     /**
