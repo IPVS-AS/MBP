@@ -14,7 +14,7 @@ def main(argv):
         count = 0
         while True:
             count = count + 1
-            mbp.send_data(count)
+            mbp.send_data("{\"value\":" + str(count) + "}")
             time.sleep(INTERVAL_BETWEEN_SENDING_DATA)
     except:
         error = sys.exc_info()

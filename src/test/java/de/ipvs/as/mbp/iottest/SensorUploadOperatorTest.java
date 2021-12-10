@@ -4,9 +4,12 @@ import javax.servlet.http.Cookie;
 
 import de.ipvs.as.mbp.base.BaseIoTTest;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.util.CommandOutput;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -21,10 +24,18 @@ public class SensorUploadOperatorTest extends BaseIoTTest {
         printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "upload-mockdevice");
 
+        //Create data model
+        printStageMessage("Creating Data Model");
+        DataModel dataModel = createDataModel(sessionCookie, "upload-datamodel", "",
+                new JSONArray()
+                        .put(new JSONObject("{\"name\": \"value\", \"type\": \"double\", \"parent\": \"RootObj\", \"children\": [] }"))
+                        .put(new JSONObject("{\"name\": \"RootObj\", \"description\": \"\", \"type\": \"object\", \"unit\": \"\", \"parent\": \"\", \"children\": [\"value\"]}")));
+
         // Create Operator
         printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
+                dataModel.getId(),
                 "TestOperator",
                 "",
                 new OperatorRoutine("test.sh", testScript)

@@ -6,11 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import javax.servlet.http.Cookie;
+import javax.xml.crypto.Data;
 
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.ComponentDTO;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.domain.operator.Operator;
@@ -69,17 +71,36 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         requestDto.setComponentType("Computer");
 
         MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
-                .cookie(sessionCookie)
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(requestDto))
-                .characterEncoding("utf-8"))
+                        .cookie(sessionCookie)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(requestDto))
+                        .characterEncoding("utf-8"))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
 
         return objectMapper.readValue(result.getResponse().getContentAsString(), Device.class);
     }
 
-    public Operator createOperator(Cookie sessionCookie, String operatorName, String operatorUnit, OperatorRoutine... scripts) throws Exception {
+    public DataModel createDataModel(Cookie sessionCookie, String dataModelName, String description, JSONArray treeNodes) throws Exception {
+        JSONObject dataModelObj = new JSONObject();
+        dataModelObj.put("name", dataModelName);
+        dataModelObj.put("description", description);
+        dataModelObj.put("treeNodes", treeNodes);
+
+        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/data-models")
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie)
+                        .contentType(REQUEST_CONTENT_TYPE)
+                        .content(dataModelObj.toString())
+                ).andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ownerName").value("admin"))
+                .andReturn();
+
+        return objectMapper.readValue(result.getResponse().getContentAsString(), DataModel.class);
+    }
+
+    public Operator createOperator(Cookie sessionCookie, String dataModelID, String operatorName, String operatorUnit, OperatorRoutine... scripts) throws Exception {
         JSONArray routines = new JSONArray();
 
         for (OperatorRoutine script : scripts) {
@@ -87,18 +108,19 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         }
 
         JSONObject operatorObj = new JSONObject();
+        operatorObj.put("name", operatorName);
+        operatorObj.put("dataModelId", dataModelID);
         operatorObj.put("parameters", new JSONArray());
         operatorObj.put("unit", operatorUnit);
-        operatorObj.put("name", operatorName);
         operatorObj.put("errors", new JSONObject());
         operatorObj.put("routines", routines);
 
         MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/operators")
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie)
-                .contentType(REQUEST_CONTENT_TYPE)
-                .content(operatorObj.toString())
-        ).andDo(print())
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie)
+                        .contentType(REQUEST_CONTENT_TYPE)
+                        .content(operatorObj.toString())
+                ).andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ownerName").value("admin"))
                 .andReturn();
@@ -124,18 +146,18 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
 
     private void deployOperator(Cookie sessionCookie, String operatorType, String operatorId) throws Exception {
         mockMvc.perform(post(RestConfiguration.BASE_PATH + "/deploy/" + operatorType + "/" + operatorId)
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie))
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
 
     private void startOperator(Cookie sessionCookie, String operatorType, String operatorId) throws Exception {
         mockMvc.perform(post(RestConfiguration.BASE_PATH + "/start/" + operatorType + "/" + operatorId)
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie)
-                .contentType(REQUEST_CONTENT_TYPE)
-                .content("[]"))
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie)
+                        .contentType(REQUEST_CONTENT_TYPE)
+                        .content("[]"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -155,10 +177,10 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         ruleAction.put("parameters", ruleActionParams);
 
         MvcResult response = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/rule-actions")
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie)
-                .contentType(REQUEST_CONTENT_TYPE)
-                .content(ruleAction.toString()))
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie)
+                        .contentType(REQUEST_CONTENT_TYPE)
+                        .content(ruleAction.toString()))
                 .andExpect(status().isOk())
                 .andDo(print()).andReturn();
 
@@ -168,8 +190,8 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
 
     public boolean testRuleAction(Cookie sessionCookie, String ruleActionId) throws Exception {
         MvcResult response = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/rule-actions/test/" + ruleActionId)
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie))
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
@@ -212,8 +234,8 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
 
     public void ensureDeviceHasSSH(Cookie sessionCookie, String deviceId) throws Exception {
         mockMvc.perform(get(RestConfiguration.BASE_PATH + "/devices/" + deviceId + "/state/")
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie))
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("SSH_AVAILABLE"))
                 .andDo(print());
@@ -221,8 +243,8 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
 
     public void ensureSensorIsReady(Cookie sessionCookie, String sensorId) throws Exception {
         mockMvc.perform(get(RestConfiguration.BASE_PATH + "/sensors/state/" + sensorId)
-                .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie))
+                        .headers(getMBPAccessHeaderForAdmin())
+                        .cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("READY"))
                 .andDo(print());

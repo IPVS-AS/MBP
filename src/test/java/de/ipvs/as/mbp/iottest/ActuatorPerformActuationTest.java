@@ -4,11 +4,14 @@ import javax.servlet.http.Cookie;
 
 import de.ipvs.as.mbp.base.BaseIoTTest;
 import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.util.CommandOutput;
 import de.ipvs.as.mbp.util.testexecution.RequiresMQTT;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,9 +27,17 @@ public class ActuatorPerformActuationTest extends BaseIoTTest {
         printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "performactuation-mockdevice");
 
+        //Create data model
+        printStageMessage("Creating Data Model");
+        DataModel dataModel = createDataModel(sessionCookie, "performactuation-datamodel", "",
+                new JSONArray()
+                        .put(new JSONObject("{\"name\": \"value\", \"type\": \"double\", \"parent\": \"RootObj\", \"children\": [] }"))
+                        .put(new JSONObject("{\"name\": \"RootObj\", \"description\": \"\", \"type\": \"object\", \"unit\": \"\", \"parent\": \"\", \"children\": [\"value\"]}")));
+
         printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
+                dataModel.getId(),
                 "TestActuationOperator",
                 "",
                 this.getRoutineFromClasspath("mbp_client.py", "text/plain", "scripts/mbp_client/mbp_client.py"),

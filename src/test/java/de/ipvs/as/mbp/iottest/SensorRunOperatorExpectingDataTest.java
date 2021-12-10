@@ -6,6 +6,7 @@ import javax.servlet.http.Cookie;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseIoTTest;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.util.CommandOutput;
@@ -31,10 +32,18 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
         printStageMessage("Creating Device");
         Device deviceObj = this.createNewDevice(device, sessionCookie, "expectdata-mockdevice");
 
+        //Create data model
+        printStageMessage("Creating Data Model");
+        DataModel dataModel = createDataModel(sessionCookie, "expectdata-datamodel", "",
+                new JSONArray()
+                        .put(new JSONObject("{\"name\": \"value\", \"type\": \"double\", \"parent\": \"RootObj\", \"children\": [] }"))
+                        .put(new JSONObject("{\"name\": \"RootObj\", \"description\": \"\", \"type\": \"object\", \"unit\": \"\", \"parent\": \"\", \"children\": [\"value\"]}")));
+
         // Create Operator
         printStageMessage("Creating Operator");
         Operator opResponse = createOperator(
                 sessionCookie,
+                dataModel.getId(),
                 "TestSensorOperator",
                 "",
                 this.getRoutineFromClasspath("mbp_client.py", "text/plain", "scripts/mbp_client/mbp_client.py"),
@@ -89,7 +98,7 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
 
         JSONObject bodyObj = new JSONObject(result.getResponse().getContentAsString());
         JSONArray contentArray = bodyObj.getJSONArray("content");
-        
+
         assertThat(contentArray.length()).isGreaterThanOrEqualTo(15);
     }
 }

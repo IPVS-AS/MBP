@@ -14,7 +14,7 @@ SECTION_MBP_PROPERTY_BROKERACTIONTOPIC = 'brokerActionTopic'
 SECTION_COMPONENT = 'Component'
 SECTION_COMPONENT_PROPERTY_COMPONENTID = 'componentId'
 
-TOPIC_SEND_MESSAGE_FORMAT = '{"component": "SENSOR", "id": "%s", "value": "%.2f"}'
+TOPIC_SEND_MESSAGE_FORMAT = '{"component": "SENSOR", "id": "%s", "value": %s}'
 
 ACTION_LOG_FILE = 'actions.log'
 JSON_PROPERTY_ACTION = 'action'
