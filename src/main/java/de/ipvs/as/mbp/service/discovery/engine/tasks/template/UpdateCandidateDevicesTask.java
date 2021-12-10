@@ -138,7 +138,7 @@ public class UpdateCandidateDevicesTask implements CandidateDevicesTask {
         addLogMessage("Requesting candidate devices from discovery repositories and creating subscriptions.");
 
         //Not available or forced, thus retrieve the candidate devices using the request topics of the owner
-        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
+        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId());
         CandidateDevicesContainer candidateDevices = this.discoveryGateway.getCandidateDevicesWithSubscription(this.deviceTemplate, requestTopics, this.subscriber);
 
         //Write log

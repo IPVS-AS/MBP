@@ -18,7 +18,6 @@ public class CEPConfiguration {
      */
     @Bean(name = "cep_engine")
     public CEPEngine cepEngine() {
-        System.out.println("load CEP Engine");
         return new EsperCEPEngine();
     }
 }

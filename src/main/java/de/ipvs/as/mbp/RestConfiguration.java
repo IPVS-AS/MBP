@@ -56,8 +56,6 @@ public class RestConfiguration implements RepositoryRestConfigurer {
      */
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-        System.out.println("load RepositoryRestMvcConfiguration");
-
         //Set base path
         config.setBasePath(BASE_PATH);
 

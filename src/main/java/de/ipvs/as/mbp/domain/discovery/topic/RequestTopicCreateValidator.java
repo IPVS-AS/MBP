@@ -53,7 +53,7 @@ public class RequestTopicCreateValidator implements ICreateValidator<RequestTopi
         }
 
         //Retrieve all request topics for current user
-        boolean duplicate = topicRepository.findByOwner(userService.getLoggedInUser().getId(), null).stream()
+        boolean duplicate = topicRepository.findByOwner(userService.getLoggedInUser().getId()).stream()
                 .map(RequestTopic::getSuffix)
                 .anyMatch(suffix::equals);
 

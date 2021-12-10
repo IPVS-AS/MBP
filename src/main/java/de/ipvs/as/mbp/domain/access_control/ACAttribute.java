@@ -79,13 +79,4 @@ public class ACAttribute {
 		this.value = value;
 		return this;
 	}
-	
-//	public static void main(String[] args) throws JsonProcessingException {
-//		ACAttribute<String> a = new ACAttribute<String>(ACDataType.ALPHABETIC, "a1", "av1");
-//		JsonNode jsonNode = new ObjectMapper().valueToTree(a);
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
-//		ACAttribute<? extends Comparable<?>> aa = new ObjectMapper().treeToValue(jsonNode, ACAttribute.class);
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(aa));
-//	}
-	
 }

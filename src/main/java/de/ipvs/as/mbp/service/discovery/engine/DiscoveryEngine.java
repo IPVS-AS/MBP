@@ -294,7 +294,7 @@ public class DiscoveryEngine implements ApplicationListener<ContextRefreshedEven
         if (requestTopic == null) throw new IllegalStateException("The request topic does not exist.");
 
         //Retrieve the device templates of the same user
-        List<DeviceTemplate> affectedDeviceTemplates = this.deviceTemplateRepository.findByOwner(requestTopic.getOwner().getId(), null);
+        List<DeviceTemplate> affectedDeviceTemplates = this.deviceTemplateRepository.findByOwner(requestTopic.getOwner().getId());
 
         //Ensure that no update task is in progress for any of those device templates
         if (affectedDeviceTemplates.stream().map(d -> this.candidateDevicesTasks.containsKey(d.getId()) ? this.candidateDevicesTasks.get(d.getId()).peek() : null).anyMatch(t -> (t != null) && (t.getTask() instanceof UpdateCandidateDevicesTask))) {

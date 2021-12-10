@@ -101,7 +101,7 @@ public class DeleteCandidateDevicesTask implements CandidateDevicesTask {
         addLogMessage("Cancelling existing subscription at the discovery repositories.");
 
         //Send message to discovery repositories in order to cancel the subscriptions
-        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId(), null);
+        List<RequestTopic> requestTopics = requestTopicRepository.findByOwner(deviceTemplate.getOwner().getId());
         this.discoveryGateway.cancelSubscription(deviceTemplate, requestTopics);
 
         //Write log

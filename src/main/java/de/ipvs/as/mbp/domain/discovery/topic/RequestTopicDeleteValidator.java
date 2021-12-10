@@ -29,7 +29,7 @@ public class RequestTopicDeleteValidator implements IDeleteValidator<RequestTopi
         if (requestTopic == null) return;
 
         //Check if there are device templates owned by the request topic owner
-        if (!deviceTemplateRepository.findByOwner(requestTopic.getOwner().getId(), null).isEmpty()) {
+        if (!deviceTemplateRepository.findByOwner(requestTopic.getOwner().getId()).isEmpty()) {
             throw new MBPException(HttpStatus.CONFLICT, "The request topic is still used by at least one device template.");
         }
     }
