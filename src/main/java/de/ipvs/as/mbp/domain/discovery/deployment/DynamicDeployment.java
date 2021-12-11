@@ -1,22 +1,16 @@
 package de.ipvs.as.mbp.domain.discovery.deployment;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.DynamicBeanProvider;
+import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
-import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
-import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.persistence.GeneratedValue;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Objects of this class represent dynamic deployments, i.e. deployments for actuators or sensors that do not make use
@@ -25,18 +19,10 @@ import java.util.List;
  */
 @Document
 @MBPEntity(createValidator = DynamicDeploymentCreateValidator.class)
-public class DynamicDeployment extends UserEntity {
+public class DynamicDeployment extends Component {
 
-    @Id
-    @GeneratedValue
-    private String id;
-
-    //Name of the dynamic deployment
-    private String name;
-
-    //The operator to deploy on the chosen devices
-    @DBRef
-    private Operator operator;
+    //Name of the component type
+    private static final String COMPONENT_TYPE_NAME = "dynamic_deployment";
 
     //The device template to use for finding suitable device candidates
     @DBRef
@@ -55,68 +41,7 @@ public class DynamicDeployment extends UserEntity {
      * Creates a new, empty dynamic deployment.
      */
     public DynamicDeployment() {
-        //Initialize data structures
-    }
 
-    /**
-     * Return the id of the dynamic deployment.
-     *
-     * @return the id
-     */
-    @Override
-    public String getId() {
-        return this.id;
-    }
-
-    /**
-     * Sets the id of the dynamic deployment.
-     *
-     * @param id The id to set
-     * @return The dynamic deployment
-     */
-    public DynamicDeployment setId(String id) {
-        this.id = id;
-        return this;
-    }
-
-    /**
-     * Returns the name of the dynamic deployment.
-     *
-     * @return The name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the name of the dynamic deployment.
-     *
-     * @param name The name to set
-     * @return The dynamic deployment
-     */
-    public DynamicDeployment setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    /**
-     * Returns the operator of the dynamic deployment.
-     *
-     * @return The operator
-     */
-    public Operator getOperator() {
-        return operator;
-    }
-
-    /**
-     * Sets the operator of the dynamic deployment.
-     *
-     * @param operator The operator to set
-     * @return The dynamic deployment
-     */
-    public DynamicDeployment setOperator(Operator operator) {
-        this.operator = operator;
-        return this;
     }
 
     /**
@@ -204,7 +129,7 @@ public class DynamicDeployment extends UserEntity {
     @JsonProperty("inProgress")
     public boolean isInProgress() {
         //Check if ID of the dynamic deployment is available
-        if ((this.id == null) || this.id.isEmpty()) {
+        if ((this.getId() == null) || this.getId().isEmpty()) {
             return false;
         }
 
@@ -212,6 +137,20 @@ public class DynamicDeployment extends UserEntity {
         DiscoveryEngine engine = DynamicBeanProvider.get(DiscoveryEngine.class);
 
         //Check whether the dynamic deployment is in progress
-        return engine.isDynamicDeploymentInProgress(this.id);
+        return engine.isDynamicDeploymentInProgress(this.getId());
+    }
+
+    @Override
+    public String getComponentTypeName() {
+        return COMPONENT_TYPE_NAME;
+    }
+
+    @JsonIgnore
+    public Device getDevice() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Component setDevice(Device address) {
+        throw new UnsupportedOperationException();
     }
 }

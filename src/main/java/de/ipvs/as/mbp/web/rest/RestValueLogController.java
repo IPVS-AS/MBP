@@ -312,5 +312,4 @@ public class RestValueLogController {
         final int end = Math.min((start + pageable.getPageSize()), valueLogsList.size());
         return new PageImpl<>(valueLogsList.subList(start, end), pageable, valueLogsList.size());
     }
-
 }
