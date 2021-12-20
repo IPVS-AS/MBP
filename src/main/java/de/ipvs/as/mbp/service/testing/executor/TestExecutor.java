@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.settings.SettingsService;
-import de.ipvs.as.mbp.service.testing.PropertiesService;
+import de.ipvs.as.mbp.service.testing.TestDevicePropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -26,7 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,7 +52,7 @@ public class TestExecutor {
     private TestAnalyzer testAnalyzer;
 
     @Autowired
-    private final PropertiesService propertiesService;
+    private TestDevicePropertiesService testDevicePropertiesService;
 
     @Autowired
     private RuleRepository ruleRepository;
@@ -81,13 +80,9 @@ public class TestExecutor {
     }
 
 
-    public TestExecutor() throws IOException {
-        propertiesService = new PropertiesService();
-        this.TESTING_ACTUATOR =
-                propertiesService.getPropertiesString("testingTool.actuatorName");
-        this.CONFIG_SENSOR_NAME_KEY =
-                propertiesService
-                        .getPropertiesString("testingTool.ConfigSensorNameKey");
+    public TestExecutor() {
+        this.TESTING_ACTUATOR = testDevicePropertiesService.getActuatorName();
+        this.CONFIG_SENSOR_NAME_KEY = testDevicePropertiesService.getConfigSensorNameKey();
     }
 
 

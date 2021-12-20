@@ -58,7 +58,7 @@ public class DefaultTestingComponents {
     private final DeviceCreateValidator deviceCreateValidator;
 
     @Autowired
-    private final PropertiesService propertiesService;
+    private TestDevicePropertiesService testDevicePropertiesService;
 
     @Autowired
     private final ComponentCreateValidator componentCreateValidator;
@@ -94,14 +94,12 @@ public class DefaultTestingComponents {
                                     SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
         this.testReportRepository = testReportRepository;
         // Get needed Strings out of the properties to create the testing components
-        propertiesService = new PropertiesService();
-        TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
-        TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.ipAddressTestDevice");
-        TEST_DEVICE_USERNAME = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
-        TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
-        ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
-        TEST_PREFIX = propertiesService.getPropertiesString("testingTool.testComponentIdentifier");
-
+        TEST_DEVICE = testDevicePropertiesService.getTestDeviceName();
+        TEST_DEVICE_IP = testDevicePropertiesService.getIpAddressTestDevice();
+        TEST_DEVICE_USERNAME = testDevicePropertiesService.getTestDeviceUserName();
+        TEST_DEVICE_PASSWORD = testDevicePropertiesService.getTestDevicePassword();
+        ACTUATOR_NAME = testDevicePropertiesService.getActuatorName();
+        TEST_PREFIX = testDevicePropertiesService.getTestComponentIdentifier();
 
         this.defaultTestComponentsWhiteList = defaultTestComponentsWhiteList;
         this.operatorRepository = operatorRepository;
