@@ -10,8 +10,8 @@ import de.ipvs.as.mbp.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
@@ -19,7 +19,7 @@ import java.util.Optional;
  * This service provides features for the management of application-wide settings that may be changed by the users.
  * The settings are implicitly stored within a MongoDB repository. implicitly stores the settings persistently in a properties file on disk and enables changes of the settings.
  */
-@Service
+@Configuration
 @DependsOn({"applicationPropertiesConfigurer", "gitPropertiesConfigurer"})
 public class SettingsService {
     @Autowired

@@ -118,7 +118,7 @@ public class RestACPolicyController {
     }
     
     private EntityModel<ACPolicyResponseDTO> policyToEntityModel(ACPolicyResponseDTO policy) {
-    	return new EntityModel<ACPolicyResponseDTO>(policy, linkTo(getClass()).slash(policy.getId()).withSelfRel());
+    	return EntityModel.of(policy, linkTo(getClass()).slash(policy.getId()).withSelfRel());
     }
     
     private PagedModel<EntityModel<ACPolicyResponseDTO>> policiesToPagedModel(List<ACPolicyResponseDTO> policies, Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
@@ -132,7 +132,7 @@ public class RestACPolicyController {
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	
     	// Create and return paged model
-    	return new PagedModel<>(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link));
+    	return PagedModel.of(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link));
     }
 
 }

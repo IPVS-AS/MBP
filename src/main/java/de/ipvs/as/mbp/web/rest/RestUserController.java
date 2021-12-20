@@ -53,10 +53,10 @@ public class RestUserController {
         userService.requireAdmin();
 
         //Retrieve all users and create entity models for them
-        List<EntityModel<User>> entityModels = userService.getAll(pageable).toList().stream().map(user -> new EntityModel<User>(user, linkTo(getClass()).slash(user.getId()).withSelfRel())).collect(Collectors.toList());
+        List<EntityModel<User>> entityModels = userService.getAll(pageable).toList().stream().map(user -> EntityModel.of(user, linkTo(getClass()).slash(user.getId()).withSelfRel())).collect(Collectors.toList());
 
         //Create paged model from users
-        PagedModel<EntityModel<User>> pagedModel = new PagedModel<>(entityModels, Pages.metaDataOf(pageable, entityModels.size()));
+        PagedModel<EntityModel<User>> pagedModel = PagedModel.of(entityModels, Pages.metaDataOf(pageable, entityModels.size()));
 
         //Create and return response
         return ResponseEntity.ok(pagedModel);
@@ -143,7 +143,7 @@ public class RestUserController {
         User updatedUser = userService.promoteUser(userId);
 
         //Return entity model of the updated user
-        return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
+        return ResponseEntity.ok(EntityModel.of(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
     }
 
     @PostMapping(path = "/{userId}/degrade")
@@ -162,7 +162,7 @@ public class RestUserController {
         User updatedUser = userService.degradeUser(userId);
 
         //Return entity model of the updated user
-        return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
+        return ResponseEntity.ok(EntityModel.of(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
     }
 
     @PostMapping(path = "/{userId}/change_password")
@@ -176,6 +176,6 @@ public class RestUserController {
         User updatedUser = userService.changePassword(userId, newPassword.getPassword());
 
         //Return entity model of the updated user
-        return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
+        return ResponseEntity.ok(EntityModel.of(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
     }
 }

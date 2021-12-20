@@ -14,6 +14,7 @@ import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -22,24 +23,19 @@ import java.util.stream.Collectors;
 @Component
 public class TestAnalyzer implements ValueLogReceiverObserver {
 
-
     @Autowired
     private TestDetailsRepository testDetailsRepository;
 
     @Autowired
-    private TestAnalyzer testEngine;
-
-    @Autowired
     private RuleTriggerRepository ruleTriggerRepository;
-
 
     @Autowired
     private TestRepository testRepo;
 
-
     @Autowired
     private RuleRepository ruleRepository;
 
+    @Lazy // avoid problems with spring because of this circular dependency
     @Autowired
     private TestExecutor testExecutor;
 
@@ -149,7 +145,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             testReportRepository.save(testReport);
         }
 
-        return testEngine.getTestValues();
+        return this.getTestValues();
     }
 
 

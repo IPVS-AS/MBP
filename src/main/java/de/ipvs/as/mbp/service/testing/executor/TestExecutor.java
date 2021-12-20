@@ -52,17 +52,10 @@ public class TestExecutor {
     private TestAnalyzer testAnalyzer;
 
     @Autowired
-    private TestDevicePropertiesService testDevicePropertiesService;
-
-    @Autowired
-    private RuleRepository ruleRepository;
-
-    @Autowired
     private DeployerDispatcher deployerDispatcher;
 
     @Autowired
     private SettingsService settingsService;
-
 
     // List of all active Tests
     Map<String, TestDetails> activeTests = new HashMap<>();
@@ -79,8 +72,7 @@ public class TestExecutor {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-
-    public TestExecutor() {
+    public TestExecutor(TestDevicePropertiesService testDevicePropertiesService) {
         this.TESTING_ACTUATOR = testDevicePropertiesService.getActuatorName();
         this.CONFIG_SENSOR_NAME_KEY = testDevicePropertiesService.getConfigSensorNameKey();
     }
@@ -119,8 +111,8 @@ public class TestExecutor {
 
 
             for (Sensor sensor : testSensors) {
-                    activeTests.put(sensor.getId(), test);
-                    list.remove(sensor.getId());
+                activeTests.put(sensor.getId(), test);
+                list.remove(sensor.getId());
             }
 
 

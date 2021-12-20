@@ -107,7 +107,7 @@ public class RestACConditionController {
     }
     
     private EntityModel<ACAbstractCondition> conditionToEntityModel(ACAbstractCondition condition) {
-    	return new EntityModel<>(condition, linkTo(getClass()).slash(condition.getId()).withSelfRel());
+    	return EntityModel.of(condition, linkTo(getClass()).slash(condition.getId()).withSelfRel());
     }
     
     private PagedModel<EntityModel<ACAbstractCondition>> conditionsToPagedModel(List<ACAbstractCondition> conditions, Pageable pageable) {
@@ -121,7 +121,7 @@ public class RestACConditionController {
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	
     	// Create and return paged model
-    	return new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
+    	return PagedModel.of(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
     }
     
 }

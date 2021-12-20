@@ -1,12 +1,13 @@
 package de.ipvs.as.mbp.service.testing;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 /**
  * This service provides configuration values about test devices
  */
-@Component
+@Configuration
 public class TestDevicePropertiesService {
 
     @Value("${testingTool.testDeviceName}")

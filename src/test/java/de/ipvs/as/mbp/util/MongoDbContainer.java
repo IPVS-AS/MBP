@@ -1,15 +1,17 @@
 package de.ipvs.as.mbp.util;
 
+import java.util.Arrays;
 import java.util.List;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import org.testcontainers.containers.GenericContainer;
 
 public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
 
     private static MongoDbContainer instance = null;
     private static final int MONGODB_STANDARD_PORT = 27017;
-    private static final List<String> MONGODB_CLEANUP_BLACKLIST = List.of(new String[] {"admin", "config", "local"});
+    private static final List<String> MONGODB_CLEANUP_BLACKLIST = Arrays.asList("admin", "config", "local");
 
     public MongoDbContainer() {
         super("mongo:latest");
@@ -30,7 +32,7 @@ public class MongoDbContainer extends GenericContainer<MongoDbContainer> {
      */
     public void wipeMongoDB() {
         if (this.isRunning()) {
-            MongoClient mongoClient = new MongoClient(this.getHost(), this.getMappedPort(MONGODB_STANDARD_PORT));
+            MongoClient mongoClient = MongoClients.create(String.format("mongodb://%s:%d", getHost(), getFirstMappedPort()));
 
             for (String dbName : mongoClient.listDatabaseNames()) {
                 if (!MONGODB_CLEANUP_BLACKLIST.contains(dbName)) {

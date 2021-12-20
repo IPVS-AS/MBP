@@ -383,11 +383,11 @@ public class UserEntityService {
 
     public <E extends UserEntity> PagedModel<EntityModel<E>> entitiesToPagedModel(List<E> entities, Link selfLink, Pageable pageable) {
         List<EntityModel<E>> deviceEntityModels = entities.stream().map(this::entityToEntityModel).collect(Collectors.toList());
-        return new PagedModel<>(deviceEntityModels, Pages.metaDataOf(pageable, deviceEntityModels.size()), C.listOf(selfLink));
+        return PagedModel.of(deviceEntityModels, Pages.metaDataOf(pageable, deviceEntityModels.size()), C.listOf(selfLink));
     }
 
     public <E extends UserEntity> EntityModel<E> entityToEntityModel(E entity) {
-        return new EntityModel<E>(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
+        return EntityModel.of(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
     }
 
 }

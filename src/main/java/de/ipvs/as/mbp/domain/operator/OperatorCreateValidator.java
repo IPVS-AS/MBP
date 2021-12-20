@@ -16,9 +16,6 @@ import java.util.Set;
  */
 @Service
 public class OperatorCreateValidator implements ICreateValidator<Operator> {
-    @Autowired
-    private OperatorRepository operatorRepository;
-
     //Max length of parameter units
     private static final int PARAMETER_UNIT_MAX_LENGTH = 20;
 

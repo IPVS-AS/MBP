@@ -79,6 +79,6 @@ public class RestDeviceStateController {
 		// Determine device state
 		DeviceState deviceState = deployer.retrieveDeviceState(device);
 
-		return ResponseEntity.ok(new EntityModel<DeviceState>(deviceState));
+		return ResponseEntity.ok(EntityModel.of(deviceState));
 	}
 }

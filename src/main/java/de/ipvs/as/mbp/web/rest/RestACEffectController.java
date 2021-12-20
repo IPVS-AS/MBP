@@ -94,7 +94,7 @@ public class RestACEffectController {
     }
     
     private EntityModel<ACAbstractEffect> effectToEntityModel(ACAbstractEffect effect) {
-    	return new EntityModel<ACAbstractEffect>(effect, linkTo(getClass()).slash(effect.getId()).withSelfRel());
+    	return EntityModel.of(effect, linkTo(getClass()).slash(effect.getId()).withSelfRel());
     }
     
     private PagedModel<EntityModel<ACAbstractEffect>> effectsToPagedModel(List<ACAbstractEffect> effects, Pageable pageable) {
@@ -108,7 +108,7 @@ public class RestACEffectController {
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	
     	// Create and return paged model
-    	return new PagedModel<>(effectEntityModels, Pages.metaDataOf(pageable, effectEntityModels.size()), C.listOf(link));
+    	return PagedModel.of(effectEntityModels, Pages.metaDataOf(pageable, effectEntityModels.size()), C.listOf(link));
     }
     
 }

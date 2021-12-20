@@ -126,6 +126,6 @@ public class RestComponentStateController {
 
 		// Determine component state
 		// TODO: Entity model really required here???
-		return new EntityModel<ComponentState>(deploymentWrapper.getComponentState(component));
+		return EntityModel.of(deploymentWrapper.getComponentState(component));
 	}
 }

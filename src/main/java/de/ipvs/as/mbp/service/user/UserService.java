@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.security.SecurityUtils;
 import de.ipvs.as.mbp.service.testing.TestEngine;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Lazy // avoid problems with spring because of this circular dependency
     @Autowired
     private UserEntityService userEntityService;
 

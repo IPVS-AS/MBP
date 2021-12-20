@@ -202,7 +202,7 @@ public class RestMonitoringController {
         requireMonitoringPermission(monitoringComponent.getDevice(), user, accessRequest);
 
         // Determine component state
-        return ResponseEntity.ok(new EntityModel<ComponentState>(deploymentWrapper.getComponentState(monitoringComponent)));
+        return ResponseEntity.ok(EntityModel.of(deploymentWrapper.getComponentState(monitoringComponent)));
     }
 
     @GetMapping("/monitoring-operators/by-device/{id}")

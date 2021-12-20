@@ -33,7 +33,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @Value("${spring.data.mongodb.password}")
     private String mongoPassword;
 
-    @Override
     @Bean
     public MongoClient mongoClient() {
         //String for mongoDB credentials

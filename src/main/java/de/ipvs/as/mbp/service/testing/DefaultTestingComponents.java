@@ -58,9 +58,6 @@ public class DefaultTestingComponents {
     private final DeviceCreateValidator deviceCreateValidator;
 
     @Autowired
-    private TestDevicePropertiesService testDevicePropertiesService;
-
-    @Autowired
     private final ComponentCreateValidator componentCreateValidator;
 
     @Autowired
@@ -75,10 +72,8 @@ public class DefaultTestingComponents {
     @Autowired
     private final DefaultOperatorService defaultOperatorService;
 
-
     @Autowired
     RuleTriggerRepository ruleTriggerRepository;
-
 
     private final String TEST_DEVICE;
     private final String TEST_DEVICE_IP;
@@ -91,7 +86,7 @@ public class DefaultTestingComponents {
 
 
     public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, TestReportRepository testReportRepository, OperatorRepository operatorRepository, DataModelRepository dataModelRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
-                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
+                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository, TestDevicePropertiesService testDevicePropertiesService) throws IOException {
         this.testReportRepository = testReportRepository;
         // Get needed Strings out of the properties to create the testing components
         TEST_DEVICE = testDevicePropertiesService.getTestDeviceName();
