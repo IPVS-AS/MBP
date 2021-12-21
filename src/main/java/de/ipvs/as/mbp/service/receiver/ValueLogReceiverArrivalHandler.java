@@ -40,19 +40,19 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
     private static final String JSON_KEY_VALUE = "value";
 
     // Cache of data model trees to provide fast supply
-    private DataModelTreeCache dataModelTreeCache;
+    private final DataModelTreeCache dataModelTreeCache;
 
     //Pattern for retrieving component types from message topics
     private static final Pattern COMPONENT_TYPES_PATTERN = Pattern.compile("^([a-zA-Z0-9_-]+)/.+");
 
     //Set of observers
-    private Set<ValueLogReceiverObserver> observerSet;
+    private final Set<ValueLogReceiverObserver> observerSet;
 
     //Repository instances for checking component IDs
-    private ActuatorRepository actuatorRepository;
-    private SensorRepository sensorRepository;
-    private DeviceRepository deviceRepository;
-    private MonitoringOperatorRepository monitoringOperatorRepository;
+    private final ActuatorRepository actuatorRepository;
+    private final SensorRepository sensorRepository;
+    private final DeviceRepository deviceRepository;
+    private final MonitoringOperatorRepository monitoringOperatorRepository;
 
     /**
      * Creates a new value logger event handler.
@@ -61,16 +61,16 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      */
     ValueLogReceiverArrivalHandler(Set<ValueLogReceiverObserver> observerSet, ActuatorRepository actuatorRepository,
                                    SensorRepository sensorRepository, DeviceRepository deviceRepository,
-                                   MonitoringOperatorRepository monitoringOperatorRepository) {
+                                   MonitoringOperatorRepository monitoringOperatorRepository,
+                                   DataModelTreeCache dataModelTreeCache) {
         //Store references to passed parameters
         this.observerSet = observerSet;
         this.actuatorRepository = actuatorRepository;
         this.sensorRepository = sensorRepository;
         this.deviceRepository = deviceRepository;
         this.monitoringOperatorRepository = monitoringOperatorRepository;
-
         // Get the bean of the data model tree cache
-        this.dataModelTreeCache = DynamicBeanProvider.get(DataModelTreeCache.class);
+        this.dataModelTreeCache = dataModelTreeCache;
     }
 
     /**

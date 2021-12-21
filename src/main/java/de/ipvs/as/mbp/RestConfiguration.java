@@ -28,6 +28,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -55,7 +56,8 @@ public class RestConfiguration implements RepositoryRestConfigurer {
      * @param config Repository REST configuration to extend
      */
     @Override
-    public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+    public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
+        RepositoryRestConfigurer.super.configureRepositoryRestConfiguration(config, cors);
         System.out.println("load RepositoryRestMvcConfiguration");
 
         //Set base path

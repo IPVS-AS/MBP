@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.repository.projection.MonitoringOperatorExcerpt;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.stereotype.Repository;
 
 /**
  * Repository definition interface for monitoring adapters.
@@ -13,6 +14,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 //@RepositoryRestResource(collectionResourceRel = "monitoring-adapters", path = "monitoring-adapters",
 //        excerptProjection = MonitoringAdapterExcerpt.class)
 //@Api(tags = {"Monitoring adapter entities"}, description = "CRUD for monitoring adapter entities")
+@Repository
 public interface MonitoringOperatorRepository extends UserEntityRepository<MonitoringOperator> {
 //    @RestResource(exported = false)
 //    MonitoringAdapter findByName(@Param("name") String name);

@@ -104,20 +104,4 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     public String getMongoPassword() {
         return mongoPassword;
     }
-
-    /**
-     * Create a configurer for the injection of application-related property values, based on the
-     * application.properties file.
-     *
-     * @return The resulting property configurer
-     */
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer applicationPropertiesConfigurer() {
-        //Create corresponding property configurer and make it tolerant
-        PropertySourcesPlaceholderConfigurer propsConfig = new PropertySourcesPlaceholderConfigurer();
-        propsConfig.setIgnoreUnresolvablePlaceholders(true);
-
-        //Return final configurer
-        return propsConfig;
-    }
 }

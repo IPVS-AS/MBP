@@ -22,7 +22,6 @@
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
     </properties>
 
     <repositories>
@@ -107,12 +106,8 @@
 
         <!-- Thymeleaf -->
         <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring5</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <!-- JScience -->
@@ -326,11 +321,11 @@
                 <version>4.0.0</version>
                 <executions>
                     <execution>
-                        <id>get-the-git-infos</id>
+                        <id>get-git-info</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>revision</goal>
                         </goals>
-                        <phase>initialize</phase>
                     </execution>
                     <execution>
                         <id>validate-the-git-infos</id>
@@ -341,7 +336,7 @@
                 </executions>
                 <configuration>
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
+                    <generateGitPropertiesFilename>${project.build.directory}/generated-resources/git.properties
                     </generateGitPropertiesFilename>
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.branch$</includeOnlyProperty>

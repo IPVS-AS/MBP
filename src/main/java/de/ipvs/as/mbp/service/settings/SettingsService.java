@@ -11,7 +11,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
 
 import java.util.Optional;
 
@@ -20,7 +20,7 @@ import java.util.Optional;
  * The settings are implicitly stored within a MongoDB repository. implicitly stores the settings persistently in a properties file on disk and enables changes of the settings.
  */
 @Configuration
-@DependsOn({"applicationPropertiesConfigurer", "gitPropertiesConfigurer"})
+@PropertySource("classpath:git.properties")
 public class SettingsService {
     @Autowired
     private SettingsRepository settingsRepository;
@@ -140,5 +140,13 @@ public class SettingsService {
         defaultSettings.setBrokerIPAddress(defaultBrokerHost);
 
         return defaultSettings;
+    }
+
+    public String getDefaultBrokerHost() {
+        return defaultBrokerHost;
+    }
+
+    public BrokerLocation getDefaultBrokerLocation() {
+        return BrokerLocation.valueOf(defaultBrokerLocation);
     }
 }

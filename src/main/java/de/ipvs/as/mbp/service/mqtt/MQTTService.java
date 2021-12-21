@@ -42,13 +42,13 @@ public class MQTTService {
     private static final String CLIENT_ID = "mbp-client-" + getUniqueClientSuffix();
 
     //Autowired components
-    private SettingsService settingsService;
+    private final SettingsService settingsService;
 
     //Stores the reference of the mqtt client
     private MqttClient mqttClient = null;
 
     //Set of topics the MQTT service is supposed to subscribe
-    private Set<String> subscribedTopics = new HashSet<>();
+    private final Set<String> subscribedTopics = new HashSet<>();
 
     //Callback object to use for incoming MQTT messages
     private MqttCallback mqttCallback = null;
@@ -81,7 +81,7 @@ public class MQTTService {
 
         //Setup and start the MQTT client if a local, normal broker is used. Otherwise: only setup MQTT client.
         try {
-            String brokerAddress = "localhost";
+            String brokerAddress = settingsService.getDefaultBrokerHost();
             MemoryPersistence persistence = new MemoryPersistence();
             if (settingsService.getSettings().getBrokerLocation().equals(BrokerLocation.LOCAL_SECURE)) {
                 mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
@@ -106,16 +106,10 @@ public class MQTTService {
      * @throws IOException   In case of an I/O issue
      */
     public void initialize() throws MqttException, IOException {
-        //Disconnect the old mqtt client if already connected
-        if ((mqttClient != null) && (mqttClient.isConnected())) {
-            mqttClient.disconnectForcibly();
-        }
-
-        //Stores the address of the desired mqtt broker
-        String brokerAddress = "localhost";
-
         //Retrieve desired broker address from settings
         Settings settings = settingsService.getSettings();
+        //Stores the address of the desired mqtt broker
+        String brokerAddress = "localhost";
         brokerAddress = settings.getBrokerIPAddress();
 
         //Pass settings to main initialization function
