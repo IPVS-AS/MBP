@@ -10,7 +10,7 @@ public enum ParameterType {
     TEXT("Text"), NUMBER("Number"), BOOLEAN("Switch");
 
     //Name of the parameter type that is displayed to the user
-    private String name;
+    private final String name;
 
     /**
      * Creates a new parameter type with a specific name.

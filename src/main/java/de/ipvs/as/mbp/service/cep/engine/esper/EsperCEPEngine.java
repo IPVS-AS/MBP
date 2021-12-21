@@ -16,12 +16,12 @@ import java.util.*;
  */
 public class EsperCEPEngine implements CEPEngine {
     //Internal fields
-    private EPServiceProvider cepService;
-    private EPAdministrator cepAdmin;
-    private EPRuntime cepRuntime;
+    private final EPServiceProvider cepService;
+    private final EPAdministrator cepAdmin;
+    private final EPRuntime cepRuntime;
 
     //Stores the event types that have been registered at the engine
-    private Set<CEPEventType> registeredEventTypes;
+    private final Set<CEPEventType> registeredEventTypes;
 
     /**
      * Creates the component by initializing Esper and the corresponding internal fields.

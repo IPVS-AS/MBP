@@ -19,7 +19,7 @@ public class SSHKeyPairGenerator {
      */
     private static final int KEY_TYPE = com.jcraft.jsch.KeyPair.RSA;
 
-    private JSch jsch;
+    private final JSch jsch;
 
     /**
      * Instantiates the key generator service with a new SSH session.

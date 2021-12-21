@@ -17,7 +17,7 @@ import java.util.Map;
 public class SSHSessionPool {
 
     //Map (device id -> SSH session) of sessions
-    private Map<String, SSHSession> sessionsMap;
+    private final Map<String, SSHSession> sessionsMap;
 
     /**
      * Initializes the session pool.

@@ -83,7 +83,7 @@ public class C {
 	 * 		   is {@code null}; the (unmodified) list otherwise.
 	 */
 	public static final <T> List<T> initIfNull(List<T> list) {
-		return list == null ? new ArrayList<T>() : list;
+		return list == null ? new ArrayList<>() : list;
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public class C {
 	 */
 	@SafeVarargs
 	public static final <T> Set<T> setOf(T... items) {
-		return new HashSet<T>(listOf(items));
+		return new HashSet<>(listOf(items));
 	}
 	
 	/**
@@ -118,7 +118,7 @@ public class C {
 	 */
 	@SafeVarargs
 	public static final <T> List<T> listOf(T... items) {
-		return new ArrayList<T>(Arrays.asList(items));
+		return new ArrayList<>(Arrays.asList(items));
 	}
 	
 }

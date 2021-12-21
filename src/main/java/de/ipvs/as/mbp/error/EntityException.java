@@ -5,7 +5,7 @@ package de.ipvs.as.mbp.error;
  */
 public abstract class EntityException extends Exception {
 
-	private String entityType;
+	private final String entityType;
 	private String entityId;
 	
 	// - - -

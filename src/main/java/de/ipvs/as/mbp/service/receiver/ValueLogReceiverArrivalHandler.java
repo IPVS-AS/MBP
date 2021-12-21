@@ -3,8 +3,7 @@ package de.ipvs.as.mbp.service.receiver;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Set;
-import de.ipvs.as.mbp.DynamicBeanProvider;
+
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;

@@ -10,7 +10,7 @@ enum DeploymentAction {
     DEPLOY(ComponentState.DEPLOYED), START(ComponentState.RUNNING), STOP(ComponentState.DEPLOYED),
     UNDEPLOY(ComponentState.READY);
 
-    private ComponentState targetState;
+    private final ComponentState targetState;
 
     /**
      * Creates a new deployment action enumeration object by passing a desired target state in which a component

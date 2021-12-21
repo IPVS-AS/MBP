@@ -90,7 +90,7 @@ public class ACCompositeCondition extends ACAbstractCondition {
 	@Override
 	public ACAbstractCondition computeAndSetHumanReadableDescription() {
 		super.computeAndSetHumanReadableDescription();
-		conditions.forEach(c -> c.computeAndSetHumanReadableDescription());
+		conditions.forEach(ACAbstractCondition::computeAndSetHumanReadableDescription);
 		return this;
 	}
 	

@@ -15,7 +15,7 @@ import java.util.Map;
 @Component
 public class CEPValueLogCache {
 
-    private Map<String, Map<Long, ValueLog>> cache;
+    private final Map<String, Map<Long, ValueLog>> cache;
 
     public CEPValueLogCache() {
         cache = new HashMap<>();

@@ -5,7 +5,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import de.ipvs.as.mbp.repository.projection.OperatorExcerpt;
-import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.List;
 

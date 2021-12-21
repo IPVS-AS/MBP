@@ -1,7 +1,6 @@
 package de.ipvs.as.mbp.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;

@@ -71,7 +71,7 @@ public class RestACPolicyController {
     }
 
 	@PreAuthorize("isFullyAuthenticated()")
-	@GetMapping(path = "/byCondition", produces = "application/hal+json")
+	@GetMapping(path = "/byCondition/{conditionId}", produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byCondition(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
@@ -79,7 +79,7 @@ public class RestACPolicyController {
     	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwnerAndCondition(user.getId(), conditionId, pageable), user.getId()), pageable));
     }
 	
-	@GetMapping(path = "/byEffect", produces = "application/hal+json")
+	@GetMapping(path = "/byEffect/{effectId}", produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byEffect(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
@@ -120,7 +120,7 @@ public class RestACPolicyController {
 	@ApiOperation(value = "Retrieves all existing policy access types.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })
     public ResponseEntity<List<String>> accessTypes() {
-    	return ResponseEntity.ok(Arrays.asList(ACAccessType.values()).stream().map(at -> at.toString()).collect(Collectors.toList()));
+    	return ResponseEntity.ok(Arrays.asList(ACAccessType.values()).stream().map(Object::toString).collect(Collectors.toList()));
     }
     
     private EntityModel<ACPolicyResponseDTO> policyToEntityModel(ACPolicyResponseDTO policy) {

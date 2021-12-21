@@ -18,7 +18,7 @@ import de.ipvs.as.mbp.domain.access_control.IACConditionArgument;
  */
 public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstractConditionEvaluator<ACSimpleCondition<T>> {
 	
-	private ACAttributeProvider attributeProvider = new ACAttributeProvider();
+	private final ACAttributeProvider attributeProvider = new ACAttributeProvider();
 	
  	@Override
 	public boolean evaluate(ACSimpleCondition<T> condition, ACAccess access, ACAccessRequest request) {

@@ -30,7 +30,7 @@ public class CEPValueLogParser {
     /**
      * All known parse instructions.
      */
-    private HashMap<String, Set<CEPValueLogParseInstruction>> cachedParseInstructions;
+    private final HashMap<String, Set<CEPValueLogParseInstruction>> cachedParseInstructions;
 
     public CEPValueLogParser() {
         cachedParseInstructions = new HashMap<>();

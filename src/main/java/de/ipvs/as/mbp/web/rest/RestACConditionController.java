@@ -4,6 +4,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,9 +101,7 @@ public class RestACConditionController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })
     public ResponseEntity<List<ACAttributeKey>> attributeKeys() {
     	List<ACAttributeKey> attributeKeys = new ArrayList<>();
-    	for (ACAttributeKey key : ACAttributeKey.values()) {
-    		attributeKeys.add(key);
-    	}
+		attributeKeys.addAll(Arrays.asList(ACAttributeKey.values()));
     	return ResponseEntity.ok(attributeKeys);
     }
     

@@ -14,7 +14,7 @@ public class MBPException extends RuntimeException {
 
 	private static final long serialVersionUID = -6655283848175258933L;
 	
-	private HttpStatus status;
+	private final HttpStatus status;
 	
 	// - - -
 	

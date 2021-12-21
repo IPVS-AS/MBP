@@ -2,7 +2,6 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -39,8 +38,8 @@ public enum DataModelDataType implements Comparable<DataModelDataType> {
 
     private final String name;
     private final CEPPrimitiveDataTypes cepType;
-    private Class<?> referenceClass;
-    private Supplier<Object> exampleSupplier;
+    private final Class<?> referenceClass;
+    private final Supplier<Object> exampleSupplier;
 
 
     DataModelDataType(String name, CEPPrimitiveDataTypes cepType, Class<?> referenceClass, Supplier<Object> exampleSupplier) {

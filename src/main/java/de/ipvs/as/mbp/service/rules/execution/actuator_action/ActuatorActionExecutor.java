@@ -37,10 +37,10 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
     private static final String REGEX_ACTION_NAME = "[A-z0-9_\\- ]+";
 
     //Autowired
-    private ActuatorRepository actuatorRepository;
+    private final ActuatorRepository actuatorRepository;
 
     //Autowired
-    private MQTTService mqttService;
+    private final MQTTService mqttService;
 
     /**
      * Initializes the actuator action executor component.

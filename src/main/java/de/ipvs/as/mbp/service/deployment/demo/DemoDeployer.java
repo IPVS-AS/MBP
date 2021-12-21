@@ -18,7 +18,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import javax.json.JsonObject;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.HashMap;

@@ -312,9 +312,7 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
                 for (int ind = 0; ind < dimension; ind++) {
                     for (List<Integer> indPerPath : arrayIndicesPerPathToBuild) {
                         List<Integer> tmp = new ArrayList<>();
-                        for (Integer toAdd : indPerPath) {
-                            tmp.add(toAdd);
-                        }
+                        tmp.addAll(indPerPath);
                         tmp.add(ind);
                         pathIndicesToAdd.add(tmp);
                         if (!pathIndicesToRemove.contains(indPerPath)) {

@@ -35,7 +35,7 @@ public class SSHSession {
     private String url;
     private int port;
     private String username;
-    private String password;
+    private final String password;
     private String key;
 
     //Remembers whether a sudo password is required

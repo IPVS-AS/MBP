@@ -120,7 +120,7 @@ public class ACSimpleCondition<T extends Comparable<T>> extends ACAbstractCondit
 	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
 	public static <T extends Comparable<T>> ACSimpleCondition<T> create(String name, String description, ACArgumentFunction function, ACEntityType entityType, ACAttributeKey key, T right, String ownerId) {
-		return new ACSimpleCondition<T>(name, description, function, new ACConditionSimpleAttributeArgument<>(entityType, key), new ACConditionSimpleValueArgument<>(right), ownerId);
+		return new ACSimpleCondition<>(name, description, function, new ACConditionSimpleAttributeArgument<>(entityType, key), new ACConditionSimpleValueArgument<>(right), ownerId);
 	}
 	
 	/**
