@@ -28,6 +28,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -90,7 +91,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
              * @return The processed sensor resource
              */
             @Override
-            public EntityModel<Sensor> process(EntityModel<Sensor> resource) {
+            public @NonNull EntityModel<Sensor> process(@NonNull EntityModel<Sensor> resource) {
                 //Get sensor id
                 String id = resource.getContent().getId();
                 //Link sensor with deployment
@@ -121,7 +122,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
              * @return The processed actuator resource
              */
             @Override
-            public EntityModel<Actuator> process(EntityModel<Actuator> resource) {
+            public @NonNull EntityModel<Actuator> process(@NonNull EntityModel<Actuator> resource) {
                 //Get actuator id
                 String id = resource.getContent().getId();
                 //Link actuator with deployment

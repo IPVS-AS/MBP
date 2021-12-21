@@ -19,11 +19,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebMvc
-@EnableSpringDataWebSupport
-@ComponentScan(basePackages = {
-        Constants.ROOT_PACKAGE
-})
-@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class WebServletConfiguration extends AbstractSecurityWebApplicationInitializer implements WebMvcConfigurer {
 
     private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {

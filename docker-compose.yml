@@ -23,15 +23,13 @@ services:
       - mongodb_volume:/data/db
 
   mosquitto:
-    image: mosquitto-go-auth
     container_name: mosquitto
     hostname: mosquitto
     build:
       context: ./mosquitto
       args:
-        # NOTE: change this to use default mosquitto setup without go-auth plugin installed
+        # NOTE: change this to use mosquitto setup with(out) auth plugin installed
         is_secure: "false"
-    #    network_mode: host # TODO test
     ports:
       - 1883:1883
       - 1884:1884

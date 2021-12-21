@@ -55,11 +55,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         return mongoDatabase;
     }
 
-    @Override
-    protected String getMappingBasePackage() {
-        return Constants.ROOT_PACKAGE + ".repository";
-    }
-
     /**
      * Returns the host name of the mongo configuration.
      *

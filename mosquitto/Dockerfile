@@ -47,7 +47,6 @@ RUN groupadd mosquitto \
 #Copy confs, plugin so and mosquitto binary.
 COPY --from=builder /app/mosquitto/ /mosquitto/
 COPY --from=builder /app/go-auth.so /tmp/go-auth.so
-RUN if [ "$is_secure" = "true" ] ; then mv /tmp/go-auth.so /mosquitto/go-auth.so ; fi
 COPY --from=builder /usr/local/sbin/mosquitto /usr/sbin/mosquitto
 
 #Uncomment to copy your custom confs (change accordingly) directly when building the image.
@@ -55,7 +54,8 @@ COPY --from=builder /usr/local/sbin/mosquitto /usr/sbin/mosquitto
 
 COPY mosquitto.conf /etc/mosquitto/mosquitto.conf
 COPY mosquitto-go-auth.conf /tmp/go-auth.conf
-RUN mkdir -p /etc/mosquitto/conf.d; if [ "$is_secure" = "true" ] ; then cp /tmp/go-auth.conf /etc/mosquitto/conf.d/go-auth.conf ; fi
+RUN mkdir -p /etc/mosquitto/conf.d; if [ "$is_secure" = "true" ] ; then mv /tmp/go-auth.so /mosquitto/go-auth.so; \
+    cp /tmp/go-auth.conf /etc/mosquitto/conf.d/go-auth.conf ; fi
 
 #COPY conf/auth/acls /etc/mosquitto/auth/acls
 #COPY conf/auth/passwords /etc/mosquitto/auth/passwords
