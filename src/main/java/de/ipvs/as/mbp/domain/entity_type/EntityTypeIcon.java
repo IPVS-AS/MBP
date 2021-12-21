@@ -71,12 +71,11 @@ public class EntityTypeIcon {
         //Replace MIME prefix from base64 content string
         String prefixlessContent = content.replaceAll(REGEX_BASE64_PREFIX, "");
 
-        try {
-            //Decode base64 string to bytes
-            byte[] imageBytes = Base64.decodeBase64(prefixlessContent);
-
+        //Decode base64 string to bytes
+        byte[] imageBytes = Base64.decodeBase64(prefixlessContent);
+        try (ByteArrayInputStream imageByteStream = new ByteArrayInputStream(imageBytes)) {
             //Create buffered image from bytes
-            return ImageIO.read(new ByteArrayInputStream(imageBytes));
+            return ImageIO.read(imageByteStream);
         } catch (Exception ignored) {
             return null;
         }
