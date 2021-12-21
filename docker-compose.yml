@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  mbp:
+    container_name: mbp
+    build: .
+    links:
+      - mosquitto
+      - mongodb
+    ports:
+      - 8080:8080
+
+  mongodb:
+    container_name: mongodb
+    hostname: mongodb
+    image: amd64/mongo:5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_volume:/data/db
+
+  mosquitto:
+    image: mosquitto-go-auth
+    container_name: mosquitto
+    hostname: mosquitto
+    build:
+      context: ./mosquitto
+      args:
+        # NOTE: change this to use default mosquitto setup without go-auth plugin installed
+        is_secure: "false"
+    #    network_mode: host # TODO test
+    ports:
+      - 1883:1883
+      - 1884:1884
+    volumes:
+      - mosquitto_volume:/var/lib/mosquitto
+
+volumes:
+  mosquitto_volume:
+  mongodb_volume:
