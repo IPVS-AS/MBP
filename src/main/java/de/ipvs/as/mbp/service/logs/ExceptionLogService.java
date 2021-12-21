@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service.logs;
 
 import de.ipvs.as.mbp.domain.logs.ExceptionLog;
+import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.repository.ExceptionLogRepository;
 import de.ipvs.as.mbp.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,12 @@ public class ExceptionLogService {
         //Get name of currently active user
         String userName = "None";
         try {
-            userName = userService.getLoggedInUser().getUsername();
-        } catch (Exception ignored) {
+            User loggedInUser = userService.getLoggedInUser();
+            if (loggedInUser != null) {
+                userName = loggedInUser.getUsername();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         //Create exception log
