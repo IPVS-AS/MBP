@@ -18,9 +18,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 import java.util.Collections;
 
-//@Configuration
-@EnableAuthorizationServer
-@PropertySource(value = "classpath:application.properties")
+@Configuration
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
     @Value("${security.oauth2.resource.jwt.key-value}")

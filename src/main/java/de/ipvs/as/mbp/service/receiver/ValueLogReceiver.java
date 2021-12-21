@@ -6,6 +6,8 @@ import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ public class ValueLogReceiver {
     //Instance of the used handler for arriving value logs
     private final ValueLogReceiverArrivalHandler arrivalHandler;
 
+    private final MQTTService mqttService;
+
     /**
      * Initializes the value logger service.
      *
@@ -44,6 +48,8 @@ public class ValueLogReceiver {
                             @NonNull SensorRepository sensorRepository, @NonNull DeviceRepository deviceRepository,
                             @NonNull MonitoringOperatorRepository monitoringOperatorRepository,
                             @NonNull DataModelTreeCache dataModelTreeCache) {
+        this.mqttService = mqttService;
+
         //Initialize set of observers
         observerSet = new HashSet<>();
 
@@ -53,11 +59,14 @@ public class ValueLogReceiver {
 
         //Register callback handler at MQTT service
         mqttService.setMqttCallback(arrivalHandler);
+    }
 
+    @EventListener(ApplicationReadyEvent.class)
+    public void onStartup() {
         //Subscribe all topics that are relevant for receiving value logs
         for (String topic : SUBSCRIBE_TOPICS) {
             try {
-                mqttService.subscribe(topic);
+                this.mqttService.subscribe(topic);
             } catch (MqttException e) {
                 e.printStackTrace();
             }

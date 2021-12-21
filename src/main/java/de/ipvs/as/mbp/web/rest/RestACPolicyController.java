@@ -30,6 +30,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,7 +61,7 @@ public class RestACPolicyController {
     @Autowired
     private UserService userService;
     
-    
+    @PreAuthorize("isFullyAuthenticated()")
 	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
@@ -68,7 +69,8 @@ public class RestACPolicyController {
 		User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwner(user.getId(), pageable), user.getId()), pageable));
     }
-	
+
+	@PreAuthorize("isFullyAuthenticated()")
 	@GetMapping(path = "/byCondition", produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
@@ -84,7 +86,8 @@ public class RestACPolicyController {
 		User user = userService.getLoggedInUser();
 		return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwnerAndEffect(user.getId(), effectId, pageable), user.getId()), pageable));
     }
-    
+
+	@PreAuthorize("isFullyAuthenticated()")
     @GetMapping(path = "/{policyId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing policy identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the policy!"), @ApiResponse(code = 404, message = "Policy or requesting user not found!") })
@@ -92,7 +95,8 @@ public class RestACPolicyController {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(policyToEntityModel(policyService.policyToResponseDto(policyService.getForIdAndOwner(policyId, user.getId()), user.getId())));
     }
-    
+
+	@PreAuthorize("isFullyAuthenticated()")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new policy.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Policy successfully created!"), @ApiResponse(code = 404, message = "Requesting user, condition, or effect not found!"), @ApiResponse(code = 409, message = "Policy name already exists!") })
@@ -100,7 +104,8 @@ public class RestACPolicyController {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.status(HttpStatus.CREATED).body(policyToEntityModel(policyService.policyToResponseDto(policyService.create(requestDto, user.getId()), user.getId()))); 
     }
-    
+
+	@PreAuthorize("isFullyAuthenticated()")
     @DeleteMapping(path = "/{policyId}")
     @ApiOperation(value = "Deletes an existing policy.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "Policy successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or policy not found!") })
@@ -109,7 +114,8 @@ public class RestACPolicyController {
     	policyService.delete(policyId, user.getId());
     	return ResponseEntity.noContent().build();
     }
-    
+
+	@PreAuthorize("isFullyAuthenticated()")
     @GetMapping(path = "/accessTypes", produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policy access types.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })

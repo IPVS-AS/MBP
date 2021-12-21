@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -109,7 +110,10 @@ public class UserService {
                 id + "' does not exist!"));
     }
 
-    public User getForUsername(String username) {
+    public @Nullable User getForUsername(String username) {
+        if (username == null) {
+            return null;
+        }
         return userRepository.findByUsername(username).orElseThrow(() -> new MBPException(HttpStatus.NOT_FOUND,
                 "User with username '" + username + "' does not exist!"));
     }
@@ -380,7 +384,11 @@ public class UserService {
      * Checks whether the currently logged in user has admin privileges.
      */
     public void requireAdmin() throws MissingAdminPrivilegesException {
-        User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(MissingAdminPrivilegesException::new);
+        String currentUserUsername = SecurityUtils.getCurrentUserUsername();
+        if (currentUserUsername == null || currentUserUsername.isEmpty()) {
+            throw new MissingAdminPrivilegesException();
+        }
+        User user = userRepository.findByUsername(currentUserUsername).orElseThrow(MissingAdminPrivilegesException::new);
         if (!user.isAdmin()) {
             throw new MissingAdminPrivilegesException();
         }

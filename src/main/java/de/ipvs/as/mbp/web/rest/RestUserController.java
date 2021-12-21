@@ -98,6 +98,7 @@ public class RestUserController {
             @ApiResponse(code = 404, message = "User or requesting user not found!")})
     public ResponseEntity<User> login(@RequestBody @ApiParam(value = "Login data", required = true) UserLoginData loginData) throws InvalidPasswordException, UserNotLoginableException {
         // Retrieve user from database
+        // FIXME this method leaks username existence information!
         User user = userService.getForUsername(loginData.getUsername().toLowerCase(Locale.ENGLISH));
 
         //Check if login into user is possible

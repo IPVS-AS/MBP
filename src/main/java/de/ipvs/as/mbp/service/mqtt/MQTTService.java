@@ -9,8 +9,8 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,7 +33,6 @@ import java.util.UUID;
  * topics
  */
 @Service
-@PropertySource(value = "classpath:application.properties")
 @EnableScheduling
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
@@ -53,21 +52,6 @@ public class MQTTService {
     //Callback object to use for incoming MQTT messages
     private MqttCallback mqttCallback = null;
 
-    @Value("${security.user.name}")
-    private String httpUser;
-
-    @Value("${security.user.password}")
-    private String httpPassword;
-
-    @Value("${security.oauth2.client.access-token-uri}")
-    private String oauth2TokenUri;
-
-    @Value("${security.oauth2.client.grant-type}")
-    private String oauth2GrantType;
-
-    @Value("${security.oauth2.client.client-id}")
-    private String oauth2ClientId;
-
     private String accessToken;
 
     /**
@@ -79,19 +63,21 @@ public class MQTTService {
     public MQTTService(SettingsService settingsService) {
         this.settingsService = settingsService;
 
-        //Setup and start the MQTT client if a local, normal broker is used. Otherwise: only setup MQTT client.
         try {
             String brokerAddress = settingsService.getDefaultBrokerHost();
             MemoryPersistence persistence = new MemoryPersistence();
-            if (settingsService.getSettings().getBrokerLocation().equals(BrokerLocation.LOCAL_SECURE)) {
-                mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-            } else {
-                mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-                initialize();
-            }
+            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
-        } catch (IOException e) {
+        }
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void afterStartup() {
+        //Setup and start the MQTT client if a local, normal broker is used. Otherwise: only setup MQTT client.
+        try {
+            initialize();
+        } catch (MqttException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -323,11 +309,12 @@ public class MQTTService {
      */
     public void requestOAuth2Token() {
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
+        HttpHeaders httpHeaders = createHeaders(settingsService.getHttpUser(), settingsService.getHttpPassword());
         HttpEntity<String> request = new HttpEntity<>(httpHeaders);
-        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(oauth2TokenUri)
-                .queryParam("grant_type", oauth2GrantType)
-                .queryParam("client-id", oauth2ClientId)
+        // FIXME returning 401
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(settingsService.getOauth2TokenUri())
+                .queryParam("grant_type", settingsService.getOauth2GrantType())
+                .queryParam("client-id", settingsService.getOauth2ClientId())
                 .queryParam("scope", "read");
         ResponseEntity<String> response = restTemplate.exchange(uriComponentsBuilder.toUriString(), HttpMethod.POST, request, String.class);
         try {

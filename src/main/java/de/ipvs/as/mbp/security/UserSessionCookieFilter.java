@@ -3,9 +3,11 @@ package de.ipvs.as.mbp.security;
 import de.ipvs.as.mbp.SecurityConfiguration;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.service.user.UserSessionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -22,12 +24,13 @@ import java.util.Optional;
  * Objects of this class behaves as filter for user session cookies by exploiting functions offered by
  * a user session service that allows to manage user sessions.
  */
+@Component
 public class UserSessionCookieFilter extends GenericFilterBean implements LogoutSuccessHandler {
 
     //Name to use for the session cookie
     public final static String SESSION_COOKIE_NAME = "user_session";
 
-    private UserSessionService userSessionService;
+    private final UserSessionService userSessionService;
 
     /**
      * Creates a new filter for user session cookies by passing a reference to a service that allows the
@@ -35,6 +38,7 @@ public class UserSessionCookieFilter extends GenericFilterBean implements Logout
      *
      * @param userSessionService The user session service to use
      */
+    @Autowired
     public UserSessionCookieFilter(UserSessionService userSessionService) {
         this.userSessionService = userSessionService;
     }

@@ -45,7 +45,7 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 		} else if (argument instanceof ACConditionSimpleValueArgument<?>) {
 			return Optional.of((T) ((ACConditionSimpleValueArgument<T>) argument).getValue());
 		} else {
-			return null;
+			return Optional.empty();
 		}
 	}
 	
