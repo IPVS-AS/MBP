@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.domain.entity_type;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -87,13 +88,13 @@ public class EntityTypeIcon {
             throw new IllegalArgumentException("File must not be null.");
         }
 
-        byte[] fileBytes = new byte[(int) file.length()];
-
-        FileInputStream fileInputStreamReader = new FileInputStream(file);
-        fileInputStreamReader.read(fileBytes);
-
-        String base64String = new String(Base64.encodeBase64(fileBytes), StandardCharsets.UTF_8);
-
+        String base64String = "";
+        try(FileInputStream fileInputStreamReader = new FileInputStream(file)) {
+            byte[] fileContent = IOUtils.toByteArray(fileInputStreamReader);
+            base64String = new String(Base64.encodeBase64(fileContent), StandardCharsets.UTF_8);
+        } catch(IOException ex) {
+            ex.printStackTrace();
+        }
         return new EntityTypeIcon(file.getName(), base64String);
     }
 }
