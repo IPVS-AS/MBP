@@ -100,7 +100,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             }
 
             //Execute request
-            return HttpService.getRequest(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, parameters);
+            return HttpService.getRequest(URL_PREFIX + component + 's/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, parameters);
         }
 
 

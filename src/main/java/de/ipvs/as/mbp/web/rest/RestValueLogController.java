@@ -8,6 +8,7 @@ import de.ipvs.as.mbp.domain.access_control.ACPolicy;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
@@ -16,9 +17,11 @@ import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.ValueLogRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.UnitConverterService;
-import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.access_control.ACEffectService;
+import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.util.S;
 import de.ipvs.as.mbp.web.rest.helper.MonitoringHelper;
 import io.swagger.annotations.*;
@@ -30,7 +33,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.measure.converter.UnitConverter;
 import javax.measure.quantity.Quantity;
@@ -57,6 +59,9 @@ public class RestValueLogController {
 
     @Autowired
     private ValueLogRepository valueLogRepository;
+
+    @Autowired
+    private DynamicDeploymentRepository dynamicDeploymentRepository;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -105,10 +110,10 @@ public class RestValueLogController {
             @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "°C", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "°C", required = false) Long endTime,
             @ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
-        // Retrieve actuator from the database (includes access-control)
+        //Retrieve sensor from the database (includes access-control)
         Sensor sensor = userEntityService.getForId(sensorRepository, sensorId);
 
-        // Retrieve value logs
+        //Retrieve value logs
         Page<ValueLog> valueLogs = getValueLogs(sensor, unit, startTime, endTime, pageable, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(valueLogs);
     }
@@ -138,11 +143,34 @@ public class RestValueLogController {
         return ResponseEntity.ok(valueLogs);
     }
 
+    @GetMapping("/discovery/dynamic-deployments/{dynamicDeploymentId}/valueLogs")
+    @ApiOperation(value = "Retrieves a list of dynamic deployment value logs in a certain unit, fitting onto a given page.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
+            @ApiResponse(code = 400, message = "Invalid unit specification!"),
+            @ApiResponse(code = 401, message = "Not authorized to access value logs of this dynamic deployment!"),
+            @ApiResponse(code = 404, message = "Dynamic deployment or requesting user not found!")})
+    public ResponseEntity<Page<ValueLog>> getDynamicDeploymentValueLogs(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable(value = "dynamicDeploymentId") @ApiParam(value = "ID of the dynamic deployment to retrieve the value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String dynamicDeploymentId,
+            @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the dynamic deployment values", example = "°C", required = false) String unit,
+            @RequestParam(value = "startTime", required = false) @ApiParam(value = "The desired start time for filtering in time", example = "°C", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) @ApiParam(value = "The desired end time for filtering in time", example = "°C", required = false) Long endTime,
+            @ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
+        //Retrieve dynamic deployment from the database (includes access-control)
+        DynamicDeployment dynamicDeployment = userEntityService.getForId(dynamicDeploymentRepository, dynamicDeploymentId);
+
+        //Create deployable component from dynamic deployment
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicDeployment);
+
+        // Retrieve value logs
+        Page<ValueLog> valueLogs = getValueLogs(component, unit, startTime, endTime, pageable, ACAccessRequest.valueOf(accessRequestHeader));
+        return ResponseEntity.ok(valueLogs);
+    }
+
     @DeleteMapping("/actuators/{id}/valueLogs")
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete value logs of this actuator!"),
             @ApiResponse(code = 404, message = "Actuator or requesting user not found!")})
-    @ApiIgnore("Currently not working")
     public ResponseEntity<Void> deleteActuatorValueLogs(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "id") String actuatorId) throws EntityNotFoundException, MissingPermissionException {
@@ -158,7 +186,6 @@ public class RestValueLogController {
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete value logs of this sensor!"),
             @ApiResponse(code = 404, message = "Sensor or requesting user not found!")})
-    @ApiIgnore("Currently not working")
     public ResponseEntity<Void> deleteSensorValueLogs(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "id") String sensorId) throws EntityNotFoundException, MissingPermissionException {
@@ -174,7 +201,6 @@ public class RestValueLogController {
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete value logs of this minitoring component!"),
             @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!")})
-    @ApiIgnore("Currently not working")
     public ResponseEntity<Void> deleteMonitoringValueLogs(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "deviceId") String deviceId,
@@ -189,6 +215,21 @@ public class RestValueLogController {
 
         // Delete value logs of this sensor
         valueLogRepository.deleteByIdRef(monitoringComponent.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/discovery/dynamic-deployments/{dynamicDeploymentId}/valueLogs")
+    @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to delete value logs of this dynamic deployment!"),
+            @ApiResponse(code = 404, message = "Dynamic deployment or requesting user not found!")})
+    public ResponseEntity<Void> deleteDynamicDeploymentValueLogs(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable(value = "dynamicDeploymentId") String dynamicDeploymentId) throws EntityNotFoundException, MissingPermissionException {
+        // Check permission
+        userEntityService.requirePermission(dynamicDeploymentRepository, dynamicDeploymentId, ACAccessType.DELETE_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
+
+        // Delete value logs of this dynamic deployment
+        valueLogRepository.deleteByIdRef(dynamicDeploymentId);
         return ResponseEntity.noContent().build();
     }
 
@@ -271,5 +312,4 @@ public class RestValueLogController {
         final int end = Math.min((start + pageable.getPageSize()), valueLogsList.size());
         return new PageImpl<>(valueLogsList.subList(start, end), pageable, valueLogsList.size());
     }
-
 }

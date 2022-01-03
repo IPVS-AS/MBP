@@ -126,11 +126,19 @@ button.list-filter-clear {
     cursor: pointer;
 }
 
-.bootstrap-select>.dropdown-toggle {
+.bootstrap-select > .dropdown-toggle {
     padding-left: 0;
 }
 
 .password-input-eye {
     border-bottom: 1px solid #ddd !important;
-    height:30px;
+    height: 30px;
+}
+
+/* Help icons with tooltip or popover */
+i.help-icon {
+    user-select: none;
+    color: #00BEFF;
+    font-size: 18px;
+    cursor: pointer;
 }

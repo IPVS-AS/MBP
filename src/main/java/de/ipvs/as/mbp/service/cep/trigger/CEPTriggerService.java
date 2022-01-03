@@ -12,8 +12,9 @@ import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.service.cep.engine.core.CEPEngine;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Service;
  * and works as a observer for the received value logs.
  */
 @Service
-public class CEPTriggerService implements ValueLogReceiverObserver {
+public class CEPTriggerService implements ValueLogObserver {
 
     // The data model tree cache to receive the data model tree of the respective component
     @Autowired
@@ -122,6 +123,10 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
      */
     @Override
     public void onValueReceived(ValueLog valueLog) {
+        //TODO
+        //Ignore value logs of dynamic deployments for the moment
+        if (valueLog.getComponent().equalsIgnoreCase(new DynamicDeployableComponent().getComponentTypeName())) return;
+
         // Pass the valueLog to the cache to have later access to it, even if it is not already written in the mongoDB
         cepValueLogCache.addValueLog(valueLog);
 

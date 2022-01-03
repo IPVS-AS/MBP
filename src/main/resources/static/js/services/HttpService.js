@@ -314,7 +314,7 @@ app.factory('HttpService', ['$rootScope', '$location', '$interval', 'ENDPOINT_UR
 
         /**
          * [Public]
-         * Retrieves all entities for a given category and returns the resulting promise.
+         * Retrieves all entities for a given category and returns the resulting list of entities.
          * In general, this function tries to automatically resolve the entity key under which
          * the embedded entities are included in the server response. However, if this is not possible for
          * a certain entity type, the matching entity key can be provided as a parameter to this function.
@@ -349,6 +349,60 @@ app.factory('HttpService', ['$rootScope', '$location', '$interval', 'ENDPOINT_UR
 
                 //No matching key found
                 return [];
+            });
+        }
+
+        /**
+         * [Public]
+         * Retrieves all entities for a given category and returns the resulting list of entites.
+         * This function is able to deal with multiple entity types (sibling classes) by extending
+         * all entities for a type field and placing them in the same common listn.
+         * @param category The category to retrieve the entities for
+         * @param typeMap An object that maps the entity types, as they appear in the retrieved data, to other names
+         * @returns {*} The resulting promise
+         */
+        function getAllTypes(category, typeMap) {
+            //Perform GET request
+            return getRequest(ENDPOINT_URI + "/" + category).then(function (data) {
+                //Extend received object for empty list if none available
+                data._embedded = data._embedded || {};
+
+                //Create result list of entities
+                let entitiesList = [];
+
+                //Iterate over all properties of the embedded objects
+                for (let key in data._embedded) {
+                    //Check property
+                    if (!data._embedded.hasOwnProperty(key)) {
+                        continue;
+                    }
+
+                    //Get entities of a certain type by key
+                    let typeEntities = data._embedded[key];
+
+                    //Sanity check
+                    if ((!Array.isArray(typeEntities)) || (typeEntities.length < 1)) {
+                        continue;
+                    }
+
+                    //Get desired type name for the entities of this key
+                    let typeName = (typeMap && typeMap.hasOwnProperty(key)) ? typeMap[key] : key;
+
+                    //iterate over all entities that are stored under this key
+                    for (let i = 0; i < typeEntities.length; i++) {
+                        //Get entity
+                        let entity = typeEntities[i];
+
+                        //Extend entity for type name field
+                        entity["type"] = typeName;
+
+                        //Add entity to result list
+                        entitiesList.push(entity);
+                    }
+                }
+
+                //Return entities list
+                return entitiesList || [];
             });
         }
 
@@ -447,6 +501,7 @@ app.factory('HttpService', ['$rootScope', '$location', '$interval', 'ENDPOINT_UR
             deleteRequest: deleteRequest,
             getOne: getOne,
             getAll: getAll,
+            getAllTypes: getAllTypes,
             count: count,
             addOne: addOne,
             updateOne: updateOne,

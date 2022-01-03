@@ -13,6 +13,7 @@ import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.ComponentRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.visualization.ActiveVisualizationUpdater;
 import io.swagger.annotations.*;
@@ -33,10 +34,13 @@ import org.springframework.web.bind.annotation.*;
 public class RestVisualizationController {
 
     @Autowired
+    private ActuatorRepository actuatorRepository;
+
+    @Autowired
     private SensorRepository sensorRepository;
 
     @Autowired
-    private ActuatorRepository actuatorRepository;
+    private DynamicDeploymentRepository dynamicDeploymentRepository;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -46,45 +50,33 @@ public class RestVisualizationController {
 
     @PutMapping(value = "/{componentId}", produces = "application/hal+json")
     @ApiOperation(value = "Updates or creates the existing visualizations of a component.", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Sensors active visualizations successfully updated!"),
+    @ApiResponses({@ApiResponse(code = 200, message = "Active visualizations successfully updated!"),
             @ApiResponse(code = 401, message = "Not authorized to access the sensor!"),
-            @ApiResponse(code = 404, message = "Sensor to update or requesting user not found!")})
+            @ApiResponse(code = 404, message = "Component or requesting user not found!")})
     public ResponseEntity<EntityModel<Component>> update(
             @PathVariable("componentId")
             @ApiParam(value = "The id of the sensor", example = "5f218c7822424828a8275037") String componentId,
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @RequestBody @ApiParam(value = "An ActiveComponentVisualization instance", required = true) ActiveVisualization visSettings)
+            @RequestBody @ApiParam(value = "An ActiveVisualization instance", required = true) ActiveVisualization visSettings)
             throws EntityNotFoundException, MissingPermissionException {
+        //Retrieve access request
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        Sensor sensor = null;
-        Actuator actuator = null;
-        try {
-            // Check permission and whether sensor with this component id exists
-            userEntityService.requirePermission(sensorRepository, componentId, ACAccessType.UPDATE, ACAccessRequest.valueOf(accessRequestHeader));
-            sensor = sensorRepository.findById(componentId).orElse(null);
-        } catch (EntityNotFoundException e) {
-            // Catch this exception as these cases are already handled seperately in the following code
-        }
+        //The component to update
+        Component componentToUpdate;
 
-        try {
-            // Check permission and whether actuator with this component id exists
-            userEntityService.requirePermission(actuatorRepository, componentId, ACAccessType.UPDATE, ACAccessRequest.valueOf(accessRequestHeader));
-            actuator = actuatorRepository.findById(componentId).orElse(null);
-        } catch (EntityNotFoundException e) {
-            // Catch this exception as these cases are handled seperately in the following code
-        }
-
-        Component componentToUpdate = null;
-        if (sensor != null) {
-            componentToUpdate = sensor;
-        } else if (actuator != null) {
-            componentToUpdate = actuator;
+        //Check repositories for a component with the given ID
+        if (actuatorRepository.existsById(componentId)) {
+            componentToUpdate = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, componentId, ACAccessType.UPDATE, accessRequest);
+        } else if (sensorRepository.existsById(componentId)) {
+            componentToUpdate = userEntityService.getForIdWithAccessControlCheck(sensorRepository, componentId, ACAccessType.UPDATE, accessRequest);
+        } else if (dynamicDeploymentRepository.existsById(componentId)) {
+            componentToUpdate = userEntityService.getForIdWithAccessControlCheck(dynamicDeploymentRepository, componentId, ACAccessType.UPDATE, accessRequest);
         } else {
-            throw new MBPException(HttpStatus.NOT_FOUND,
-                    "Component with the id" + componentId + "' does not exist!");
+            throw new EntityNotFoundException("Component", componentId);
         }
 
-        // Return the updated sensor
+        // Return the updated component
         return ResponseEntity.ok(
                 userEntityService.entityToEntityModel(
                         activeVisualizationUpdater.updateOrCreateActiveVisualization(componentToUpdate, visSettings)
@@ -92,48 +84,32 @@ public class RestVisualizationController {
     }
 
     @DeleteMapping(path = "/{componentId}/{activeVisualComponentId}")
-    @ApiOperation(value = "Deletes an existing visual component entity identified by its sensor and own id if " +
-            "it's available for the requesting entity.")
+    @ApiOperation(value = "Deletes an existing visual component entity identified by its component and own id if " +
+            "available for the requesting entity.")
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete the visual component!")})
     public ResponseEntity<Void> delete(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("componentId") String componentId,
             @PathVariable("activeVisualComponentId") String visualId) throws EntityNotFoundException, MissingPermissionException {
-        // Delete the data model (includes access-control)
-        Sensor sensor = null;
-        Actuator actuator = null;
-        try {
-            // Check permission and whether sensor with this component id exists
-            userEntityService.requirePermission(sensorRepository, componentId, ACAccessType.UPDATE, ACAccessRequest.valueOf(accessRequestHeader));
-            sensor = sensorRepository.findById(componentId).orElse(null);
-        } catch (EntityNotFoundException e) {
-            // Catch this exception as these cases are handled seperately in the following code
-        }
+        //Retrieve access request
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        try {
-            // Check permission and whether actuator with this component id exists
-            userEntityService.requirePermission(actuatorRepository, componentId, ACAccessType.UPDATE, ACAccessRequest.valueOf(accessRequestHeader));
-            actuator = actuatorRepository.findById(componentId).orElse(null);
-        } catch (EntityNotFoundException e) {
-            // Catch this exception as these cases are handled seperately in the following code
-        }
+        //The component to update
+        Component componentToUpdate;
 
-        Component componentToUpdate = null;
-        if (sensor != null) {
-            componentToUpdate = sensor;
-        } else if (actuator != null) {
-            componentToUpdate = actuator;
+        //Check repositories for a component with the given ID
+        if (actuatorRepository.existsById(componentId)) {
+            componentToUpdate = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, componentId, ACAccessType.UPDATE, accessRequest);
+        } else if (sensorRepository.existsById(componentId)) {
+            componentToUpdate = userEntityService.getForIdWithAccessControlCheck(sensorRepository, componentId, ACAccessType.UPDATE, accessRequest);
+        } else if (dynamicDeploymentRepository.existsById(componentId)) {
+            componentToUpdate = userEntityService.getForIdWithAccessControlCheck(dynamicDeploymentRepository, componentId, ACAccessType.UPDATE, accessRequest);
         } else {
-            throw new MBPException(HttpStatus.NOT_FOUND,
-                    "Component with the id" + componentId + "' does not exist!");
+            throw new EntityNotFoundException("Component", componentId);
         }
 
-        ResponseEntity response = activeVisualizationUpdater.deleteVisualComponent(componentToUpdate, visualId);
-
-        if (response != null) {
-            return response;
-        }
-        return ResponseEntity.noContent().build();
+        //Delete visualization
+        return activeVisualizationUpdater.deleteVisualComponent(componentToUpdate, visualId);
     }
 }

@@ -87,7 +87,7 @@ public class UserEntityService {
      * @param repository the repository to retrieve the user entity from.
      * @param entityId   the id of the {@link UserEntity}.
      * @return the {@link UserEntity} if it exists.
-     * @throws EntityNotFoundException
+     * @throws EntityNotFoundException In case the entity could not be found
      */
     public <E extends UserEntity> E getForId(UserEntityRepository<E> repository, String entityId) throws EntityNotFoundException {
         // Retrieve the entity from the database
@@ -118,8 +118,8 @@ public class UserEntityService {
      *                      of the requesting user required to evaluate the policies.
      * @return the {@link UserEntity} if it exists and the user is either the owner or has been granted reading access
      * to it via a corresponding {@link ACPolicy}.
-     * @throws EntityNotFoundException
-     * @throws MissingPermissionException
+     * @throws EntityNotFoundException In case the entity could not be found
+     * @throws MissingPermissionException In case of missing permissions
      */
     public <E extends UserEntity> E getForIdWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the entity from the database
@@ -159,8 +159,7 @@ public class UserEntityService {
         return Optional.empty();
     }
 
-    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException
-    {
+    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException {
         //Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
 
@@ -201,6 +200,48 @@ public class UserEntityService {
     }
 
     /**
+     * Updates an user entity in its repository.
+     *
+     * @param <E>           The type of the {@link UserEntity}
+     * @param repository    The repository to update the user entity in
+     * @param entityId      The id of the {@link UserEntity} to update
+     * @param updatedEntity The updated {@link UserEntity} to save
+     * @param accessRequest The {@link ACAccessRequest} containing the contextual information
+     * @return The updated user entity
+     */
+    public <E extends UserEntity> E updateWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, E updatedEntity, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
+        //Retrieve the entity from the repository
+        E entity = getForId(repository, entityId);
+
+        //User must be loginable
+        requireLoginable();
+
+        //Check permissions
+        if ((!checkAdmin() && !checkOwner(entity))) {
+            // Not the owner -> check policies
+            requirePermission(repository, entityId, ACAccessType.UPDATE, accessRequest);
+        }
+
+        //Copy user data to updatedEntity
+        updatedEntity.setOwner(entity.getOwner());
+
+        //Get all create validators that are associated with this entity type
+        MBPEntity[] annotations = entity.getClass().getAnnotationsByType(MBPEntity.class);
+        List<ICreateValidator<E>> validators = new ArrayList<>();
+        for (MBPEntity annotation : annotations) {
+            for (Class<? extends ICreateValidator<?>> c : annotation.createValidator()) {
+                validators.add((ICreateValidator<E>) DynamicBeanProvider.get(c));
+            }
+        }
+
+        //Validate the updated entity and throw exception if validation fails
+        validators.forEach(v -> v.validateCreatable(updatedEntity));
+
+        //Everything fine, update the entity in the repository
+        return repository.save(updatedEntity);
+    }
+
+    /**
      * Deletes a user entity in the database.
      *
      * @param <E>           the type of the {@link UserEntity}.
@@ -208,8 +249,8 @@ public class UserEntityService {
      * @param entityId      the id of the {@link UserEntity}.
      * @param accessRequest the {@link ACAccessRequest} containing the contextual information
      *                      of the requesting user required to evaluate the policies.
-     * @throws EntityNotFoundException
-     * @throws MissingPermissionException
+     * @throws EntityNotFoundException In case the entity could not be found
+     * @throws MissingPermissionException In case of missing permissions
      */
     public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the entity from the database
@@ -251,11 +292,11 @@ public class UserEntityService {
         validators.forEach(v -> v.validateDeletable(entity));
     }
 
-    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest)  {
+    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest) {
         return filterForAdminOwnerAndPolicies(entitiesSupplier.get(), accessType, accessRequest);
     }
 
-    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest)  {
+    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest) {
         // Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
 
@@ -342,15 +383,15 @@ public class UserEntityService {
         }
     }
 
-    public void requireLoginable()  {
+    public void requireLoginable() {
         requireLoginable(userService.getLoggedInUser());
     }
 
-    public void requireLoginable(String userId)  {
+    public void requireLoginable(String userId) {
         requireLoginable(userService.getForId(userId));
     }
 
-    public void requireLoginable(User user){
+    public void requireLoginable(User user) {
         if (!user.isLoginable()) {
             throw new UserNotLoginableException();
         }
@@ -389,5 +430,4 @@ public class UserEntityService {
     public <E extends UserEntity> EntityModel<E> entityToEntityModel(E entity) {
         return new EntityModel<E>(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
     }
-
 }

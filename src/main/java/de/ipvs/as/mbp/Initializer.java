@@ -12,13 +12,11 @@ public class Initializer
     
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        System.out.println("load RootConfiguration");
         return new Class[]{RootConfiguration.class, SecurityConfiguration.class};
     }
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        System.out.println("load ServletConfiguration");
         return new Class[]{WebServletConfiguration.class};
     }
 
