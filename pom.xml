@@ -222,7 +222,33 @@
             <artifactId>json-path</artifactId>
             <version>2.5.0</version>
         </dependency>
-      
+
+        <!-- Reflections -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.12</version>
+        </dependency>
+
+        <!-- Statistical Machine Intelligence and Learning Engine (SMILE) -->
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-nlp</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <!-- exp4j for evaluating mathematical infix expressions -->
+        <dependency>
+            <groupId>net.objecthunter</groupId>
+            <artifactId>exp4j</artifactId>
+            <version>0.4.8</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -372,6 +398,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

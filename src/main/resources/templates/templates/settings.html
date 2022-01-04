@@ -51,6 +51,17 @@
                                     </div>
                                     <span class="help-block">IP address of the MQTT broker to use</span>
                                 </div>
+                                <h2 class="card-inside-title">Sender name</h2>
+                                <span class="help-block">Please specify the sender name that is supposed to be
+                                    displayed in messages that are published by this application. It may help the
+                                    receivers of messages to identify the sender.</span>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input class="form-control" type="text" placeholder="Sender name"
+                                               ng-model="ctrl.settings.senderName"/>
+                                    </div>
+                                </div>
+
                                 <h2 class="card-inside-title">Demonstration mode</h2>
                                 <span class="help-block">The demo mode allows to test and demonstrate the features
                                 of the MBP without actually deploying operators on real devices.

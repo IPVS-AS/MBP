@@ -99,8 +99,7 @@
                         </td>
                         <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td ng-if="item.name.indexOf('TESTING_') === -1">
-                            <form ng-submit="deleteDeviceCtrl.deleteItem()"
-                                  style="display: inline-block">
+                            <form ng-submit="deleteDeviceCtrl.deleteItem()" style="display: inline-block">
                                 <button type="submit"
                                         class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteDeviceCtrl.item.id = item.id">
@@ -145,8 +144,7 @@
                         <div class="modal-body">
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
-                                <div class="form-line"
-                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
                                     <input class="form-control" id="device-form-input-name" type="text"
                                            placeholder="Name *" ng-model="addDeviceCtrl.item.name"/>
                                 </div>

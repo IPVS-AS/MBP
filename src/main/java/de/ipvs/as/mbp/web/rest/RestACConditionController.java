@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.EntityStillInUseException;
@@ -52,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/policy-conditions")
+@RequestMapping(Constants.BASE_PATH + "/policy-conditions")
 @Api(tags = {"Access-Control Policy Conditions"})
 public class RestACConditionController {
 	

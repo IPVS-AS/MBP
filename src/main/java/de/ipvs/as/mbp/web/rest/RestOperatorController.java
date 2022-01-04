@@ -1,10 +1,10 @@
 package de.ipvs.as.mbp.web.rest;
 
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.OperatorRequestDTO;
 import de.ipvs.as.mbp.repository.DataModelRepository;
 import io.swagger.annotations.*;
-import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
@@ -32,7 +32,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/operators")
+@RequestMapping(Constants.BASE_PATH + "/operators")
 @Api(tags = {"Operators"})
 public class RestOperatorController {
 

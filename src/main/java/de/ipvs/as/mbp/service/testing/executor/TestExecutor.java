@@ -327,7 +327,6 @@ public class TestExecutor {
             newLog.setMessage("Testing tool rerun");
             newLog.setTopic("sensor/" + sensor.getId());
             newLog.setIdref(sensor.getId());
-            newLog.setQos(0);
             newLog.setTime(Instant.now());
 
             retQueue.add(newLog);

@@ -323,7 +323,6 @@
                 <form ng-submit="componentDetailsCtrl.updateJsonPath(visItem)">
                     <fieldset>
                         <div class="modal-body">
-
                             <!-- START: Modal cases for each visualization and available vis field collections -->
                             <div ng-if="visItem.visId === 'doubleVis'">
 
@@ -338,8 +337,7 @@
                                     </div>
                                     <!-- item.name group -->
                                     <label>JsonPath to number value:</label>
-                                    <div
-                                            ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                    <div ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
 
                                             <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
@@ -348,9 +346,7 @@
                                                              field-collection-id-input="visItem.fieldCollectionIdInput"
                                                              path-type="default"
                                             </json-path-input>
-
                                         </div>
-
                                         <span class="help-block"
                                               ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
                                     </div>
@@ -367,11 +363,8 @@
                                     </div>
                                     <!-- item.name group -->
                                     <label>JsonPath to number array:</label>
-                                    <div
-                                            ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
-                                        <div class="form-line"
-                                             ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
-
+                                    <div ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <div class="form-line" ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
                                             <json-path-input ng-model="visItem.visFieldToPathMappingInput.arrVal"
                                                              json-path-list="visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
                                                              number-of-needed-wildcards="1"
@@ -389,7 +382,6 @@
 
                             <!-- GeoMap modal case -->
                             <div ng-if="visItem.visId === 'geoMap'">
-
                                 <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
                                     <!-- "global" error for addItem -->
                                     <div class="form-group"
@@ -476,3 +468,4 @@
         </div>
     </div>
 </div>
+

@@ -1,0 +1,161 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Request topics
+                        <small>Topics under which discovery requests to external repositories are supposed to be
+                            published.</small>
+                    </h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+                            data-target="#addRequestTopicModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body" ng-init="showFullTopic = [];">
+                <table class="table table-hover" st-table="displayedCollection"
+                       st-safe-src="requestTopicListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th class="align-center">Timeout</th>
+                        <th class="align-center">Exp. replies</th>
+                        <th class="align-center">Owner</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{topic.id}}" ng-repeat="topic in displayedCollection">
+                        <td ng-init="showFullTopic[topic.id] = false">
+                            <code>
+                                <a href="#" ng-click="showFullTopic[topic.id] = !showFullTopic[topic.id]"
+                                   style="color:inherit;">{{showFullTopic[topic.id] ? topic.fullTopic : '.../' + topic.suffix}}</a>
+                            </code>
+                        </td>
+                        <td class="align-center">
+                            {{topic.timeout}} ms
+                        </td>
+                        <td class="align-center">
+                            {{topic.expectedReplies}}
+                        </td>
+                        <td class="align-center">{{topic.ownerName ? topic.ownerName : "None"}}</td>
+                        <td>
+                            <form ng-submit="ctrl.testRequestTopic(topic.id)" style="display: inline-block">
+                                <button type="submit" class="btn btn-block btn-primary m-t-0 waves-effect">
+                                    Test
+                                </button>
+                            </form>&nbsp;
+                            <a class="clickable" data-toggle="collapse" data-target="#results-{{topic.id}}"
+                               ng-show="topic.testResults">
+                                Toggle results
+                            </a>
+                            <div id="results-{{topic.id}}" class="collapse" ng-show="topic.testResults"
+                                 style="margin-top: 10px;">
+                                <ul class="list-group">
+                                    <li class="list-group-item bg-mbp-blue">Repository replies:</li>
+                                    <li class="list-group-item"
+                                        ng-repeat="(name, devicesCount) in topic.testResults">{{name}}<span
+                                            class="badge bg-teal">{{devicesCount}} devices</span></li>
+                                    <li class="list-group-item" ng-show="(topic.testResults | json) == '{}'">
+                                        None
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                        <td>
+                            <form ng-submit="deleteRequestTopicCtrl.deleteItem()"
+                                  style="display: inline-block">
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                        ng-click="deleteRequestTopicCtrl.item.id = topic.id">
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="requestTopicListCtrl.items.length === 0">
+                        <td colspan="4">No request topics registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addRequestTopicModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new request topic
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addRequestTopicCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addRequestTopicCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addRequestTopicCtrl.item.errors.global">
+			                      {{addRequestTopicCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.suffix group -->
+                            <div class="form-group" ng-class="{'has-error' : addRequestTopicCtrl.item.errors.suffix }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRequestTopicCtrl.item.errors.suffix }">
+                                    <input class="form-control" type="text" placeholder="Suffix *"
+                                           ng-model="addRequestTopicCtrl.item.suffix"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addRequestTopicCtrl.item.errors.suffix">{{addRequestTopicCtrl.item.errors.suffix}}</span>
+                            </div>
+                            <!-- item.timeout group -->
+                            <div class="form-group" ng-class="{'has-error' : addRequestTopicCtrl.item.errors.timeout }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRequestTopicCtrl.item.errors.timeout }">
+                                    <input class="form-control" type="number" min="10" max="60000"
+                                           placeholder="Timeout (in milliseconds) *"
+                                           ng-model="addRequestTopicCtrl.item.timeout"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addRequestTopicCtrl.item.errors.timeout">{{addRequestTopicCtrl.item.errors.timeout}}</span>
+                            </div>
+                            <!-- item.expectedReplies group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addRequestTopicCtrl.item.errors.expectedReplies }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRequestTopicCtrl.item.errors.expectedReplies }">
+                                    <input class="form-control" type="number" min="1" max="100"
+                                           placeholder="Expected number of replies *"
+                                           ng-model="addRequestTopicCtrl.item.expectedReplies"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addRequestTopicCtrl.item.errors.expectedReplies">{{addRequestTopicCtrl.item.errors.expectedReplies}}</span>
+                            </div>
+
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

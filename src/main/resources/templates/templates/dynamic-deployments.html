@@ -1,0 +1,177 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-9">
+                    <h2>Dynamic deployments
+                        <small>Deployments of actuators and sensors that do not make use of a fixed device,
+                            but use a device template in order to dynamically and automatically search for the most
+                            appropriate devices on which the user-defined operators can be deployed, installed and
+                            executed.</small>
+                    </h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+                            data-target="#addDynamicDeploymentModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection"
+                       st-safe-src="dynamicDeploymentListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="align-center">State</th>
+                        <th class="align-center">Operator</th>
+                        <th class="align-center">Device template</th>
+                        <th class="align-center">Owner</th>
+                        <th class="align-center">Active</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{deployment.id}}" ng-repeat="deployment in displayedCollection">
+                        <td><a ng-href="{{'view/dynamic-deployments/' + deployment.id}}">{{deployment.name}}</a></td>
+                        <td class="align-center">
+                            <div ng-click="ctrl.reloadDeploymentState(deployment.id)" class="clickable">
+                                <div ng-show="deployment.lastState === 'loading'">
+                                    <div class="preloader pl-size-xs">
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-show="deployment.lastState !== 'loading' && deployment.inProgress">
+                                    <span class="label label-primary">{{deployment.activatingIntended ? 'Activating' : 'Deactivating'}}</span>
+                                </div>
+                                <div ng-show="deployment.lastState === 'disabled' && !deployment.inProgress">
+                                    <span class="label label-default">Disabled</span>
+                                </div>
+                                <div ng-show="deployment.lastState === 'no_candidate' && !deployment.inProgress">
+                                    <span class="label label-warning">No candidates</span>
+                                </div>
+                                <div ng-show="deployment.lastState === 'all_failed' && !deployment.inProgress">
+                                    <span class="label label-warning">All failed</span>
+                                </div>
+                                <div ng-show="deployment.lastState === 'deployed' && !deployment.inProgress">
+                                    <span class="label label-success">Deployed</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-center">{{deployment.operator.name}}</td>
+                        <td class="align-center">{{deployment.deviceTemplate.name}}</td>
+                        <td class="align-center">{{deployment.ownerName ? deployment.ownerName : "None"}}</td>
+                        <td class="align-center">
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" ng-model="deployment.activatingIntended"
+                                           ng-change="ctrl.toggleActivationIntention(deployment.id)">
+                                    <span class="lever"></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <form ng-submit="deleteDynamicDeploymentCtrl.deleteItem()" style="display: inline-block">
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                        ng-click="deleteDynamicDeploymentCtrl.item.id = deployment.id">
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="dynamicDeploymentListCtrl.items.length === 0">
+                        <td colspan="5">No dynamic deployments registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addDynamicDeploymentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new dynamic deployment
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addDynamicDeploymentCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicDeploymentCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDynamicDeploymentCtrl.item.errors.global">
+			                      {{addDynamicDeploymentCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicDeploymentCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicDeploymentCtrl.item.errors.name }">
+                                    <input class="form-control" type="text" placeholder="Name"
+                                           ng-model="addDynamicDeploymentCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDynamicDeploymentCtrl.item.errors.name">{{addDynamicDeploymentCtrl.item.errors.name}}</span>
+                            </div>
+                            <!-- item.operator group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicDeploymentCtrl.item.errors.operator }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicDeploymentCtrl.item.errors.operator }">
+                                    <select class="form-control selectpicker show-tick" title="Operator *"
+                                            data-header="Operator *"
+                                            ng-model="addDynamicDeploymentCtrl.item.operator"
+                                            ng-options="t.id as (t.name) for t in ctrl.operatorList | filter:hideSimulators()">
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDynamicDeploymentCtrl.item.errors.operator">{{addDynamicDeploymentCtrl.item.errors.operator}}</span>
+                            </div>
+                            <!-- item.deviceTemplate group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDynamicDeploymentCtrl.item.errors.deviceTemplate }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDynamicDeploymentCtrl.item.errors.deviceTemplate }">
+                                    <select class="form-control selectpicker show-tick" title="Device template *"
+                                            data-header="Device template *"
+                                            ng-model="addDynamicDeploymentCtrl.item.deviceTemplate"
+                                            ng-options="t.id as (t.name) for t in ctrl.deviceTemplateList">
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addDynamicDeploymentCtrl.item.errors.deviceTemplate">{{addDynamicDeploymentCtrl.item.errors.deviceTemplate}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

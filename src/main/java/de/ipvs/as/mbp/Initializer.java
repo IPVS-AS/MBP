@@ -12,18 +12,17 @@ public class Initializer extends AbstractAnnotationConfigDispatcherServletInitia
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        System.out.println("load RootConfiguration");
         return new Class[]{SecurityConfiguration.class};
     }
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        System.out.println("load ServletConfiguration");
         return new Class[]{WebServletConfiguration.class};
     }
 
     @Override
-    protected @NonNull String[] getServletMappings() {
+    protected @NonNull
+    String[] getServletMappings() {
         return new String[]{"/"};
     }
 
@@ -33,6 +32,6 @@ public class Initializer extends AbstractAnnotationConfigDispatcherServletInitia
         charFilter.setEncoding("UTF-8");
         charFilter.setForceEncoding(true);
         return new Filter[]{new HiddenHttpMethodFilter(), charFilter,
-            new FormContentFilter()};
+                new FormContentFilter()};
     }
 }

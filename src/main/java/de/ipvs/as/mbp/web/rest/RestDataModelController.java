@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
@@ -28,7 +28,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * REST controller for requests related to the creation of new data models.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/data-models")
+@RequestMapping(Constants.BASE_PATH + "/data-models")
 @Api(tags = {"Data models"})
 public class RestDataModelController {
 

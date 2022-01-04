@@ -11,9 +11,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootApplication
 @EnableWebMvc
 @EnableSpringDataWebSupport
+@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 @EnableAuthorizationServer
 @EnableResourceServer
-@EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class SpringBootMBP {
     public static void main(String[] args) {
         SpringApplication.run(SpringBootMBP.class, args);

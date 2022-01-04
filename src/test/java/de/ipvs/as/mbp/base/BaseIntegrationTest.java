@@ -1,13 +1,12 @@
 package de.ipvs.as.mbp.base;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.util.IntegrationTestConfiguration;
 import de.ipvs.as.mbp.util.testexecution.MBPTestExtension;
 import de.ipvs.as.mbp.util.MongoDbContainer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +70,7 @@ public abstract class BaseIntegrationTest {
     public Cookie getSessionCookie(String username, String password) throws Exception {
         UserLoginData adminLogin = new UserLoginData(username, password);
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/users/login")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(adminLogin)))
                 .andExpect(status().isOk()).andReturn();

@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserLoginData;
@@ -30,7 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
  * REST Controller for managing users.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/users")
+@RequestMapping(Constants.BASE_PATH + "/users")
 @Api(tags = {"Users"})
 public class RestUserController {
 

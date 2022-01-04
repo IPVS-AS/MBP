@@ -59,25 +59,6 @@ public class ValueLog implements IACValueLog<Document> {
     }
 
     /**
-     * Returns the quality of service with which the value log was sent.
-     *
-     * @return The quality of service
-     */
-    public Integer getQos() {
-        return qos;
-    }
-
-    /**
-     * Sets the quality of service with which the value log was sent.
-     *
-     * @param qos The quality of service to set
-     */
-    public ValueLog setQos(Integer qos) {
-        this.qos = qos;
-        return this;
-    }
-
-    /**
      * Returns the MQTT topic under which the value log was received.
      *
      * @return The topic

@@ -29,7 +29,6 @@ public class WebServletConfiguration extends AbstractSecurityWebApplicationIniti
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        System.out.println("load addResourceHandlers");
         registry.addResourceHandler("swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");
         if (!registry.hasMappingForPattern("/webjars/**")) {

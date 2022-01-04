@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp;
 
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.security.UserSessionCookieFilter;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +50,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/resources/**")
                 .antMatchers("/webapp/**")
                 .antMatchers(URL_LOGIN, "/templates/register")
-                .antMatchers(HttpMethod.GET, RestConfiguration.BASE_PATH + "/settings/mbpinfo")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenUser")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenSuperuser")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenAcl");
+                .antMatchers(HttpMethod.GET, Constants.BASE_PATH + "/settings/mbpinfo")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/users")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenUser")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenSuperuser")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenAcl");
     }
 
     @Override

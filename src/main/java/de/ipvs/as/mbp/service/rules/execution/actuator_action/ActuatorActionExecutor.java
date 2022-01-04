@@ -6,9 +6,8 @@ import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
-import de.ipvs.as.mbp.service.mqtt.MQTTService;
+import de.ipvs.as.mbp.service.messaging.PubSubService;
 import de.ipvs.as.mbp.service.rules.execution.RuleActionExecutor;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +22,10 @@ import java.util.Map;
 public class ActuatorActionExecutor implements RuleActionExecutor {
 
     /*
-    Frame of the MQTT topic to use for notifying actuators
+    Frame of the publish-subscribe topic to use for notifying actuators
     Format: action/{actuator id}/{action name}
      */
-    private static final String MQTT_TOPIC = "action/%s/%s";
+    private static final String PUBSUB_TOPIC_FILTER = "action/%s/%s";
 
     //Parameter keys
     private static final String PARAM_KEY_ACTUATOR = "actuator";
@@ -36,22 +35,20 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
     //Regular expression describing permissible action names
     private static final String REGEX_ACTION_NAME = "[A-z0-9_\\- ]+";
 
-    //Autowired
+    //Auto-wired
     private final ActuatorRepository actuatorRepository;
-
-    //Autowired
-    private final MQTTService mqttService;
+    private final PubSubService pubSubService;
 
     /**
      * Initializes the actuator action executor component.
      *
-     * @param actuatorRepository The actuator repository (autowired)
-     * @param mqttService        The MQTT service (autowired)
+     * @param actuatorRepository The actuator repository (auto-wired)
+     * @param pubSubService      The publish-subscribe-based messaging service (auto-wired)
      */
     @Autowired
-    public ActuatorActionExecutor(ActuatorRepository actuatorRepository, MQTTService mqttService) {
+    public ActuatorActionExecutor(ActuatorRepository actuatorRepository, PubSubService pubSubService) {
         this.actuatorRepository = actuatorRepository;
-        this.mqttService = mqttService;
+        this.pubSubService = pubSubService;
     }
 
     /**
@@ -120,10 +117,10 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         String actionName = parameters.get(PARAM_KEY_ACTION_NAME);
         String data = parameters.get(PARAM_KEY_DATA);
 
-        //Get actuator from repository
-        Actuator actuator = actuatorRepository.findById(actuatorId).get();
+        //Get the pertained actuator from repository
+        Actuator actuator = actuatorRepository.findById(actuatorId).orElse(null);
 
-        //Sanity check
+        //Check whether the actuator could be found
         if (actuator == null) {
             return false;
         }
@@ -159,13 +156,10 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         //Get string from JSON object
         String message = messageObject.toString();
 
-        //Publish JSON object as sting
-        try {
-            mqttService.publish(topic, message);
-        } catch (MqttException e) {
-            return false;
-        }
+        //Publish JSON object as message
+        pubSubService.publish(topic, message);
 
+        //Everything seemed to work
         return true;
     }
 
@@ -186,6 +180,6 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         }
 
         //Format topic and return it
-        return String.format(MQTT_TOPIC, actuator.getId(), actionName);
+        return String.format(PUBSUB_TOPIC_FILTER, actuator.getId(), actionName);
     }
 }

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -44,7 +44,7 @@ import io.swagger.annotations.ApiResponses;
  * REST Controller for managing {@link Device}s.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/devices")
+@RequestMapping(Constants.BASE_PATH + "/devices")
 @Api(tags = { "Devices" })
 public class RestDeviceController {
 	

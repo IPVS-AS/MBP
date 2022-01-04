@@ -8,8 +8,8 @@ import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.domain.testing.Testing;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.bson.Document;
@@ -21,8 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class TestAnalyzer implements ValueLogReceiverObserver {
-
+public class TestAnalyzer implements ValueLogObserver {
     @Autowired
     private TestDetailsRepository testDetailsRepository;
 
@@ -35,7 +34,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     @Autowired
     private RuleRepository ruleRepository;
 
-    @Lazy // avoid problems with spring because of this circular dependency
+    @Lazy //Circular dependency
     @Autowired
     private TestExecutor testExecutor;
 
@@ -174,9 +173,8 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     /**
      * Compares the rules to be triggered and the actually triggered rules during the test for the success calculation.
      *
-     *
      * @param triggerValuesMap List of all triggered rules and values during the test
-     * @param ruleNames names of the rules to be triggered during the test
+     * @param ruleNames        names of the rules to be triggered during the test
      * @return if test was successful or not
      */
     private String compareTriggeredRules(Map<String, List<Document>> triggerValuesMap, List<String> ruleNames) {
@@ -288,13 +286,13 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * Extract the correct trigger values saved in the database (Testing) for the rules included in a specific test that occurred between the start and end times.
      *
      * @param testValues list of all
-     * @param startTime of the executed test
-     * @param endTime of the executed test
-     * @param ruleNames which should be observed during the test
-     * @param triggerID trigger id's of the rules to be observed
+     * @param startTime  of the executed test
+     * @param endTime    of the executed test
+     * @param ruleNames  which should be observed during the test
+     * @param triggerID  trigger id's of the rules to be observed
      * @return list of trigger values
      */
-    private  Map<String, List<Document>> extractTriggerValues(Map<String, List<Document>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
+    private Map<String, List<Document>> extractTriggerValues(Map<String, List<Document>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
         // Get all trigger values for  the test rules between start and end time
         for (int i = 0; i < ruleNames.size(); i++) {
             List<Document> values = new ArrayList<>();

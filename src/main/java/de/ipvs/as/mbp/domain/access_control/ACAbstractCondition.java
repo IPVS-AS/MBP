@@ -13,8 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Abstract base class for all access-control policy conditions.
- * 
- * @author Jakob Benz
  */
 public abstract class ACAbstractCondition extends ACAbstractEntity {
 	

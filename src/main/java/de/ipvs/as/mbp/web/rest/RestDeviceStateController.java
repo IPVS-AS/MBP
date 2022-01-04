@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -26,7 +26,7 @@ import java.util.Map;
  * REST Controller for requests related to the availability of devices.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/devices")
+@RequestMapping(Constants.BASE_PATH + "/devices")
 @Api(tags = { "Device state" })
 public class RestDeviceStateController {
 

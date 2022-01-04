@@ -5,8 +5,6 @@
 /**
  * Directive which creates a chart for displaying historical values. Control elements are provided with
  * which the user has the possibility to select the data that he wants to display.
- *
- * @author Jan
  */
 app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $interval) {
     //Initial number of elements to display in the chart
