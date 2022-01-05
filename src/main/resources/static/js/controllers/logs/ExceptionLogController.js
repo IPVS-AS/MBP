@@ -79,7 +79,7 @@ app.controller('ExceptionLogController',
                     ordering: false,
                     columns: [
                         {
-                            data: 'time.epochSecond',
+                            data: 'time',
                             render: function (data, type, row) {
                                 return new Date(data * 1000).toLocaleString('de-DE', {
                                     'year': 'numeric',
