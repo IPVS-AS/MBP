@@ -145,7 +145,7 @@ app.controller('ComponentDetailsController',
                 showDeploymentWaitingScreen("Deploying...");
 
                 //Execute deployment request
-                ComponentService.deploy(componentDetails._links.deploy.href).then(
+                ComponentService.deployComponent(COMPONENT_ID, COMPONENT_TYPE).then(
                     function (response) {
                         //Notify user
                         vm.deploymentState = 'DEPLOYED';
@@ -170,7 +170,7 @@ app.controller('ComponentDetailsController',
                 //Show waiting screen
                 showDeploymentWaitingScreen("Undeploying...");
                 //Execute undeployment request
-                ComponentService.undeploy(componentDetails._links.deploy.href).then(
+                ComponentService.undeployComponent(COMPONENT_ID, COMPONENT_TYPE).then(
                     function (response) {
                         //Notify user
                         vm.deploymentState = 'READY';

@@ -12,6 +12,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         const URL_START_COMPONENT = URL_PREFIX + 'start/';
         //URL suffix for stopping components
         const URL_STOP_COMPONENT = URL_PREFIX + 'stop/';
+        //URL suffix for deploying and undeploying components
+        const URL_DEPLOY_COMPONENT = URL_PREFIX + 'deploy/';
         //URL suffix under which the deployment state of all components can be retrieved
         const URL_GET_ALL_COMPONENT_STATES_SUFFIX = '/state';
         //URL suffix under which the deployment state of a certain component can be retrieved
@@ -50,12 +52,28 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             return HttpService.postRequest(URL_STOP_COMPONENT + componentType + '/' + componentId, null, null);
         }
 
-        function deployComponent(url) {
-            return HttpService.postRequest(url, {}, null);
+        /**
+         * [Public]
+         * Performs a server request in order to deploy a certain component.
+         *
+         * @param componentId The id of the component to deploy
+         * @param componentType The type of the component to deploy
+         * @returns {*}
+         */
+        function deployComponent(componentId, componentType) {
+            return HttpService.postRequest(URL_DEPLOY_COMPONENT + componentType + '/' + componentId, {}, null);
         }
 
-        function undeployComponent(url) {
-            return HttpService.deleteRequest(url);
+        /**
+         * [Public]
+         * Performs a server request in order to undeploy a certain component.
+         *
+         * @param componentId The id of the component to undeploy
+         * @param componentType The type of the component to undeploy
+         * @returns {*}
+         */
+        function undeployComponent(componentId, componentType) {
+            return HttpService.deleteRequest(URL_DEPLOY_COMPONENT + componentType + '/' + componentId);
         }
 
         /**
@@ -241,8 +259,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             deleteValueLogs: deleteValueLogs,
             startComponent: startComponent,
             stopComponent: stopComponent,
-            deploy: deployComponent,
-            undeploy: undeployComponent,
+            deployComponent: deployComponent,
+            undeployComponent: undeployComponent,
             addNewActiveVisualization: addNewActiveVisualization,
             deleteActiveVisualization: deleteActiveVisualization
         };
