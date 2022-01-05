@@ -83,7 +83,7 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
          * @return {string} The date string
          */
         function convertTime(timeToConvert = 0) {
-            let time = timeToConvert.epochSecond * 1000;
+            let time = timeToConvert * 1000;
             time = dateToString(new Date(time));
             return time;
         }
