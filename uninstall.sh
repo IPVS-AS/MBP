@@ -1,45 +1,37 @@
 #!/bin/sh
 
 ###########################################################################################
-# This script removes the software components installed with the MBP installation script. #
-# It removes Mosquitto, MongoDB and Tomcat.                                               #
+# This script removes the MBP application and un-registers the corresponding service.     #
+# It can also be used to remove mosquitto and MongoDB.                                    #
 ###########################################################################################
 
+# Config
+TARGET_DIR="/usr/local/bin/MBP"
+SERVICE_NAME="mbp"
+
 echo "This will uninstall the MBP from your device."
-read -n1 -p "Do you also want to uninstall Tomcat? [y,n]" un_tomcat 
-echo ""
 read -n1 -p "Do you also want to uninstall MongoDB? [y,n]" un_mongo
 echo ""
 read -n1 -p "Do you also want to uninstall mosquitto? [y,n]" un_mosquitto
 echo ""
 
-echo "Stopping Tomcat..."
-sudo systemctl stop tomcat*
+echo "Stopping the MBP application..."
+sudo systemctl stop $SERVICE_NAME
 
-echo "Removing MBP..."
-sudo rm /var/lib/tomcat*/webapps/MBP.war
-sudo rm -rf /var/lib/tomcat*/webapps/MBP
-
-
-# Uninstall Tomcat if desired
-if [[ $un_tomcat == "Y" || $un_tomcat == "y" ]]; then
-	echo "Uninstalling Tomcat..."
-	sudo systemctl stop tomcat*
-	sudo apt-get remove -qy tomcat*
-	sudo apt purge -qy tomcat*
-fi
-
+echo "Removing the MBP application..."
+sudo rm -rf $TARGET_DIR
+sudo rm /etc/systemd/system/${SERVICE_NAME}.service
+sudo systemctl daemon-reload
 
 # Uninstall MongoDB if desired
 if [[ $un_mongo == "Y" || $un_mongo == "y" ]]; then
-	echo "Uninstalling MongoDb..."
+	echo "Uninstalling MongoDB..."
 	sudo systemctl stop mongodb
 	sudo apt-get remove -qy mongodb-server
 	sudo apt purge -qy mongodb-server
 	sudo rm -r /var/log/mongodb
 	sudo rm -r /var/lib/mongodb
 fi
-
 
 # Uninstall mosquitto if desired
 if [[ $un_mosquitto == "Y" || $un_mosquitto == "y" ]]; then
@@ -49,5 +41,4 @@ if [[ $un_mosquitto == "Y" || $un_mosquitto == "y" ]]; then
 	sudo apt purge -qy mosquitto
 fi
 
-
-echo "Uninstalling completed."
+echo "Uninstall complete."

@@ -9,61 +9,61 @@
 # Config
 TARGET_DIR="/usr/local/bin/MBP"
 SERVICE_NAME="mbp"
-SERVICE_DESCRIPTION="Multi-purpose binding and provisioning platform for the IoT."
+SERVICE_DESCRIPTION="Multi-purpose binding and provisioning platform"
 
 # Generated
-APP_STARTER_PATH="${TARGET_DIR}/start_mbp.sh"
+APP_STARTER_PATH="${TARGET_DIR}/start_mbp"
 
-echo "write hostname\n"
+echo "Writing hostname..."
 sudo sh -c "echo '127.0.0.1' $(hostname) >> /etc/hosts";
-echo "\nupdate package repositories\n"
+echo "Updating package repositories..."
 sudo apt-get -qy update;
 sudo apt-get -qy upgrade;
 
 #Installing Java 8
-echo "\nInstalling Java 8...\n"
+echo "Installing Java 8..."
 sudo apt-get install -qy openjdk-8-jdk;
 sudo apt-get install -qy maven;
 
-echo "\nInstalling Mosquitto Broker, MongoDB and maven...\n"
+echo "Installing mosquitto, MongoDB and maven..."
 
 if [ -n "$1" ]
 then
     if [ "$1" = "secure" ]
     then
-        echo "Installing secured Mosquitto with OAuth2 authentication as Docker container..."
+        echo "Installing secured mosquitto with OAuth2 authentication as Docker container..."
         echo "\nbroker_location=LOCAL_SECURE" >> src/main/resources/config.properties
-        echo "\nBuilding mosquitto with go-auth plugin...\n"
+        echo "Building mosquitto with go-auth plugin..."
         cd mosquitto/
         docker build -t mosquitto-go-auth .
-        echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
+        echo "Starting docker container for mosquitto with go-auth plugin..."
         docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
         cd ..
     else
         echo "Invalid command-line argument(s)."
     fi
 else
-    echo "Installing normal Mosquitto..."
+    echo "Installing mosquitto..."
     sudo apt-get install -qy mosquitto;
     sudo systemctl start mosquitto;
 fi
 
 # Install and start MongoDB
-sudo apt-get -qy install mongodb;
+sudo apt-get -qy install mongodb-server;
 sudo systemctl start mongodb;
 
 # Build application
-echo "\nBuilding MBP application...\n"
+echo "Building MBP application..."
 sudo mvn clean package -DskipTests=true
 
 # Check if service is active
 IS_ACTIVE=$(sudo systemctl is-active $SERVICE_NAME)
 if [ "$IS_ACTIVE" == "active" ]; then
     # Just Restart the service
-    echo "MBP service is already running. Just restarting it."
+    echo "MBP service is already running. Restarting it..."
     sudo systemctl restart $SERVICE_NAME
 else
-    echo "Installing MBP as service"
+    echo "Installing MBP as service..."
 
     # Create target dir and copy the MBP application to it
     sudo mkdir $TARGET_DIR
@@ -75,7 +75,7 @@ else
 Description=$SERVICE_DESCRIPTION
 After=network.target
 [Service]
-User=ubuntu
+WorkingDirectory=$TARGET_DIR
 ExecStart=$APP_STARTER_PATH
 Restart=on-failure
 RestartSec=5
@@ -106,8 +106,8 @@ APP_STATUS=$(sudo systemctl is-active $SERVICE_NAME)
 
 # Output status
 echo "---------------------------"
-echo "Software components status:"
-echo "> Mosquitto: $MOSQUITTO_STATUS"
+echo "Status of the individual software components:"
+echo "> mosquitto: $MOSQUITTO_STATUS"
 echo "> MongoDB: $MONGODB_STATUS"
 echo "> MBP application: $APP_STATUS"
 echo "---------------------------------------------------------"
@@ -118,7 +118,7 @@ then
   echo "The MBP should now be accessible on http://127.0.0.1:8080/mbp"
 else
   echo "Installation INCOMPLETE!"
-  echo "At least one of the required components is not active"
+  echo "At least one of the required components is not available."
 fi
 echo "---------------------------------------------------------"
 
