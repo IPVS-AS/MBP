@@ -2,8 +2,8 @@
 
 #######################################################################################################################
 # This install script provides a fully automated installation of the MBP.                                             #
-# It installs all required software components including Java, mosquitto and a MongoDB instance.                      #
-# Finally, a systemd service is registered and started for the MBP application.                                       #
+# It installs all required software components including Java, mosquitto and a MongoDB instance and sets up           #
+# a systemd service with which the MBP can be launched and stopped.                                                   #
 #######################################################################################################################
 
 # Config
@@ -115,7 +115,7 @@ echo "---------------------------------------------------------"
 if [ $MOSQUITTO_STATUS = "active" ] && [ $MONGODB_STATUS = "active" ] && ([ $APP_STATUS = "active" ] || [ $APP_STATUS = "activating" ])
 then
   echo "Installation finished SUCCESSFULLY!"
-  echo "The MBP should now be accessible on http://127.0.0.1:8080/mbp"
+  echo "After some seconds, the web interface of the MBP should become available under http://127.0.0.1:8080/mbp"
 else
   echo "Installation INCOMPLETE!"
   echo "At least one of the required components is not available."

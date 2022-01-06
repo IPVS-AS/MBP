@@ -2,7 +2,7 @@
 
 ###########################################################################################
 # This script removes the MBP application and un-registers the corresponding service.     #
-# It can also be used to remove mosquitto and MongoDB.                                    #
+# It can also be used to uninstall mosquitto and MongoDB.                                    #
 ###########################################################################################
 
 # Config
@@ -20,6 +20,8 @@ sudo systemctl stop $SERVICE_NAME
 
 echo "Removing the MBP application..."
 sudo rm -rf $TARGET_DIR
+
+echo "Unregistering service..."
 sudo rm /etc/systemd/system/${SERVICE_NAME}.service
 sudo systemctl daemon-reload
 
@@ -41,4 +43,4 @@ if [[ $un_mosquitto == "Y" || $un_mosquitto == "y" ]]; then
 	sudo apt purge -qy mosquitto
 fi
 
-echo "Uninstall complete."
+echo "Uninstalled the MBP and related components SUCCESSFULLY!"
