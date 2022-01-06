@@ -173,8 +173,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             //Array that stores the finally formatted value logs
             let finalValues = [];
 
-            console.log("Start processing value logs")
-
             //Iterate over all received value logs
             for (let i = 0; i < receivedLogs.length; i++) {
                 //Extract value and time for the current log and format them
@@ -185,9 +183,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
                 let tuple = [time, value];
                 finalValues.push(tuple);
             }
-
-            console.log("End processing value logs")
-
 
             //Return final value log array so that it is accessible in the promise
             return finalValues;
