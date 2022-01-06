@@ -9,10 +9,10 @@
 # Config
 TARGET_DIR="/usr/local/bin/MBP"
 SERVICE_NAME="mbp"
-SERVICE_DESCRIPTION="Service for the Multi-purpose binding and provisioning platform."
+SERVICE_DESCRIPTION="Multi-purpose binding and provisioning platform for the IoT."
 
 # Generated
-SERVICE_PATH="${TARGET_DIR}/MBP.jar"
+APP_STARTER_PATH="${TARGET_DIR}/start_mbp.sh"
 
 echo "write hostname\n"
 sudo sh -c "echo '127.0.0.1' $(hostname) >> /etc/hosts";
@@ -49,7 +49,7 @@ else
 fi
 
 # Install and start MongoDB
-sudo apt-get -qy install mongodb-server;
+sudo apt-get -qy install mongodb;
 sudo systemctl start mongodb;
 
 # Build application
@@ -75,11 +75,23 @@ else
 Description=$SERVICE_DESCRIPTION
 After=network.target
 [Service]
-ExecStart=$SERVICE_PATH
+User=ubuntu
+ExecStart=$APP_STARTER_PATH
 Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
 [Install]
 WantedBy=multi-user.target
 EOF
+
+    # Create script for executing the application
+    sudo cat > ${APP_STARTER_PATH} << EOF
+#!/bin/sh
+sudo java -jar MBP.jar
+EOF
+
+    # Make starter script executable
+    sudo chmod u+x $APP_STARTER_PATH
 
     # Enable and start service
     sudo systemctl daemon-reload
@@ -100,7 +112,7 @@ echo "> MongoDB: $MONGODB_STATUS"
 echo "> MBP application: $APP_STATUS"
 echo "---------------------------------------------------------"
 
-if [ $MOSQUITTO_STATUS = "active" ] && [ $MONGODB_STATUS = "active" ] && [ $APP_STATUS = "active" ]
+if [ $MOSQUITTO_STATUS = "active" ] && [ $MONGODB_STATUS = "active" ] && ([ $APP_STATUS = "active" ] || [ $APP_STATUS = "activating" ])
 then
   echo "Installation finished SUCCESSFULLY!"
   echo "The MBP should now be accessible on http://127.0.0.1:8080/mbp"
