@@ -7,7 +7,6 @@ import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import io.swagger.annotations.ApiModel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;

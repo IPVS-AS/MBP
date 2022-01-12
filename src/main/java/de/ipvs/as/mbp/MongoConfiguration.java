@@ -2,14 +2,10 @@ package de.ipvs.as.mbp;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import de.ipvs.as.mbp.constants.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
@@ -33,7 +29,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @Value("${spring.data.mongodb.password}")
     private String mongoPassword;
 
-    @Override
     @Bean
     public MongoClient mongoClient() {
         //String for mongoDB credentials
@@ -54,11 +49,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @Override
     protected String getDatabaseName() {
         return mongoDatabase;
-    }
-
-    @Override
-    protected String getMappingBasePackage() {
-        return Constants.ROOT_PACKAGE + ".repository";
     }
 
     /**
@@ -104,21 +94,5 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
      */
     public String getMongoPassword() {
         return mongoPassword;
-    }
-
-    /**
-     * Create a configurer for the injection of application-related property values, based on the
-     * application.properties file.
-     *
-     * @return The resulting property configurer
-     */
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer applicationPropertiesConfigurer() {
-        //Create corresponding property configurer and make it tolerant
-        PropertySourcesPlaceholderConfigurer propsConfig = new PropertySourcesPlaceholderConfigurer();
-        propsConfig.setIgnoreUnresolvablePlaceholders(true);
-
-        //Return final configurer
-        return propsConfig;
     }
 }

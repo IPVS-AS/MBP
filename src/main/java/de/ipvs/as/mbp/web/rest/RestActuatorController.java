@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Actuator;
@@ -33,7 +33,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/actuators")
+@RequestMapping(Constants.BASE_PATH + "/actuators")
 @Api(tags = {"Actuators"})
 public class RestActuatorController {
 

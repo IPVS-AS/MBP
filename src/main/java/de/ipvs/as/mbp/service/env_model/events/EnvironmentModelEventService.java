@@ -144,9 +144,7 @@ public class EnvironmentModelEventService {
         SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT);
 
         //Unsubscribe on timeout or completion
-        Runnable unsubscribe = () -> {
-            this.unsubscribe(modelId, emitter);
-        };
+        Runnable unsubscribe = () -> this.unsubscribe(modelId, emitter);
         emitter.onCompletion(unsubscribe);
         emitter.onTimeout(unsubscribe);
 

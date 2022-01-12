@@ -1,10 +1,9 @@
 package de.ipvs.as.mbp.iottest;
 
-import javax.print.attribute.standard.JobName;
 import javax.servlet.http.Cookie;
 
-import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseIoTTest;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -90,7 +89,7 @@ public class SensorRunOperatorExpectingDataTest extends BaseIoTTest {
         System.out.println("Waiting for data to be Produced");
         Thread.sleep(15000);
 
-        String url = RestConfiguration.BASE_PATH + "/sensors/" + sensorResponse.getId() + "/valueLogs?sort=time,desc&size=200&startTime=-1&endTime=-1";
+        String url = Constants.BASE_PATH + "/sensors/" + sensorResponse.getId() + "/valueLogs?sort=time,desc&size=200&startTime=-1&endTime=-1";
         MvcResult result = this.mockMvc.perform(get(url).cookie(sessionCookie).headers(getMBPAccessHeaderForAdmin()))
                 .andExpect(status().isOk())
                 .andDo(print())

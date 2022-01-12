@@ -23,6 +23,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -59,7 +60,7 @@ public class UserEntityService {
      * @return the list of (filtered) user entities.
      */
     public <E extends UserEntity> List<E> getAllWithAccessControlCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest accessRequest) {
-        return filterForAdminOwnerAndPolicies(() -> repository.findAll(DEFAULT_SORT), accessType, accessRequest);
+        return filterForAdminOwnerAndPolicies(repository.findAll(DEFAULT_SORT), accessType, accessRequest);
     }
 
     /**
@@ -299,6 +300,9 @@ public class UserEntityService {
     public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest) {
         // Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
+        if (user == null) {
+            return Collections.emptyList();
+        }
 
         //User must be loginable
         requireLoginable(user);
@@ -424,10 +428,10 @@ public class UserEntityService {
 
     public <E extends UserEntity> PagedModel<EntityModel<E>> entitiesToPagedModel(List<E> entities, Link selfLink, Pageable pageable) {
         List<EntityModel<E>> deviceEntityModels = entities.stream().map(this::entityToEntityModel).collect(Collectors.toList());
-        return new PagedModel<>(deviceEntityModels, Pages.metaDataOf(pageable, deviceEntityModels.size()), C.listOf(selfLink));
+        return PagedModel.of(deviceEntityModels, Pages.metaDataOf(pageable, deviceEntityModels.size()), C.listOf(selfLink));
     }
 
     public <E extends UserEntity> EntityModel<E> entityToEntityModel(E entity) {
-        return new EntityModel<E>(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
+        return EntityModel.of(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
     }
 }

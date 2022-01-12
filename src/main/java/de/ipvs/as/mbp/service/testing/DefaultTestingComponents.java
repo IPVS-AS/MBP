@@ -58,9 +58,6 @@ public class DefaultTestingComponents {
     private final DeviceCreateValidator deviceCreateValidator;
 
     @Autowired
-    private final PropertiesService propertiesService;
-
-    @Autowired
     private final ComponentCreateValidator componentCreateValidator;
 
     @Autowired
@@ -75,10 +72,8 @@ public class DefaultTestingComponents {
     @Autowired
     private final DefaultOperatorService defaultOperatorService;
 
-
     @Autowired
     RuleTriggerRepository ruleTriggerRepository;
-
 
     private final String TEST_DEVICE;
     private final String TEST_DEVICE_IP;
@@ -91,17 +86,15 @@ public class DefaultTestingComponents {
 
 
     public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, TestReportRepository testReportRepository, OperatorRepository operatorRepository, DataModelRepository dataModelRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
-                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
+                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository, TestDevicePropertiesService testDevicePropertiesService) throws IOException {
         this.testReportRepository = testReportRepository;
         // Get needed Strings out of the properties to create the testing components
-        propertiesService = new PropertiesService();
-        TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
-        TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.ipAddressTestDevice");
-        TEST_DEVICE_USERNAME = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
-        TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
-        ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
-        TEST_PREFIX = propertiesService.getPropertiesString("testingTool.testComponentIdentifier");
-
+        TEST_DEVICE = testDevicePropertiesService.getTestDeviceName();
+        TEST_DEVICE_IP = testDevicePropertiesService.getIpAddressTestDevice();
+        TEST_DEVICE_USERNAME = testDevicePropertiesService.getTestDeviceUserName();
+        TEST_DEVICE_PASSWORD = testDevicePropertiesService.getTestDevicePassword();
+        ACTUATOR_NAME = testDevicePropertiesService.getActuatorName();
+        TEST_PREFIX = testDevicePropertiesService.getTestComponentIdentifier();
 
         this.defaultTestComponentsWhiteList = defaultTestComponentsWhiteList;
         this.operatorRepository = operatorRepository;

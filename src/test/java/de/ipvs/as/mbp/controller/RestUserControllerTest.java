@@ -5,8 +5,8 @@ import java.util.List;
 import javax.servlet.http.Cookie;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseBackendTest;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.error.MBPException;
@@ -43,7 +43,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void retrieveAllUsers_returnOk() throws Exception {
         Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users")
+        MvcResult result = mockMvc.perform(get(Constants.BASE_PATH + "/users")
                         .contentType("application/json+hal")
                         .cookie(adminCookie))
                 .andDo(print())
@@ -52,7 +52,7 @@ public class RestUserControllerTest extends BaseBackendTest {
 
     @Test
     void retrieveAllUsers_returnUnauthorized() throws Exception {
-        mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users")
+        mockMvc.perform(get(Constants.BASE_PATH + "/users")
                         .contentType("application/json"))
                 .andDo(print())
                 .andExpect(status().isUnauthorized()).andReturn();
@@ -62,7 +62,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void getUserEntityForUsername_returnOk() throws Exception {
         Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users/admin")
+        MvcResult result = mockMvc.perform(get(Constants.BASE_PATH + "/users/admin")
                         .contentType("application/json")
                         .cookie(adminCookie))
                 .andDo(print())
@@ -79,7 +79,7 @@ public class RestUserControllerTest extends BaseBackendTest {
 
     @Test
     void create_returnCreated() throws Exception {
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/users")
                         .contentType("application/json")
                         .content(newUser))
                 .andDo(print())
@@ -98,7 +98,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void searchByUsername_returnOk() throws Exception {
         Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users/searchByUsername")
+        MvcResult result = mockMvc.perform(get(Constants.BASE_PATH + "/users/searchByUsername")
                         .contentType("application/json")
                         .queryParam("query", "admin")
                         .cookie(adminCookie))
@@ -117,7 +117,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void searchByUsername_emptyQuery_returnOk() throws Exception {
         Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users/searchByUsername")
+        MvcResult result = mockMvc.perform(get(Constants.BASE_PATH + "/users/searchByUsername")
                         .contentType("application/json")
                         .param("query", "")
                         .cookie(adminCookie))
@@ -134,7 +134,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void login_returnOk() throws Exception {
         UserLoginData adminLogin = new UserLoginData("admin", "12345");
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/users/login")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(adminLogin)))
                 .andExpect(status().isOk()).andReturn();
@@ -157,7 +157,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void delete_returnOk() throws Exception {
         Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users")
+        mockMvc.perform(post(Constants.BASE_PATH + "/users")
                         .contentType("application/json")
                         .content(newUser))
                 .andDo(print())
@@ -165,7 +165,7 @@ public class RestUserControllerTest extends BaseBackendTest {
 
         User user = userService.getForUsername("newuser");
 
-        mockMvc.perform(delete(RestConfiguration.BASE_PATH + "/users/" + user.getId())
+        mockMvc.perform(delete(Constants.BASE_PATH + "/users/" + user.getId())
                         .contentType("application/json")
                         .cookie(adminCookie))
                 .andExpect(status().isNoContent()).andReturn();
@@ -179,7 +179,7 @@ public class RestUserControllerTest extends BaseBackendTest {
 
         List<User> users = userService.getAll(Pageable.unpaged()).toList();
 
-        mockMvc.perform(delete(RestConfiguration.BASE_PATH + "/users/" + users.get(1).getId())
+        mockMvc.perform(delete(Constants.BASE_PATH + "/users/" + users.get(1).getId())
                         .contentType("application/json")
                         .cookie(adminCookie))
                 .andExpect(status().isForbidden()).andReturn();
@@ -189,7 +189,7 @@ public class RestUserControllerTest extends BaseBackendTest {
     void delete_returnNotFound() throws Exception {
         Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        mockMvc.perform(delete(RestConfiguration.BASE_PATH + "/users/userThatDoesNotExist")
+        mockMvc.perform(delete(Constants.BASE_PATH + "/users/userThatDoesNotExist")
                         .contentType("application/json")
                         .cookie(adminCookie))
                 .andExpect(status().isNotFound()).andReturn();
@@ -200,7 +200,7 @@ public class RestUserControllerTest extends BaseBackendTest {
         Cookie adminCookie = this.getSessionCookieForAdmin();
         String username = "newuser";
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users")
+        mockMvc.perform(post(Constants.BASE_PATH + "/users")
                         .contentType("application/json")
                         .content(newUser))
                 .andDo(print())
@@ -210,7 +210,7 @@ public class RestUserControllerTest extends BaseBackendTest {
 
         assertThat(user.isAdmin()).isFalse();
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/" + user.getId() + "/promote")
+        mockMvc.perform(post(Constants.BASE_PATH + "/users/" + user.getId() + "/promote")
                         .contentType("application/json")
                         .cookie(adminCookie))
                 .andExpect(status().isOk()).andReturn();
@@ -223,7 +223,7 @@ public class RestUserControllerTest extends BaseBackendTest {
         assertThat(promotedUser.getFirstName()).isEqualTo(user.getFirstName());
         assertThat(promotedUser.getLastName()).isEqualTo(user.getLastName());
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/" + user.getId() + "/degrade")
+        mockMvc.perform(post(Constants.BASE_PATH + "/users/" + user.getId() + "/degrade")
                         .contentType("application/json")
                         .cookie(adminCookie))
                 .andExpect(status().isOk()).andReturn();
@@ -243,7 +243,7 @@ public class RestUserControllerTest extends BaseBackendTest {
         String newChangedPasswordUser = "{\"id\":null,\"username\":\"newuser\",\"password\":\"changedPassword\",\"firstName\":\"John\",\"lastName\":\"Doe\",\"isSystemUser\":false,\"isLoginable\":true,\"loginable\":true,\"entityType\":\"REQUESTING_ENTITY\",\"isAdmin\":false}";
         String username = "newuser";
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users")
+        mockMvc.perform(post(Constants.BASE_PATH + "/users")
                         .contentType("application/json")
                         .content(newUser))
                 .andDo(print())
@@ -251,7 +251,7 @@ public class RestUserControllerTest extends BaseBackendTest {
 
         User user = userService.getForUsername(username);
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/" + user.getId() + "/change_password")
+        mockMvc.perform(post(Constants.BASE_PATH + "/users/" + user.getId() + "/change_password")
                         .contentType("application/json")
                         .content(newChangedPasswordUser)
                         .cookie(adminCookie))

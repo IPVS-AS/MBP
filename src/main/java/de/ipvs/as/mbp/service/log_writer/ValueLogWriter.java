@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class ValueLogWriter implements ValueLogObserver {
 
     //Repository component to use for storing value logs (autowired)
-    private ValueLogRepository valueLogRepository;
+    private final ValueLogRepository valueLogRepository;
 
     //Cache for value logs
     private CEPValueLogCache cepValueLogCache;

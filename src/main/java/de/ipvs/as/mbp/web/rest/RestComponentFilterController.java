@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.web.rest;
 
 import java.util.List;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
  * components, e.g. by operator/device id.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Component filter"})
 public class RestComponentFilterController {
 

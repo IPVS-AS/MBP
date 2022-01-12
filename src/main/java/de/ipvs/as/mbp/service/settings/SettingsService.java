@@ -11,7 +11,9 @@ import de.ipvs.as.mbp.service.messaging.PubSubService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +23,8 @@ import java.util.Optional;
  * This service provides features for the management of application-wide settings that may be changed by the users.
  * The settings are implicitly stored within a MongoDB repository. implicitly stores the settings persistently in a properties file on disk and enables changes of the settings.
  */
-@Service
-@DependsOn({"applicationPropertiesConfigurer", "gitPropertiesConfigurer"})
+@Configuration
+@PropertySource("classpath:git.properties")
 public class SettingsService {
 
     @Autowired
@@ -58,6 +60,20 @@ public class SettingsService {
     @Value("${git.commit.time}")
     private String commitTime;
 
+    @Value("${security.oauth2.client.access-token-uri}")
+    private String oauth2TokenUri;
+
+    @Value("${security.user.name}")
+    private String httpUser;
+
+    @Value("${security.user.password}")
+    private String httpPassword;
+
+    @Value("${security.oauth2.client.grant-type}")
+    private String oauth2GrantType;
+
+    @Value("${security.oauth2.client.client-id}")
+    private String oauth2ClientId;
     /**
      * Returns a MBOInfo object containing information about the running MBP app instance and the environment
      * in which it is operated.
@@ -175,5 +191,33 @@ public class SettingsService {
         defaultSettings.setBrokerPort(Integer.parseInt(defaultBrokerPort));
 
         return defaultSettings;
+    }
+
+    public String getDefaultBrokerHost() {
+        return defaultBrokerHost;
+    }
+
+    public BrokerLocation getDefaultBrokerLocation() {
+        return BrokerLocation.valueOf(defaultBrokerLocation);
+    }
+
+    public String getOauth2TokenUri() {
+        return oauth2TokenUri;
+    }
+
+    public String getHttpUser() {
+        return httpUser;
+    }
+
+    public String getHttpPassword() {
+        return httpPassword;
+    }
+
+    public String getOauth2GrantType() {
+        return oauth2GrantType;
+    }
+
+    public String getOauth2ClientId() {
+        return oauth2ClientId;
     }
 }

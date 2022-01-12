@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import javax.servlet.http.Cookie;
 
-import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.base.BaseBackendTest;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.repository.DeviceRepository;
@@ -47,7 +47,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
 
     @Test
     void retrieveAllDevices_returnOk() throws Exception {
-        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/devices")
+        MvcResult result = mockMvc.perform(get(Constants.BASE_PATH + "/devices")
                         .cookie(adminCookie)
                         .contentType("application/json")
                         .headers(getMBPAccessHeaderForAdmin()))
@@ -64,7 +64,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
         requestDto.setIpAddress("127.0.0.1");
         requestDto.setComponentType("Computer");
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/devices")
                         .cookie(adminCookie)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -73,7 +73,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
 
         Device createdDevice = objectMapper.readValue(result.getResponse().getContentAsString(), Device.class);
 
-        result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/devices/" + createdDevice.getId())
+        result = mockMvc.perform(get(Constants.BASE_PATH + "/devices/" + createdDevice.getId())
                         .cookie(adminCookie)
                         .contentType("application/json")
                         .headers(getMBPAccessHeaderForAdmin()))
@@ -103,7 +103,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
         requestDto.setIpAddress("127.0.0.1");
         requestDto.setComponentType("Computer");
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/devices")
                         .cookie(adminCookie)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -136,7 +136,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
         requestDto.setIpAddress("127.0.0.1");
         requestDto.setComponentType("Computer");
 
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+        mockMvc.perform(post(Constants.BASE_PATH + "/devices")
                         .cookie(adminCookie)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -146,7 +146,7 @@ public class RestDeviceControllerTest extends BaseBackendTest {
         Optional<Device> createdDevice = deviceRepository.findFirstByName(requestDto.getName());
         assertThat(createdDevice.isPresent()).isTrue();
 
-        mockMvc.perform(delete(RestConfiguration.BASE_PATH + "/devices/" + createdDevice.get().getId())
+        mockMvc.perform(delete(Constants.BASE_PATH + "/devices/" + createdDevice.get().getId())
                         .cookie(adminCookie)
                         .contentType("application/json")
                         .headers(getMBPAccessHeaderForAdmin()))

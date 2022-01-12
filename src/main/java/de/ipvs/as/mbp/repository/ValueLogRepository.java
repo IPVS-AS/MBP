@@ -50,8 +50,8 @@ public class ValueLogRepository {
     private static final long VALUES_PER_DOCUMENT = 80;
 
     // Value log database and collection of the MongoDB
-    private MongoDatabase valueLogDatabase;
-    private MongoCollection<ValueLog> valueLogCollection;
+    private final MongoDatabase valueLogDatabase;
+    private final MongoCollection<ValueLog> valueLogCollection;
 
     /**
      * Instantiates the repository by passing a reference to the MongoDB bean that
@@ -62,7 +62,7 @@ public class ValueLogRepository {
     @Autowired
     private ValueLogRepository(MongoClient mongoClient, MongoConfiguration mongoConfiguration) {
         // Fetch coded registry for mapping value log objects from and to BSON documents
-        CodecRegistry codecRegistry = fromRegistries(com.mongodb.MongoClient.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+        CodecRegistry codecRegistry = fromRegistries(com.mongodb.MongoClientSettings.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
         //Get database name from configuration
         String databaseName = mongoConfiguration.getMongoDatabase();

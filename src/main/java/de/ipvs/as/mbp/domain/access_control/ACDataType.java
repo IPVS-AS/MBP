@@ -62,7 +62,7 @@ public enum ACDataType {
 	/**
 	 * The class to use, e.g., for deserializing and comparing.
 	 */
-	private Class<?> clazz;
+	private final Class<?> clazz;
 	
 	// - - -
 	

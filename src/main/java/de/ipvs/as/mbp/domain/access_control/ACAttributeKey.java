@@ -36,11 +36,11 @@ public enum ACAttributeKey {
 	
 	// - - -
 	
-	private String id;
-	private String description;
-	private Class<?> type;
-	private String valueLookupPath;
-	private ACEntityType entityType;
+	private final String id;
+	private final String description;
+	private final Class<?> type;
+	private final String valueLookupPath;
+	private final ACEntityType entityType;
 	
 	private ACAttributeKey(String id, String description, Class<?> type, String valueLookupPath, ACEntityType entityType) {
 		this.id = id;

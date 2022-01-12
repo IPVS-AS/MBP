@@ -1,12 +1,10 @@
 package de.ipvs.as.mbp.domain.rules;
 
-import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import java.util.*;

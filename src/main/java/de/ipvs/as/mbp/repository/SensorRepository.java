@@ -1,13 +1,14 @@
 package de.ipvs.as.mbp.repository;
 
-import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 //@RepositoryRestResource(collectionResourceRel = "sensors", path = "sensors")
 //@Api(tags = {"Sensor entities"}, description = "CRUD for sensor entities")
+@Repository
 public interface SensorRepository extends ComponentRepository<Sensor> {
 
     Optional<Sensor> findFirstByName(@Param("name") String name);

@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest.discovery;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
@@ -27,7 +27,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * REST Controller for managing {@link DeviceTemplate}s.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/discovery/device-templates")
+@RequestMapping(Constants.BASE_PATH + "/discovery/device-templates")
 @Api(tags = {"Device templates"})
 public class RestDeviceTemplateController {
 

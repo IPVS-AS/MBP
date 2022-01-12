@@ -12,7 +12,7 @@ public enum ACArgumentFunction {
 	 * Function that evaluates to {@code true}, if and only if
 	 * two arguments are equal.
 	 */
-	EQUALS("=", compareResult -> compareResult == 0, (l, r) -> l.equalsIgnoreCase(r)),
+	EQUALS("=", compareResult -> compareResult == 0, String::equalsIgnoreCase),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
@@ -85,17 +85,17 @@ public enum ACArgumentFunction {
 	/**
 	 * A human readable description.
 	 */
-	private String humanReadableDescription;
+	private final String humanReadableDescription;
 	
 	/**
 	 * The predicate used to evaluate the result of the call to {@link Comparable#compareTo(Object)}.
 	 */
-	private Predicate<Integer> evaluationPredicate;
+	private final Predicate<Integer> evaluationPredicate;
 	
 	/**
 	 * The function used to evaluate functions on strings.
 	 */
-	private BiFunction<String, String, Boolean> evaluationFunction;
+	private final BiFunction<String, String, Boolean> evaluationFunction;
 	
 	// - - -
 	

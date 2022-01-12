@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html ng-app="app" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    <base th:href="@{/}"/>
+    <link id="BASE_URI" th:href="@{/}"/>
+    <link id="ENDPOINT_URI" th:href="@{/api}"/>
+
+    <title>MBP</title>
+
+    <!-- Favicon-->
+    <link rel="icon" th:href="@{/images/mbp-icon.png}" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link th:href="@{/plugins/google-fonts/roboto.css}" rel="stylesheet">
+    <link th:href="@{/plugins/google-fonts/material-icons.css}" rel="stylesheet">
+
+    <!-- Bootstrap Css -->
+    <link th:href="@{/plugins/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+
+    <!-- Waves Effect Css -->
+    <link th:href="@{/plugins/node-waves/waves.css}" rel="stylesheet"/>
+
+    <!-- Animation Css -->
+    <link th:href="@{/plugins/animate-css/animate.css}" rel="stylesheet"/>
+
+    <!-- jQuery-UI -->
+    <link th:href="@{/plugins/jquery-ui/jquery-ui.css}" rel="stylesheet"/>
+
+    <!-- jQuery DataTables -->
+    <link th:href="@{/plugins/jquery-datatables/dataTables.bootstrap.min.css}" rel="stylesheet"/>
+
+    <!-- jQuery QueryBuilder -->
+    <link th:href="@{/plugins/jquery-querybuilder/css/query-builder.default.css}" rel="stylesheet"/>
+
+    <!-- jQuery-UI Rotatable -->
+    <link th:href="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.css}" rel="stylesheet"/>
+
+    <!-- Morris Chart Css-->
+    <link th:href="@{/plugins/morrisjs/morris.css}" rel="stylesheet"/>
+
+    <!-- Dropzone CSS -->
+    <link th:href="@{/plugins/dropzone/min/dropzone.min.css}" rel="stylesheet"/>
+
+    <!-- Directive styles -->
+    <link th:href="@{/css/charts.css}" rel="stylesheet">
+
+    <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
+    <link th:href="@{/css/themes/all-themes.css}" rel="stylesheet"/>
+
+    <!-- Angular UI Bootstrap href fix -->
+    <link th:href="@{/plugins/angular-ui/bootstrap/css/angular-ui-fix.css}" rel="stylesheet"/>
+
+    <!-- Angular Dropzone Plugin -->
+    <link th:href="@{/plugins/angular-dropzone/css/ng-dropzone.min.css}" rel="stylesheet"/>
+
+    <!-- Size fix for SweetAlert2 -->
+    <link th:href="@{/plugins/sweetalert2/sweetalert2_fix.css}" rel="stylesheet"/>
+
+    <!-- Font Awesome -->
+    <link th:href="@{/plugins/fontawesome/all.css}" rel="stylesheet">
+
+    <!-- JsPlumb Defaults -->
+    <link th:href="@{/plugins/jsplumb/css/jsPlumb-defaults.css}" rel="stylesheet"/>
+
+    <!-- Modeling Tool Css -->
+    <link th:href="@{/css/modelling-tool.css}" rel="stylesheet"/>
+
+    <!-- Event pattern creator -->
+    <link th:href="@{/css/cep-query-editor.css}" rel="stylesheet"/>
+
+    <!-- waitMe plugin -->
+    <link th:href="@{/plugins/waitme/waitMe.min.css}" rel="stylesheet"/>
+
+    <!-- Bootstrap Select -->
+    <link th:href="@{/plugins/bootstrap-select/bootstrap-select.min.css}" rel="stylesheet"/>
+
+    <!-- Ion RangeSlider -->
+    <link th:href="@{/plugins/ion-rangeslider/ion.rangeSlider.min.css}" rel="stylesheet"/>
+
+    <!-- Easy Autocomplete -->
+    <link th:href="@{/plugins/easy-autocomplete/autocomplete.min.css}" rel="stylesheet"/>
+
+    <!-- GitHub Fork Ribbon -->
+    <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
+
+    <!-- jsonFormatter css -->
+    <link th:href="@{/plugins/json-formatter/json-formatter.min.css}" rel="stylesheet"/>
+
+    <!-- Leaflet (OSM javascript library) -->
+    <link th:href="@{/plugins/leaflet/css/leaflet.css}" rel="stylesheet"/>
+
+    <!-- Openlayers -->
+    <link th:href="@{/plugins/openlayers/openlayers.min.css}" rel="stylesheet"/>
+    <link th:href="@{/plugins/openlayers/geocoder.min.css}" rel="stylesheet"/>
+
+    <!-- Custom -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <link th:href="@{/css/style_additional.css}" rel="stylesheet">
+    <link th:href="@{/css/discovery.css}" rel="stylesheet">
+</head>
+
+<body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
+
+<!-- Progress bar for HTTP requests -->
+<div id="requestLoadingBar" class="progress" ng-show="ctrl.loadingBarDisplay">
+    <div class="progress-bar progress-bar-primary progress-bar-striped active" role="progressbar">
+        <span>{{ctrl.requestCount}} active {{(ctrl.requestCount === 1) ? 'request' : 'requests'}}</span>
+    </div>
+</div>
+
+<!-- Overlay For Sidebars -->
+<div class="overlay"></div>
+<!-- #END# Overlay For Sidebars -->
+
+<!-- Top Bar -->
+<nav class="navbar">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse"
+               data-target="#navbar-collapse" aria-expanded="false" ng-show="loggedIn"></a>
+            <a href="javascript:void(0);" class="bars" ng-show="loggedIn"></a>
+            <a class="navbar-brand" th:href="@{/}">MBP: A Platform for Managing IoT Environments</a>
+        </div>
+        <div style="float: right">
+            <a class="navbar-brand" th:href="@{/logout}" target="_parent" ng-show="loggedIn">
+                <i class="material-icons">power_settings_new</i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+</nav>
+<!-- #END# Top Bar -->
+
+<!-- Left Sidebar -->
+<aside id="leftsidebar" class="sidebar" ng-show="loggedIn">
+    <!-- User Info -->
+    <div class="user-info">
+        <div class="image">
+            <img src="images/user.png" alt="User" style="width:48px;height:48px"/>
+        </div>
+        <div class="info-container">
+            <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{username}}
+            </div>
+            <div class="username" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                 style="font-size: 10px">
+                {{userData.firstName + " " + userData.lastName}}
+            </div>
+        </div>
+    </div>
+    <!-- Menu -->
+    <div class="menu">
+        <ul class="list">
+            <li class="header">Main Navigation</li>
+            <li class="active" href="./" menu-item="menu-item">
+                <a th:href="@{/}">
+                    <i class="material-icons">home</i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li href="view/env-models" menu-item="menu-item">
+                <a href="view/env-models">
+                    <i class="material-icons">view_quilt</i>
+                    <span>Environment Models</span>
+                </a>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">devices</i>
+                    <span>IoT Hardware</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/devices" menu-item="menu-item">Devices</a>
+                    </li>
+                    <li>
+                        <a href="view/actuators" menu-item="menu-item">Actuators</a>
+                    </li>
+                    <li>
+                        <a href="view/sensors" menu-item="menu-item">Sensors</a>
+                    </li>
+                    <li>
+                        <a href="view/key-pairs" menu-item="menu-item">Key Pairs</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">search</i>
+                    <span>Discovery</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/request-topics" menu-item="menu-item">Topics</a>
+                    </li>
+                    <li>
+                        <a href="view/device-templates" menu-item="menu-item">Device Templates</a>
+                    </li>
+                    <li>
+                        <a href="view/dynamic-deployments" menu-item="menu-item">Dynamic deployments</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">description</i>
+                    <span>Operators</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/operators" menu-item="menu-item">Extraction/Control Operators</a>
+                    </li>
+                    <li>
+                        <a href="view/monitoring-operators" menu-item="menu-item">Monitoring Operators</a>
+                    </li>
+                    <li>
+                        <a href="view/data-models" menu-item="menu-item">Data Models</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">call_split</i>
+                    <span>Rules</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/rules" menu-item="menu-item">Definitions</a>
+                    </li>
+                    <li>
+                        <a href="view/rule-triggers" menu-item="menu-item">Conditions</a>
+                    </li>
+                    <li>
+                        <a href="view/rule-actions" menu-item="menu-item">Actions</a>
+                    </li>
+                    <li>
+                        <a href="view/testing-tool" menu-item="menu-item">Testing-Tool</a>
+                    </li>
+                </ul>
+            </li>
+            <li href="view/entity-types" menu-item="menu-item">
+                <a href="view/entity-types">
+                    <i class="material-icons">widgets</i>
+                    <span>Entity Types</span>
+                </a>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">security</i>
+                    <span>Policies</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/policies" menu-item="menu-item">Policy Definitions</a>
+                    </li>
+                    <li>
+                        <a href="view/policy-conditions" menu-item="menu-item">Conditions</a>
+                    </li>
+                    <li>
+                        <a href="view/policy-effects" menu-item="menu-item">Effects</a>
+                    </li>
+                </ul>
+            </li>
+            <li href="view/users" menu-item="menu-item" ng-show="userData.isAdmin">
+                <a href="view/users">
+                    <i class="material-icons">people</i>
+                    <span>User Management</span>
+                </a>
+            </li>
+            <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
+                <a href="view/settings">
+                    <i class="material-icons">settings</i>
+                    <span>Settings</span>
+                </a>
+            </li>
+            <li menu-item="menu-item" ng-show="userData.isAdmin">
+                <a class="menu-toggle">
+                    <i class="material-icons">list</i>
+                    <span>Logs</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/exception-logs" menu-item="menu-item">Exception logs</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <!-- #Menu -->
+    <!-- Footer -->
+    <div class="legal">
+        <div class="copyright">
+            &copy;
+            {{ctrl.getDate() | date:'yyyy'}}&nbsp;|&nbsp;
+            <a href="#" ng-click="ctrl.showAboutAlert()">MBP</a>.
+        </div>
+    </div>
+    <!-- #Footer -->
+</aside>
+<!-- #END# Left Sidebar -->
+
+<section class="content" ng-style="{ 'margin-left' : loggedIn ? '315px' : '0px' }">
+    <div class="container-fluid">
+        <div ng-view="ng-view"></div>
+    </div>
+</section>
+
+<!-- JQuery -->
+<script th:src="@{/plugins/jquery/jquery-3.1.1.min.js}"></script>
+
+<!-- JQuery-UI -->
+<script th:src="@{/plugins/jquery-ui/jquery-ui.js}"></script>
+
+<!-- jQuery DataTables -->
+<script th:src="@{/plugins/jquery-datatables/dataTables.min.js}"></script>
+<script th:src="@{/plugins/jquery-datatables/dataTables.bootstrap.min.js}"></script>
+
+<!-- jQuery Steps -->
+<script th:src="@{/plugins/jquery-steps/jquery.steps.min.js}"></script>
+
+<!-- jQuery QueryBuilder -->
+<script th:src="@{/plugins/jquery-querybuilder/js/query-builder.standalone.min.js}"></script>
+
+<!-- jQuery CountTo -->
+<script th:src="@{/plugins/jquery-countTo/countTo.js}"></script>
+
+<!-- Handle naming conflict between jQuery-UI and Bootstrap -->
+<script>
+    $.widget.bridge('uibutton', $.ui.button);
+    $.widget.bridge('uitooltip', $.ui.tooltip);
+</script>
+
+<!-- Bootstrap JS -->
+<script th:src="@{/plugins/bootstrap/js/bootstrap.min.js}"></script>
+
+<!-- Waves Effect Plugin Js -->
+<script th:src="@{/plugins/node-waves/waves.js}"></script>
+
+<!-- Dropzone Js -->
+<script th:src="@{/plugins/dropzone/min/dropzone.min.js}"></script>
+
+<!-- Custom Template Js -->
+<script th:src="@{/js/admin.js}"></script>
+
+<!-- AngularJS with resource and route - built by WRO -->
+<script th:src="@{/js/angular.js}"></script>
+
+<!-- Angular UI Bootstrap Plugin -->
+<script th:src="@{/plugins/angular-ui/bootstrap/js/ui-bootstrap-tpls-2.4.0.min.js}"></script>
+
+<!-- Angular File Upload Plugin -->
+<script th:src="@{/plugins/angular-file-upload/js/ng-file-upload.min.js}"></script>
+
+<!-- Angular Dropzone Plugin -->
+<script th:src="@{/plugins/angular-dropzone/js/ng-dropzone.min.js}"></script>
+
+<!-- Angular Smart Table Plugin -->
+<script th:src="@{/plugins/angular-smart-table/js/smart-table.min.js}"></script>
+
+<!-- SweetAlert plugin -->
+<script th:src="@{/plugins/sweetalert2/sweetalert2.all.min.js}"></script>
+
+<!-- Bootstrap notify plugin -->
+<script th:src="@{/plugins/bootstrap-notify/bootstrap-notify.min.js}"></script>
+
+<!-- waitMe plugin -->
+<script th:src="@{/plugins/waitme/waitMe.min.js}"></script>
+
+<!-- Ion RangeSlider -->
+<script th:src="@{/plugins/ion-rangeslider/ion.rangeSlider.min.js}"></script>
+
+<!-- Bootstrap select -->
+<script th:src="@{/plugins/bootstrap-select/bootstrap-select.min.js}"></script>
+
+<!-- Highchart -->
+<script th:src="@{/plugins/highcharts/highstock.js}"></script>
+
+<!-- JsPlumb -->
+<script th:src="@{/plugins/jsplumb/jsplumb.js}"></script>
+
+<!-- Easy Autocomplete -->
+<script th:src="@{/plugins/easy-autocomplete/autocomplete.min.js}"></script>
+
+<!-- jQuery-UI-Rotatable-->
+<script th:src="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.js}"></script>
+
+<!-- Undo Manager -->
+<script th:src="@{/plugins/undo-manager/undo-manager.min.js}"></script>
+
+<!-- Filesaver -->
+<script th:src="@{/plugins/filesaver/filesaver.min.js}"></script>
+
+<!-- CryptoJS -->
+<script th:src="@{/plugins/cryptojs/cryptojs.min.js}"></script>
+
+<!-- JsonPath -->
+<script th:src="@{/plugins/jsonpath/index-browser-umd.min.js}"></script>
+
+<!-- Angular jsonFormatter plugin -->
+<script th:src="@{/plugins/json-formatter/json-formatter.min.js}"></script>
+
+<!-- JSPDF -->
+<script th:src="@{/plugins/jspdf/jspdf.umd.min.js}"></script>
+<script th:src="@{/plugins/jspdf/jspdf.plugin.autotable.min.js}"></script>
+
+<!-- Leaflet (Open-Street-Map javascript library) -->
+<script th:src="@{/plugins/leaflet/leaflet.js}"></script>
+
+<!-- OpenLayers -->
+<script th:src="@{/plugins/openlayers/openlayers.min.js}"></script>
+<script th:src="@{/plugins/openlayers/geocoder.min.js}"></script>
+
+<!-- Angular -->
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/services/FileReader.js}"></script>
+<script th:src="@{/js/services/KeyPairService.js}"></script>
+<script th:src="@{/js/services/DeviceService.js}"></script>
+<script th:src="@{/js/services/ComponentService.js}"></script>
+<script th:src="@{/js/services/OperatorService.js}"></script>
+<script th:src="@{/js/services/DataModelService.js}"></script>
+<script th:src="@{/js/services/MonitoringService.js}"></script>
+<script th:src="@{/js/services/UserService.js}"></script>
+<script th:src="@{/js/services/EnvModelService.js}"></script>
+<script th:src="@{/js/services/UnitService.js}"></script>
+<script th:src="@{/js/services/NotificationService.js}"></script>
+<script th:src="@{/js/services/RuleService.js}"></script>
+<script th:src="@{/js/services/SettingsService.js}"></script>
+<script th:src="@{/js/services/TestService.js}"></script>
+<script th:src="@{/js/services/DefaultComponentsService.js}"></script>
+
+<script th:src="@{/js/services/RuleActionService.js}"></script>
+<script th:src="@{/js/services/RuleTriggerService.js}"></script>
+<script th:src="@{/js/services/PolicyService.js}"></script>
+<script th:src="@{/js/services/PolicyConditionService.js}"></script>
+<script th:src="@{/js/services/PolicyEffectService.js}"></script>
+<script th:src="@{/js/services/HttpService.js}"></script>
+<script th:src="@{/js/services/TestService.js}"></script>
+<script th:src="@{/js/services/LogService.js}"></script>
+<script th:src="@{/js/services/DiscoveryService.js}"></script>
+
+<script th:src="@{/js/directives/menuItem.js}"></script>
+<script th:src="@{/js/directives/popover.js}"></script>
+<script th:src="@{/js/directives/fileModel.js}"></script>
+<script th:src="@{/js/directives/ngDropzone.js}"></script>
+<script th:src="@{/js/directives/refreshTable.js}"></script>
+<script th:src="@{/js/directives/units/UnitInput.js}"></script>
+<script th:src="@{/js/directives/charts/line-chart/LiveChart.js}"></script>
+<script th:src="@{/js/directives/charts/line-chart/HistoricalChart.js}"></script>
+<script th:src="@{/js/directives/charts/geo-map/LiveGeoMapChart.js}"></script>
+<script th:src="@{/js/directives/charts/geo-map/HistoricalGeoMapChart.js}"></script>
+<script th:src="@{/js/directives/env-models/EnvModelTool.js}"></script>
+<script th:src="@{/js/directives/stats/ValueLogStats.js}"></script>
+<script th:src="@{/js/directives/triggers/CEPQueryEditor.js}"></script>
+<script th:src="@{/js/directives/json-path-ui/jsonPathInput.js}"></script>
+<script th:src="@{/js/directives/model-data/dmInput.js}"></script>
+<script th:src="@{/js/directives/charts/customizable-chart-card/CustomizableChartCard.js}"></script>
+<script th:src="@{/js/directives/maps/LocationDrawerMap.js}"></script>
+<script th:src="@{/js/directives/maps/LocationMarkerMap.js}"></script>
+
+<script th:src="@{/js/controllers/index/IndexController.js}"></script>
+<script th:src="@{/js/controllers/ItemListController.js}"></script>
+<script th:src="@{/js/controllers/ItemDetailsController.js}"></script>
+<script th:src="@{/js/controllers/AddItemController.js}"></script>
+<script th:src="@{/js/controllers/UpdateItemController.js}"></script>
+<script th:src="@{/js/controllers/DeleteItemController.js}"></script>
+<script th:src="@{/js/controllers/DeleteTestController.js}"></script>
+
+<script th:src="@{/js/controllers/home/HomeController.js}"></script>
+<script th:src="@{/js/controllers/key-pairs/KeyPairListController.js}"></script>
+<script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
+<script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingListController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingDetailsController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingChartController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestReportController.js}"></script>
+
+<script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
+<script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
+<script th:src="@{/js/controllers/operators/OperatorListController.js}"></script>
+<script th:src="@{/js/controllers/data-models/DataModelListController.js}"></script>
+<script th:src="@{/js/controllers/monitoring-operators/MonitoringOperatorListController.js}"></script>
+<script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
+<script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
+<script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
+<script th:src="@{/js/controllers/entity-types/EntityTypesListController.js}"></script>
+<script th:src="@{/js/controllers/rules/RuleListController.js}"></script>
+<script th:src="@{/js/controllers/rules/RuleActionListController.js}"></script>
+<script th:src="@{/js/controllers/rules/RuleTriggerListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyConditionListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyEffectListController.js}"></script>
+<script th:src="@{/js/controllers/settings/SettingsController.js}"></script>
+<script th:src="@{/js/controllers/user/LoginController.js}"></script>
+<script th:src="@{/js/controllers/user/RegisterController.js}"></script>
+<script th:src="@{/js/controllers/user/UserListController.js}"></script>
+<script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
+<script th:src="@{/js/controllers/logs/ExceptionLogController.js}"></script>
+<script th:src="@{/js/controllers/discovery/DeviceTemplateListController.js}"></script>
+<script th:src="@{/js/controllers/discovery/RequestTopicListController.js}"></script>
+<script th:src="@{/js/controllers/discovery/DynamicDeploymentListController.js}"></script>
+<script th:src="@{/js/controllers/discovery/DynamicDeploymentDetailsController.js}"></script>
+
+<script th:src="@{/js/filters/LocationTemplateFilter.js}"></script>
+</body>
+</html>

@@ -10,7 +10,6 @@ import smile.nlp.dictionary.EnglishStopWords;
 import smile.nlp.tokenizer.SimpleSentenceSplitter;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
  * relative to a collection of related candidate devices.
  * The resulting scores are guaranteed to be greater than or equal to zero.
  */
-public class CandidateDeviceScorer  {
+public class CandidateDeviceScorer {
     //Device template to use for calculating the scores
     private DeviceTemplate deviceTemplate;
 

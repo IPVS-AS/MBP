@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public abstract class CEPEvent {
     //Map (field name --> field value) of field values that are part of the event
-    private Map<String, Object> fieldValues;
+    private final Map<String, Object> fieldValues;
 
     /**
      * Creates a new CEP event.

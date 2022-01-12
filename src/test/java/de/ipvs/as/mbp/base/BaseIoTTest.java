@@ -6,9 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import javax.servlet.http.Cookie;
-import javax.xml.crypto.Data;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.ComponentDTO;
 import de.ipvs.as.mbp.domain.component.Sensor;
@@ -16,7 +15,6 @@ import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.domain.operator.Operator;
-import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.domain.rules.RuleActionType;
 import de.ipvs.as.mbp.util.IoTDeviceContainer;
 import de.ipvs.as.mbp.util.testexecution.IoTDeviceTest;
@@ -70,7 +68,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         requestDto.setPort(container.getSshPort());
         requestDto.setComponentType("Computer");
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/devices")
                         .cookie(sessionCookie)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -87,7 +85,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         dataModelObj.put("description", description);
         dataModelObj.put("treeNodes", treeNodes);
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/data-models")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/data-models")
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie)
                         .contentType(REQUEST_CONTENT_TYPE)
@@ -115,7 +113,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         operatorObj.put("errors", new JSONObject());
         operatorObj.put("routines", routines);
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/operators")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/operators")
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie)
                         .contentType(REQUEST_CONTENT_TYPE)
@@ -145,7 +143,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     }
 
     private void deployOperator(Cookie sessionCookie, String operatorType, String operatorId) throws Exception {
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/deploy/" + operatorType + "/" + operatorId)
+        mockMvc.perform(post(Constants.BASE_PATH + "/deploy/" + operatorType + "/" + operatorId)
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie))
                 .andExpect(status().isOk())
@@ -153,7 +151,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     }
 
     private void startOperator(Cookie sessionCookie, String operatorType, String operatorId) throws Exception {
-        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/start/" + operatorType + "/" + operatorId)
+        mockMvc.perform(post(Constants.BASE_PATH + "/start/" + operatorType + "/" + operatorId)
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie)
                         .contentType(REQUEST_CONTENT_TYPE)
@@ -176,7 +174,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         ruleActionParams.put("actuator", actuatorId);
         ruleAction.put("parameters", ruleActionParams);
 
-        MvcResult response = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/rule-actions")
+        MvcResult response = mockMvc.perform(post(Constants.BASE_PATH + "/rule-actions")
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie)
                         .contentType(REQUEST_CONTENT_TYPE)
@@ -189,7 +187,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     }
 
     public boolean testRuleAction(Cookie sessionCookie, String ruleActionId) throws Exception {
-        MvcResult response = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/rule-actions/test/" + ruleActionId)
+        MvcResult response = mockMvc.perform(post(Constants.BASE_PATH + "/rule-actions/test/" + ruleActionId)
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie))
                 .andExpect(status().isOk())
@@ -205,7 +203,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         sensorReq.setOperatorId(operatorId);
         sensorReq.setName(sensorName);
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/sensors")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/sensors")
                 .headers(getMBPAccessHeaderForAdmin())
                 .cookie(sessionCookie)
                 .contentType(REQUEST_CONTENT_TYPE)
@@ -222,7 +220,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
         actuatorCreationReq.setOperatorId(operatorId);
         actuatorCreationReq.setName(actuatorName);
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/actuators")
+        MvcResult result = mockMvc.perform(post(Constants.BASE_PATH + "/actuators")
                 .headers(getMBPAccessHeaderForAdmin())
                 .cookie(sessionCookie)
                 .contentType(REQUEST_CONTENT_TYPE)
@@ -233,7 +231,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     }
 
     public void ensureDeviceHasSSH(Cookie sessionCookie, String deviceId) throws Exception {
-        mockMvc.perform(get(RestConfiguration.BASE_PATH + "/devices/" + deviceId + "/state/")
+        mockMvc.perform(get(Constants.BASE_PATH + "/devices/" + deviceId + "/state/")
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie))
                 .andExpect(status().isOk())
@@ -242,7 +240,7 @@ public abstract class BaseIoTTest extends BaseIntegrationTest {
     }
 
     public void ensureSensorIsReady(Cookie sessionCookie, String sensorId) throws Exception {
-        mockMvc.perform(get(RestConfiguration.BASE_PATH + "/sensors/state/" + sensorId)
+        mockMvc.perform(get(Constants.BASE_PATH + "/sensors/state/" + sensorId)
                         .headers(getMBPAccessHeaderForAdmin())
                         .cookie(sessionCookie))
                 .andExpect(status().isOk())

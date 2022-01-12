@@ -2,13 +2,10 @@ package de.ipvs.as.mbp.service.deployment;
 
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.settings.Settings;
-import de.ipvs.as.mbp.error.DeploymentException;
 import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
 import de.ipvs.as.mbp.service.deployment.ssh.SSHDeployer;
 import de.ipvs.as.mbp.service.settings.SettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
 
 /**
  * Dispatches the deployer component bean that is supposed to be used for the deployment of certain MBP components.

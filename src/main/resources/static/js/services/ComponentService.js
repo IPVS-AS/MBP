@@ -12,6 +12,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         const URL_START_COMPONENT = URL_PREFIX + 'start/';
         //URL suffix for stopping components
         const URL_STOP_COMPONENT = URL_PREFIX + 'stop/';
+        //URL suffix for deploying and undeploying components
+        const URL_DEPLOY_COMPONENT = URL_PREFIX + 'deploy/';
         //URL suffix under which the deployment state of all components can be retrieved
         const URL_GET_ALL_COMPONENT_STATES_SUFFIX = '/state';
         //URL suffix under which the deployment state of a certain component can be retrieved
@@ -50,12 +52,28 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             return HttpService.postRequest(URL_STOP_COMPONENT + componentType + '/' + componentId, null, null);
         }
 
-        function deployComponent(url) {
-            return HttpService.postRequest(url, {}, null);
+        /**
+         * [Public]
+         * Performs a server request in order to deploy a certain component.
+         *
+         * @param componentId The id of the component to deploy
+         * @param componentType The type of the component to deploy
+         * @returns {*}
+         */
+        function deployComponent(componentId, componentType) {
+            return HttpService.postRequest(URL_DEPLOY_COMPONENT + componentType + '/' + componentId, {}, null);
         }
 
-        function undeployComponent(url) {
-            return HttpService.deleteRequest(url);
+        /**
+         * [Public]
+         * Performs a server request in order to undeploy a certain component.
+         *
+         * @param componentId The id of the component to undeploy
+         * @param componentType The type of the component to undeploy
+         * @returns {*}
+         */
+        function undeployComponent(componentId, componentType) {
+            return HttpService.deleteRequest(URL_DEPLOY_COMPONENT + componentType + '/' + componentId);
         }
 
         /**
@@ -155,21 +173,16 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             //Array that stores the finally formatted value logs
             let finalValues = [];
 
-            console.log("Start processing value logs")
-
             //Iterate over all received value logs
             for (let i = 0; i < receivedLogs.length; i++) {
                 //Extract value and time for the current log and format them
                 let value = receivedLogs[i].value;
-                let time = receivedLogs[i].time.epochSecond * 1000;
+                let time = receivedLogs[i].time * 1000;
 
                 //Create a (time, value) tuple and add it to the array
                 let tuple = [time, value];
                 finalValues.push(tuple);
             }
-
-            console.log("End processing value logs")
-
 
             //Return final value log array so that it is accessible in the promise
             return finalValues;
@@ -241,8 +254,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             deleteValueLogs: deleteValueLogs,
             startComponent: startComponent,
             stopComponent: stopComponent,
-            deploy: deployComponent,
-            undeploy: undeployComponent,
+            deployComponent: deployComponent,
+            undeployComponent: undeployComponent,
             addNewActiveVisualization: addNewActiveVisualization,
             deleteActiveVisualization: deleteActiveVisualization
         };

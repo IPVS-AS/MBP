@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest.discovery;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.collections.CandidateDevicesRanking;
@@ -30,7 +30,7 @@ import java.util.Set;
  * REST Controller for discovery-related tasks.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/discovery")
+@RequestMapping(Constants.BASE_PATH + "/discovery")
 @Api(tags = {"Discovery"})
 public class RestDiscoveryController {
 

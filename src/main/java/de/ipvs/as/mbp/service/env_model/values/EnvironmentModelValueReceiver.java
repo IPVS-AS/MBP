@@ -26,7 +26,7 @@ public class EnvironmentModelValueReceiver implements ValueLogObserver {
     @Autowired
     private EnvironmentModelEventService eventService;
 
-    private ValueLogReceiver valueLogReceiver;
+    private final ValueLogReceiver valueLogReceiver;
 
     @Autowired
     public EnvironmentModelValueReceiver(ValueLogReceiver valueLogReceiver) {

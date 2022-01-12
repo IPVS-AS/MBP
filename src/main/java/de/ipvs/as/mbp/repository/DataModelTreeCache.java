@@ -44,7 +44,7 @@ public class DataModelTreeCache {
     /**
      * Data model with one "value" double data field
      */
-    DataModelTree monitoringOperatorDataModel;
+    final DataModelTree monitoringOperatorDataModel;
 
     private DataModelTreeCache() {
         // Init the data models cache

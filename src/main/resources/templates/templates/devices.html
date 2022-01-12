@@ -1,0 +1,251 @@
+<div class="row clearfix" ng-hide="ng-hide">
+    <!-- List of Devices Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Devices<small>Your devices at a glance</small></h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            data-toggle="modal" data-target="#addDeviceModal" data-backdrop="static"
+                            data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="deviceListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="deviceListCtrl.filterTerm.length > 0"
+                                            ng-click="deviceListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="deviceListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="align-center">State</th>
+                        <th>Device type</th>
+                        <th>IP address</th>
+                        <th>Policies</th>
+                        <th>Owner</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:deviceListCtrl.nameFilter">
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">
+                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
+                            <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
+                        </td>
+                        <td class="align-center" ng-if="item.name.indexOf('TESTING_') === -1">
+                            <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
+                                <div ng-switch-when="LOADING">
+                                    <div class="preloader pl-size-xs">
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="OFFLINE">
+                                    <span class="label label-danger">Unavailable</span>
+                                </div>
+                                <div ng-switch-when="ONLINE">
+                                    <span class="label label-warning">Not connected</span>
+                                </div>
+                                <div ng-switch-when="SSH_AVAILABLE">
+                                    <span class="label label-success">Connected</span>
+                                </div>
+                                <div ng-switch-default>
+                                    <span class="label label-default">Unknown</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.componentType}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.ipAddress}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">
+                            <div ng-if="item.accessControlPolicyIds">
+                                <a class="clickable" data-toggle="collapse" data-target="#policy-{{item.id}}">
+                                    Show Policies
+                                </a>
+                                <div id="policy-{{item.id}}" class="collapse">
+                                    <p ng-repeat="id in item.accessControlPolicyIds">{{id}}</p>
+                                </div>
+                            </div>
+                            <div ng-if="!item.accessControlPolicyIds">
+                                <span>None</span>
+                            </div>
+                        </td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.ownerName ? item.ownerName : "None"}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">
+                            <form ng-submit="deleteDeviceCtrl.deleteItem()" style="display: inline-block">
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                        ng-click="deleteDeviceCtrl.item.id = item.id">
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="deviceListCtrl.items.length === 0 || simExists === 0 ">
+                        <td>No devices registered.</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Devices Card -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="addDeviceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new device
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addDeviceCtrl.addItem()">
+                    <fieldset id="device-form">
+                        <div class="modal-body">
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
+                                    <input class="form-control" id="device-form-input-name" type="text"
+                                           placeholder="Name *" ng-model="addDeviceCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name}}</span>
+                            </div>
+                            <!-- item.componentType group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDeviceCtrl.item.errors.componentType }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.componentType }">
+                                    <select class="form-control selectpicker show-tick" title="Device Type *"
+                                            data-header="Device Type *"
+                                            ng-model="addDeviceCtrl.item.componentType"
+                                            ng-options="t.name as t.name for t in ctrl.deviceTypesList">
+                                        <option value="" selected></option>
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType}}</span>
+                            </div>
+                            <!-- item.ipAddress group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
+                                    <input class="form-control" id="device-form-input-ipAddress" type="text"
+                                           placeholder="IP address *" ng-model="addDeviceCtrl.item.ipAddress"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress}}</span>
+                            </div>
+                            <!-- item.username group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.username }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.username }">
+                                    <input class="form-control" id="device-form-input-username" type="text"
+                                           placeholder="User name *" ng-model="addDeviceCtrl.item.username"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username}}</span>
+                            </div>
+                            <!-- item.password group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.password }">
+                                <div class="input-group">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addDeviceCtrl.item.errors.password}">
+                                        <input class="form-control" id="device-form-input-password"
+                                               type="{{ctrl.hidePassword ? 'password' : 'text'}}"
+                                               placeholder="Password" autocomplete="no"
+                                               ng-model="addDeviceCtrl.item.password"/>
+                                    </div>
+                                    <span class="input-group-addon" style="padding:0;">
+                                        <button type="button" class="list-filter-clear password-input-eye"
+                                                ng-click="ctrl.hidePassword = !ctrl.hidePassword">
+                                            <i class="material-icons">{{ctrl.hidePassword ? "visibility" : "visibility_off"}}</i>
+                                        </button>
+                                    </span>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password}}</span>
+                            </div>
+                            <!-- item.keyPair group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.keypair }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.keypair }">
+                                    <select class="form-control selectpicker show-tick" title="SSH Key Pair"
+                                            data-header="SSH Key Pair"
+                                            ng-model="addDeviceCtrl.item.keyPairId"
+                                            ng-options="t.id as (t.name) for t in ctrl.keyPairList">
+                                        <option value="" selected></option>
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair}}</span>
+                            </div>
+                            <!-- item.accessControlPolicyIds group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
+                                    <select multiple class="form-control selectpicker" title="Access Control Policies"
+                                            data-header="Access Control Policies"
+                                            ng-model="addDeviceCtrl.item.accessControlPolicyIds"
+                                            ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">* Mandatory field</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>

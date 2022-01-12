@@ -4,8 +4,12 @@ package de.ipvs.as.mbp.constants;
  * Constant terms and values.
  */
 public final class Constants {
-	
+
+    //Root package
 	public static final String ROOT_PACKAGE = "de.ipvs.as.mbp";
+
+    //Base path for REST calls (URL prefix)
+    public static final String BASE_PATH = "/api";
 
     //Regex for acceptable usernames
     public static final String USERNAME_REGEX = "^[_'.@A-Za-z0-9-]*$";

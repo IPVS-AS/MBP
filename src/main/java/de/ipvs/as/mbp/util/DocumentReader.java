@@ -16,13 +16,13 @@ public class DocumentReader {
      * Stores array indices to resolve list indices in the {@link Document}. The order of the
      * indices stored in the queue must be the same as it would occur in a json path.
      */
-    private ArrayDeque<Integer> arrayIndexQueue;
+    private final ArrayDeque<Integer> arrayIndexQueue;
 
     /**
      * Represents a slice of the {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree} in the
      * order from the root to the leaves.
      */
-    private List<DataModelTreeNode> pathList;
+    private final List<DataModelTreeNode> pathList;
 
     /**
      * Returns a dequeue of array indices of all predecessor nodes of a given {@link DataModelTreeNode}

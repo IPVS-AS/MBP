@@ -1,12 +1,11 @@
 package de.ipvs.as.mbp.web.rest.discovery;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeploymentDTO;
 import de.ipvs.as.mbp.domain.discovery.deployment.log.DiscoveryLog;
-import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -28,7 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -38,7 +36,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
  * REST Controller for managing {@link DynamicDeployment}s.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/discovery/dynamic-deployments")
+@RequestMapping(Constants.BASE_PATH + "/discovery/dynamic-deployments")
 @Api(tags = {"Dynamic deployments"})
 public class RestDynamicDeploymentController {
 

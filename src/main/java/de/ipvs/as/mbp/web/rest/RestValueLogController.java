@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAbstractEffect;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * desired units.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Value logs"})
 public class RestValueLogController {
 

@@ -2,10 +2,6 @@ package de.ipvs.as.mbp.domain.operator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
-import java.util.List;
-import javax.measure.unit.Unit;
-import javax.persistence.GeneratedValue;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;

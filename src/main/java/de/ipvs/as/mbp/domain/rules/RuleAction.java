@@ -4,7 +4,6 @@ import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import java.util.Map;

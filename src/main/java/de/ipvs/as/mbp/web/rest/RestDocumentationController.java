@@ -5,8 +5,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.SwaggerConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.web.rest.response.DocumentationMetaData;
@@ -35,7 +35,7 @@ import io.swagger.annotations.ApiResponses;
  * REST controller for serving various data related to the documentation of the REST interface.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Documentation"}, description = "Provides documentation for the REST interface in different formats")
 public class RestDocumentationController {
 	
@@ -51,8 +51,8 @@ public class RestDocumentationController {
             new DocumentationURL(SwaggerConfiguration.SWAGGER_PATH_UI, "Swagger UI"),
             new DocumentationURL(SwaggerConfiguration.SWAGGER_PATH_JSON, "Swagger JSON API")),
             Arrays.asList(
-                    new DocumentationURL(RestConfiguration.BASE_PATH + EXPORT_PATH_ASCIIDOC, "AsciiDoc"),
-                    new DocumentationURL(RestConfiguration.BASE_PATH + EXPORT_PATH_MARKDOWN, "Markdown")
+                    new DocumentationURL(Constants.BASE_PATH + EXPORT_PATH_ASCIIDOC, "AsciiDoc"),
+                    new DocumentationURL(Constants.BASE_PATH + EXPORT_PATH_MARKDOWN, "Markdown")
             ));
 
 

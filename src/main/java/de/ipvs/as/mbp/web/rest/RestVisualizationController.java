@@ -1,17 +1,13 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
-import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Component;
-import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.ComponentRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.user.UserEntityService;
@@ -19,7 +15,6 @@ import de.ipvs.as.mbp.service.visualization.ActiveVisualizationUpdater;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * <p>
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/component-vis")
+@RequestMapping(Constants.BASE_PATH + "/component-vis")
 @Api(tags = {"Visualization"})
 public class RestVisualizationController {
 

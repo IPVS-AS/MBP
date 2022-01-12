@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.discovery.engine.DiscoveryEngine;
@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
  * REST Controller for debugging.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @ApiIgnore("Controller exists only for debugging purposes")
 public class RestDebugController {
 
