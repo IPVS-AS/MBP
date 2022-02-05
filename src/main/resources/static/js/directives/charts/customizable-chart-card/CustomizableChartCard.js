@@ -33,11 +33,20 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
         scope.currChart = "select";
 
         scope.onCreateNewVisualizationClicked = function () {
-            //alert(scope.nextChartToAdd + " for sensor " + scope.componentData.name);
             scope.currChart = scope.nextChartToAdd;
             scope.visItem.visId = scope.currChart;
             scope.visItem = new ActiveVisualization(scope.instanceId, scope.nextChartToAdd);
-            //alert(scope.nextChartToAdd);
+
+            // Workaround START for preventing a tab display error when adding a chart while the sensor is currently running
+            if (scope.deploymentState === 'RUNNING') {
+                $(document).ready(function () {
+                    setTabActive('#historical-chart-card', scope.visItem.visId);
+                });
+                $(document).ready(function () {
+                    setTabActive('#live-chart-card', scope.visItem.visId);
+                });
+            }
+            // Workaround END
         }
 
         /**
@@ -223,7 +232,7 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
          */
         function setTabActive(tab, instanceId) {
             if (instanceId != null) {
-                $('.nav-tabs a[data-target="' + tab + "-" + instanceId + ']"').tab('show');
+                $('.nav-tabs a[data-target*="' + tab + "-" + instanceId + '"]').tab('show');
             } else {
                 // Select the tab as active which id begins with tab
                 $('.nav-tabs a[data-target^="' + tab + '"]').tab('show');
@@ -237,11 +246,9 @@ app.directive('customizableChartCard', ['ComponentService', function (ComponentS
         }, function (newValue, oldValue) {
             if (newValue === 'RUNNING') {
                 // Make sure that the tab of the live chart is selected
-                setTabActive('#historical-chart-card'); // Make sure that currently the selected tab is really the historical one
                 setTabActive('#live-chart-card');
             } else {
                 // Make sure that the tab of the historical chart is selected
-                setTabActive('#live-chart-card'); // Make sure that currently the selected tab is really the live one
                 setTabActive('#historical-chart-card');
             }
         });

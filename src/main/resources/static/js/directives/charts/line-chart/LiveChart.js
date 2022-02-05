@@ -104,7 +104,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                 grid_num: 5,
                 grid_snap: true,
                 step: 1,
-                min: 5,
+                min: 1,
                 max: 60,
                 from: scope.settings.refreshInterval,
                 onFinish: function (data) {
