@@ -3,10 +3,12 @@ package de.ipvs.as.mbp.service.visualization;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +24,14 @@ import java.util.List;
 public class ActiveVisualizationUpdater {
 
     @Autowired
+    private ActuatorRepository actuatorRepository;
+
+    @Autowired
     private SensorRepository sensorRepository;
 
     @Autowired
-    private ActuatorRepository actuatorRepository;
+    private DynamicDeploymentRepository dynamicDeploymentRepository;
+
 
     /**
      * Updates the currently active visualization settings for one component persistent to the database.
@@ -33,7 +39,7 @@ public class ActiveVisualizationUpdater {
      * visualization settings for this visualization will be updated. Else, a new ActiveComponentVisualization
      * entry will be added to the sensor with a new uniquely generated id.
      *
-     * @param componentToUpdate      The sensor of which the visualization fields should be updated.
+     * @param componentToUpdate   The sensor of which the visualization fields should be updated.
      * @param visToCreateOrUpdate The {@link ActiveVisualization} which should be edited or created new.
      * @return The sensor which was updated.
      */
@@ -62,37 +68,41 @@ public class ActiveVisualizationUpdater {
                     .setFieldCollectionId(visToCreateOrUpdate.getFieldCollectionId()));
         }
 
-        // Apply the changes to the respective database (either the on for actuators or sensors)
-        if (componentToUpdate instanceof Sensor) {
-            sensorRepository.save((Sensor) componentToUpdate);
-        } else if (componentToUpdate instanceof Actuator){
+        // Apply the changes to the respective repository
+        if (componentToUpdate instanceof Actuator) {
             actuatorRepository.save((Actuator) componentToUpdate);
+        } else if (componentToUpdate instanceof Sensor) {
+            sensorRepository.save((Sensor) componentToUpdate);
+        } else if (componentToUpdate instanceof DynamicDeployment) {
+            dynamicDeploymentRepository.save((DynamicDeployment) componentToUpdate);
         } else {
-            System.err.println("Error applying visualization changes to sensor or actuator repository.");
+            System.err.println("Error while saving visualization changes to repository.");
         }
         return componentToUpdate;
     }
 
     /**
-     * Deletes a visual component of a sensor by the sensor reference and the visual
+     * Deletes a visual component by the affected component and the visual
      * component id. Applies the changes to the database.
      *
      * @param component
      * @param visualComponentId
      */
-    public ResponseEntity deleteVisualComponent(Component component, String visualComponentId) {
+    public ResponseEntity<Void> deleteVisualComponent(Component component, String visualComponentId) {
         for (ActiveVisualization vis : component.getActiveVisualizations()) {
             if (vis.getInstanceId().equals(visualComponentId)) {
                 component.removeActiveVisualization(visualComponentId);
 
-                if (component instanceof Sensor) {
-                    sensorRepository.save((Sensor) component);
-                } else if (component instanceof Actuator){
+                // Apply the changes to the respective repository
+                if (component instanceof Actuator) {
                     actuatorRepository.save((Actuator) component);
+                } else if (component instanceof Sensor) {
+                    sensorRepository.save((Sensor) component);
+                } else if (component instanceof DynamicDeployment) {
+                    dynamicDeploymentRepository.save((DynamicDeployment) component);
                 } else {
-                    System.err.println("Error applying visualization changes to sensor or actuator repository.");
+                    System.err.println("Error while saving visualization changes to repository.");
                 }
-
                 return ResponseEntity.ok().build();
             }
         }

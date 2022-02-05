@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.service.receiver;
 
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import org.apache.commons.lang3.time.DateUtils;
@@ -43,7 +44,7 @@ public class ValueLogReceiveVerifier {
      * All data types are interfered according to the respective {@link DataModelTree}
      * which means for example that a JSON integer number can be interpreted as
      * int (int32 with 32 bits) or as long (int64 with 64 bits) depending on the
-     * data model {@link de.ipvs.as.mbp.domain.data_model.IoTDataTypes IoTDataTypes} details.
+     * data model {@link DataModelDataType IoTDataTypes} details.
      *
      * @param valueRoot The root object of the JSON "value" object which is contained
      *                  by all mqtt messages originated from a sensor producing component.
@@ -84,14 +85,13 @@ public class ValueLogReceiveVerifier {
     private static void validateChild(DataModelTreeNode currNode, JSONArray lastArray, JSONObject lastObject, Document lastDocument, List<Object> lastList, int arrIndex) throws JSONException, ParseException {
         if (lastArray == null && lastObject != null) {
             switch (currNode.getType()) {
-
                 case OBJECT:
                     JSONObject nextObject = lastObject.getJSONObject(currNode.getName());
 
                     Document nextObjDoc = new Document();
                     lastDocument.append(currNode.getName(), nextObjDoc);
 
-                    // Call the function for all childs recursively
+                    // Call the function for all children recursively
                     for (DataModelTreeNode node : currNode.getChildren()) {
                         validateChild(node, null, nextObject, nextObjDoc, null, -1);
                     }
@@ -102,7 +102,7 @@ public class ValueLogReceiveVerifier {
                     List<Object> nextList = new ArrayList<>();
                     lastDocument.append(currNode.getName(), nextList);
 
-                    // Call the function for the childs recursively (dimensions are treated here as childs)
+                    // Call the function for the children recursively
                     for (int i = 0; i < currNode.getSize(); i++) {
                         validateChild(currNode.getChildren().get(0), nextArr, null, null, nextList, i);
                     }
@@ -112,7 +112,7 @@ public class ValueLogReceiveVerifier {
                     lastDocument.append(currNode.getName(), nextDouble);
                     break;
                 case DECIMAL128:
-                    // Big Decimal must be sent as strings as the json parsers cant parse to BigDecimal
+                    // Big Decimal must be sent as strings as the json parsers can't parse to BigDecimal
                     BigDecimal nextBD = new BigDecimal(lastObject.getString(currNode.getName()));
                     lastDocument.append(currNode.getName(), nextBD);
                     break;
@@ -149,7 +149,7 @@ public class ValueLogReceiveVerifier {
                     Document nextObjDoc = new Document();
                     lastList.add(nextObjDoc);
 
-                    // Call the function for all childs recursively
+                    // Call the function for all children recursively
                     for (int i = 0; i < currNode.getChildren().size(); i++) {
                         validateChild(currNode.getChildren().get(i), null, nextObject, nextObjDoc, null, i);
                     }
@@ -160,7 +160,7 @@ public class ValueLogReceiveVerifier {
                     List<Object> nextList = new ArrayList<>();
                     lastList.add(nextList);
 
-                    // Call the function for the childs recursively (call it that often like dimensions)
+                    // Call the function for the children recursively
                     for (int i = 0; i < currNode.getSize(); i++) {
                         validateChild(currNode.getChildren().get(0), nextArr, null, null, nextList, i);
                     }

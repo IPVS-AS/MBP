@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.settings.SettingsService;
-import de.ipvs.as.mbp.service.testing.PropertiesService;
+import de.ipvs.as.mbp.service.testing.TestDevicePropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -26,7 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,17 +52,10 @@ public class TestExecutor {
     private TestAnalyzer testAnalyzer;
 
     @Autowired
-    private final PropertiesService propertiesService;
-
-    @Autowired
-    private RuleRepository ruleRepository;
-
-    @Autowired
     private DeployerDispatcher deployerDispatcher;
 
     @Autowired
     private SettingsService settingsService;
-
 
     // List of all active Tests
     Map<String, TestDetails> activeTests = new HashMap<>();
@@ -80,14 +72,9 @@ public class TestExecutor {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-
-    public TestExecutor() throws IOException {
-        propertiesService = new PropertiesService();
-        this.TESTING_ACTUATOR =
-                propertiesService.getPropertiesString("testingTool.actuatorName");
-        this.CONFIG_SENSOR_NAME_KEY =
-                propertiesService
-                        .getPropertiesString("testingTool.ConfigSensorNameKey");
+    public TestExecutor(TestDevicePropertiesService testDevicePropertiesService) {
+        this.TESTING_ACTUATOR = testDevicePropertiesService.getActuatorName();
+        this.CONFIG_SENSOR_NAME_KEY = testDevicePropertiesService.getConfigSensorNameKey();
     }
 
 
@@ -124,8 +111,8 @@ public class TestExecutor {
 
 
             for (Sensor sensor : testSensors) {
-                    activeTests.put(sensor.getId(), test);
-                    list.remove(sensor.getId());
+                activeTests.put(sensor.getId(), test);
+                list.remove(sensor.getId());
             }
 
 
@@ -340,7 +327,6 @@ public class TestExecutor {
             newLog.setMessage("Testing tool rerun");
             newLog.setTopic("sensor/" + sensor.getId());
             newLog.setIdref(sensor.getId());
-            newLog.setQos(0);
             newLog.setTime(Instant.now());
 
             retQueue.add(newLog);

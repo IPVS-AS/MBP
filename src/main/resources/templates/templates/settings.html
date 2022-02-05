@@ -1,0 +1,163 @@
+<div class="row clearfix" ng-hide>
+
+    <!-- MQTT Broker settings card -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    Settings
+                </h2>
+            </div>
+            <div class="body">
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <form ng-submit="ctrl.saveSettings()">
+                            <fieldset id="settings-form">
+                                <h2 class="card-inside-title">MQTT Broker</h2>
+                                <span class="help-block">Please specify whether you want to use a local or a remote
+                                MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
+                                However, already deployed sensors need to be redeployed.</span>
+                                <div class="form-group">
+                                    <div class="radio">
+                                        <input type="radio" class="with-gap" id="broker_location_local"
+                                               ng-model="ctrl.settings.brokerLocation"
+                                               value="LOCAL"/>
+                                        <label for="broker_location_local">Use local broker</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" class="with-gap" id="broker_location_local_secure"
+                                               ng-model="ctrl.settings.brokerLocation"
+                                               value="LOCAL_SECURE"/>
+                                        <label for="broker_location_local_secure">Use local broker with OAuth2</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" class="with-gap" id="broker_location_remote"
+                                               ng-model="ctrl.settings.brokerLocation"
+                                               value="REMOTE"/>
+                                        <label for="broker_location_remote">Use remote broker</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" class="with-gap" id="broker_location_remote_secure"
+                                               ng-model="ctrl.settings.brokerLocation"
+                                               value="REMOTE_SECURE"/>
+                                        <label for="broker_location_remote_secure">Use remote broker with OAuth2</label>
+                                    </div>
+                                </div>
+                                <div class="form-group"
+                                     ng-show="ctrl.settings.brokerLocation=='REMOTE' || ctrl.settings.brokerLocation=='REMOTE_SECURE'">
+                                    <div class="form-line">
+                                        <input class="form-control" type="text" placeholder="Mqtt broker IP address"
+                                               ng-model="ctrl.settings.brokerIPAddress"/>
+                                    </div>
+                                    <span class="help-block">IP address of the MQTT broker to use</span>
+                                </div>
+                                <h2 class="card-inside-title">Sender name</h2>
+                                <span class="help-block">Please specify the sender name that is supposed to be
+                                    displayed in messages that are published by this application. It may help the
+                                    receivers of messages to identify the sender.</span>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input class="form-control" type="text" placeholder="Sender name"
+                                               ng-model="ctrl.settings.senderName"/>
+                                    </div>
+                                </div>
+
+                                <h2 class="card-inside-title">Demonstration mode</h2>
+                                <span class="help-block">The demo mode allows to test and demonstrate the features
+                                of the MBP without actually deploying operators on real devices.
+                                Instead, the arrival of sensor values is simulated.</span>
+                                <span class="help-block">As long as the demo mode is active, components cannot be actually
+                                (un-)deployed anymore and also a fake status is displayed for them.</span>
+                                <div class="form-group">
+                                    <div class="switch">
+                                        <label>Off
+                                            <input type="checkbox" ng-model="ctrl.settings.demoMode">
+                                            <span class="lever"></span>On</label>
+                                    </div>
+                                </div>
+                                <div class="form-group align-left">
+                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">
+                                        Save settings
+                                    </button>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation card -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="header">
+                <h2>Control functions</h2>
+            </div>
+            <div class="body">
+                <h2 class="card-inside-title">Default operators</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <span class="help-block">This will load some default operators from the <code>resources</code>
+                            directory of the MBP's repository and make them available for usage in sensors.
+                        </span>
+                        <form ng-submit="ctrl.addDefaultOperators()">
+                            <div class="form-group align-left">
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect">
+                                    Add operators
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <h2 class="card-inside-title">Reinstall and Redeploy Testing Default Components</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <span class="help-block">This will reinstall and redeploy the invisible default components for the Testing-Tool from the <code>resources</code>
+                            directory of the MBP's repository and make them again available for usage in the Testing-Tool.
+                        </span>
+                        <form>
+                            <div class="form-group align-left">
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                        ng-click="ctrl.reinstallTestingComponents()">
+                                    Reinstall Components
+                                </button>
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                        ng-click="ctrl.redeployTestingComponents()">
+                                    Redeploy Components
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="header">
+                <h2>REST API Documentation</h2>
+            </div>
+            <div class="body">
+                <h2 class="card-inside-title">Swagger documentation</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <p ng-repeat="item in ctrl.documentationMetaData.swaggerURLs">
+                            <a href="{{ctrl.documentationMetaData.contextPath + item.url}}" target="_blank">
+                                {{item.description}}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <h2 class="card-inside-title">Export as...</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <p ng-repeat="item in ctrl.documentationMetaData.exportURLs">
+                            <a href="{{ctrl.documentationMetaData.contextPath + item.url}}" target="_blank">
+                                {{item.description}}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

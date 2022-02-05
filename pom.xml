@@ -4,22 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>ipvs.as</groupId>
+    <artifactId>MBP</artifactId>
+    <name>MBP</name>
+    <description>Multi-purpose Binding and Provisioning Platform</description>
+
     <version>1.0</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.9.RELEASE</version>
+        <version>2.6.1</version>
         <relativePath/>
     </parent>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>5.2.8.RELEASE</spring.version>
-        <springboot.version>2.3.3.RELEASE</springboot.version>
-        <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
     </properties>
 
     <repositories>
@@ -33,13 +35,23 @@
         </repository>
     </repositories>
 
-
     <dependencies>
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <!-- 			<version>${springboot.version}</version> -->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -49,20 +61,41 @@
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
             <artifactId>spring-security-oauth2</artifactId>
-            <version>2.5.0.RELEASE</version>
+            <version>2.5.1.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.oauth.boot</groupId>
+            <artifactId>spring-security-oauth2-autoconfigure</artifactId>
+            <version>2.6.1</version>
         </dependency>
 
-        <!-- MongoDB -->
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>3.12.7</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-mongodb</artifactId>
-            <!-- 			<version>2.2.9.RELEASE</version> -->
-            <!-- 			<version>3.0.2.RELEASE</version> -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- MQTT -->
@@ -88,14 +121,8 @@
 
         <!-- Thymeleaf -->
         <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf</artifactId>
-            <!-- 			<version>${thymeleaf.version}</version> -->
-        </dependency>
-        <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring5</artifactId>
-            <!-- 			<version>${thymeleaf.version}</version> -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
         <!-- JScience -->
@@ -109,17 +136,16 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <!-- 			<version>2.3.0</version> -->
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>2.3.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>2.3.0</version>
+            <version>3.0.1</version>
         </dependency>
 
         <!-- Javax Web API -->
@@ -137,7 +163,6 @@
             <version>1.6.1</version>
             <type>jar</type>
         </dependency>
-
 
         <!-- IText -->
         <!-- https://mvnrepository.com/artifact/com.itextpdf/itext7-core -->
@@ -190,7 +215,7 @@
             <artifactId>cglib</artifactId>
             <version>3.3.0</version>
         </dependency>
-
+      
         <!-- JsonPath -->
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
@@ -198,9 +223,49 @@
             <version>2.5.0</version>
         </dependency>
 
+        <!-- Reflections -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.12</version>
+        </dependency>
+
+        <!-- Statistical Machine Intelligence and Learning Engine (SMILE) -->
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-core</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.haifengl</groupId>
+            <artifactId>smile-nlp</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <!-- exp4j for evaluating mathematical infix expressions -->
+        <dependency>
+            <groupId>net.objecthunter</groupId>
+            <artifactId>exp4j</artifactId>
+            <version>0.4.8</version>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+            <version>1.15.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+            <version>1.15.3</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>MBP</finalName>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
@@ -211,67 +276,13 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <path>/${project.build.finalName}</path>
-                    <update>true</update>
-                    <url>http://localhost:8080/manager/text</url>
-                    <server>tomcat8</server>
-                    <username>admin</username>
-                    <password>admin</password>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <compilerArguments>
-                        <endorseddirs>${endorsed.dir}</endorseddirs>
-                    </compilerArguments>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>2.3</version>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <webResources>
-                        <resource>
-                            <directory>resources/operators</directory>
-                            <targetPath>operators</targetPath>
-                            <!-- <includes> <include>release.txt</include> </includes> -->
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.6</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>repackage</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${endorsed.dir}</outputDirectory>
-                            <silent>true</silent>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>javax</groupId>
-                                    <artifactId>javaee-endorsed-api</artifactId>
-                                    <version>7.0</version>
-                                    <type>jar</type>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -291,6 +302,22 @@
                             <resources>
                                 <resource>
                                     <directory>src/main/wro</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources-2</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/generated-resources/static/operators</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>resources/operators</directory>
                                     <filtering>true</filtering>
                                 </resource>
                             </resources>
@@ -335,16 +362,22 @@
                 <version>4.0.0</version>
                 <executions>
                     <execution>
-                        <id>get-the-git-infos</id>
+                        <id>get-git-info</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>revision</goal>
                         </goals>
-                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>validate-the-git-infos</id>
+                        <goals>
+                            <goal>validateRevision</goal>
+                        </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
+                    <generateGitPropertiesFilename>${project.build.directory}/generated-resources/git.properties
                     </generateGitPropertiesFilename>
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.branch$</includeOnlyProperty>
@@ -356,11 +389,13 @@
                     <failOnNoGitDirectory>false</failOnNoGitDirectory>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M4</version>
+                <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
-    <groupId>ipvs.as</groupId>
-    <artifactId>MBP</artifactId>
-    <name>MBP</name>
-    <description>Multi-purpose Binding and Provisioning Platform</description>
 </project>

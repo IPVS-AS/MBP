@@ -13,7 +13,6 @@ app.controller('ComponentDetailsController',
             //Important properties of the currently considered component
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
-            const COMPONENT_TYPE_URL = COMPONENT_TYPE + 's';
             const COMPONENT_OPERATOR_UNIT = componentDetails.operator.unit;
 
             //Initialization of variables that are used in the frontend by angular
@@ -74,7 +73,7 @@ app.controller('ComponentDetailsController',
                 }
 
                 //Retrieve the state of the current component
-                ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
+                ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE + 's').then(function (response) {
                     //Success
                     vm.deploymentState = response.content;
                 }, function (response) {
@@ -146,7 +145,7 @@ app.controller('ComponentDetailsController',
                 showDeploymentWaitingScreen("Deploying...");
 
                 //Execute deployment request
-                ComponentService.deploy(componentDetails._links.deploy.href).then(
+                ComponentService.deployComponent(COMPONENT_ID, COMPONENT_TYPE).then(
                     function (response) {
                         //Notify user
                         vm.deploymentState = 'DEPLOYED';
@@ -171,7 +170,7 @@ app.controller('ComponentDetailsController',
                 //Show waiting screen
                 showDeploymentWaitingScreen("Undeploying...");
                 //Execute undeployment request
-                ComponentService.undeploy(componentDetails._links.deploy.href).then(
+                ComponentService.undeployComponent(COMPONENT_ID, COMPONENT_TYPE).then(
                     function (response) {
                         //Notify user
                         vm.deploymentState = 'READY';
@@ -347,7 +346,7 @@ app.controller('ComponentDetailsController',
                  * from the server.
                  */
                 function getStats(unit) {
-                    return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
+                    return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE, unit).then(function (response) {
                         //Success, pass statistics data
                         return response;
                     }, function (response) {

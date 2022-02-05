@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.repository.EnvironmentModelRepository;
 import de.ipvs.as.mbp.domain.env_model.EnvironmentModel;
 import de.ipvs.as.mbp.service.env_model.events.EnvironmentModelEventService;
@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiResponses;
  * REST Controller for server-sent events regarding environment models.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Environment model SSE"}, description = "Subscription of server-sent events regarding updates of an environment model")
 public class RestEnvModelSSEController {
 

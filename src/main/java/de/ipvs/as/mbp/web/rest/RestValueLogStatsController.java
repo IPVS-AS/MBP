@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAbstractEffect;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
@@ -8,16 +8,19 @@ import de.ipvs.as.mbp.domain.access_control.ACPolicy;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.discovery.deployment.DynamicDeployment;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
-import de.ipvs.as.mbp.service.user.UserEntityService;
+import de.ipvs.as.mbp.repository.discovery.DynamicDeploymentRepository;
 import de.ipvs.as.mbp.service.access_control.ACEffectService;
+import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
 import de.ipvs.as.mbp.service.stats.ValueLogStatsService;
 import de.ipvs.as.mbp.service.stats.model.ValueLogStats;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.util.S;
 import de.ipvs.as.mbp.web.rest.helper.MonitoringHelper;
 import io.swagger.annotations.*;
@@ -33,7 +36,7 @@ import javax.measure.unit.Unit;
  * REST Controller for requests related to the value log stats of components.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Value logs statistics"}, description = "Retrieval of statistics for recorded value logs")
 public class RestValueLogStatsController {
 
@@ -53,14 +56,16 @@ public class RestValueLogStatsController {
     private MonitoringHelper monitoringHelper;
 
     @Autowired
+    private DynamicDeploymentRepository dynamicDeploymentRepository;
+
+    @Autowired
     private UserEntityService userEntityService;
 
 
     /**
      * Responds with the value log stats for a certain actuator.
      *
-     * @param actuatorId The id of the actuator whose value log stats are supposed
-     *                   to be retrieved
+     * @param actuatorId The id of the actuator whose value log stats are supposed to be retrieved
      * @param unit       A string specifying the desired unit of the value log stats
      * @return The value log stats of the actuator
      * @throws EntityNotFoundException
@@ -86,8 +91,7 @@ public class RestValueLogStatsController {
     /**
      * Responds with the value log stats for a certain sensor.
      *
-     * @param sensorId The id of the sensor whose value log stats are supposed to be
-     *                 retrieved
+     * @param sensorId The id of the sensor whose value log stats are supposed to be retrieved
      * @param unit     A string specifying the desired unit of the value log stats
      * @return The value log stats of the sensor
      * @throws EntityNotFoundException
@@ -117,13 +121,12 @@ public class RestValueLogStatsController {
      *                             supposed to be retrieved
      * @param monitoringOperatorId The id of the monitoring operator for which the
      *                             stats are supposed to be retrieved
-     * @param unit                 A string specifying the desired unit of the value
-     *                             log stats
-     * @return The value log stats of the sensor
+     * @param unit                 A string specifying the desired unit of the value log stats
+     * @return The value log stats of the monitoring component
      * @throws MissingPermissionException In case of missing permissions
      * @throws EntityNotFoundException    In case an entity could not be found
      */
-    @GetMapping("/monitoring/{deviceId}/stats")
+    @GetMapping("/monitorings/{deviceId}/stats")
     @ApiOperation(value = "Retrieves a list of statistics for recorded monitoring value logs in a certain unit", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 400, message = "Invalid unit specification!"),
@@ -145,14 +148,47 @@ public class RestValueLogStatsController {
     }
 
     /**
+     * Responds with the value log stats for a certain {@link DynamicDeployment}, given by its ID.
+     *
+     * @param dynamicDeploymentId The ID of the dynamic deployment for which the stats are supposed to be retrieved
+     * @param unit                A string specifying the desired unit of the value log stats
+     * @return The value log stats of the dynamic deployment
+     * @throws MissingPermissionException In case of missing permissions
+     * @throws EntityNotFoundException    In case the dynamic deployment or requesting user could not be found
+     */
+    @GetMapping("/discovery/dynamic-deployments/{dynamicDeploymentId}/stats")
+    @ApiOperation(value = "Retrieves a list of statistics in a certain unit for recorded value logs of a dynamic deployment. ", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
+            @ApiResponse(code = 400, message = "Invalid unit specification!"),
+            @ApiResponse(code = 401, message = "Not authorized to access value log statistics of this dynamic deployment!"),
+            @ApiResponse(code = 404, message = "Dynamic deployment or requesting user not found!")})
+    public ResponseEntity<ValueLogStats> getDynamicDeploymentValueLogStats(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable(value = "dynamicDeploymentId") @ApiParam(value = "ID of the dynamic deployment to retrieve the value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String dynamicDeploymentId,
+            @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the statistics", example = "°C", required = false) String unit) throws MissingPermissionException, EntityNotFoundException {
+        //Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Retrieve pertaining dynamic deployment
+        DynamicDeployment dynamicDeployment = userEntityService.getForIdWithAccessControlCheck(dynamicDeploymentRepository, dynamicDeploymentId, ACAccessType.READ, accessRequest);
+
+        //Create deployable component from the dynamic deployment
+        DynamicDeployableComponent component = new DynamicDeployableComponent(dynamicDeployment);
+
+        // Retrieve value log statistics
+        return ResponseEntity.ok(calculateValueLogStats(component, unit, accessRequest));
+    }
+
+
+    /**
      * Calculates the value log statistics for a give component and unit.
      *
      * @param <C>        the component type.
      * @param component  the {@link Component}.
      * @param unitString the unit specification as {@code String}.
      * @return the {@link ValueLogStats}.
-     * @throws MissingPermissionException
-     * @throws EntityNotFoundException
+     * @throws MissingPermissionException In case of missing permissions
+     * @throws EntityNotFoundException    In case an entity could not be found
      */
     private <C extends Component> ValueLogStats calculateValueLogStats(C component, String unitString, ACAccessRequest accessRequest) throws MissingPermissionException, EntityNotFoundException {
         ACAbstractEffect effect = null;

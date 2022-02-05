@@ -3,14 +3,15 @@ package de.ipvs.as.mbp.domain.visualization.repo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import de.ipvs.as.mbp.domain.visualization.*;
 
 /**
  * Maps a {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree} to
- * a visualization field colection by mapping each visualizable field of the visualization
+ * a visualization field collection by mapping each visualizable field of the visualization
  * field collection to a suitable field of
  * the {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree}.
- *
+ * <p>
  * One {@link Visualization} can have 1..* {@link VisualizationMappings} each identified
  * by a {@link VisualizationMappings#fieldCollectionName}.
  */
@@ -27,6 +28,13 @@ public class VisualizationMappings {
      */
     private String fieldCollectionName;
 
+    /**
+     * Creates an empty {@link VisualizationMappings} object.
+     * The default constructor is solely required by Jackson.
+     */
+    public VisualizationMappings() {
+
+    }
 
     public VisualizationMappings(String fieldCollectionName) {
         this.jsonPathPerVisualization = new HashMap<>();

@@ -4,8 +4,6 @@
 
 /**
  * Directive which creates a table for displaying descriptive statistics for value logs of a certain component.
- *
- * @author Jan
  */
 app.directive('valueLogStats', ['$interval', function ($interval) {
     //Time interval with that the value statistics are supposed to be refreshed
@@ -18,11 +16,11 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
      * @param element Elements of the directive
      * @param attrs Attributes of the directive
      */
-    var link = function (scope, element, attrs) {
+    let link = function (scope, element, attrs) {
 
 
         //Stores the interval object for regular updates
-        var updateInterval = null;
+        let updateInterval = null;
 
         //Attribute in which the statistics data is stored
         scope.statisticsData = {};
@@ -42,8 +40,6 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             scope.getStats({unit: scope.unit}).then(function (receivedData) {
                 //Take received data
                 scope.statisticsData = receivedData;
-                console.log("STATSTICS");
-                console.log(scope.statisticsData);
 
                 //Loading finish callback if desired
                 if (!noCallback) {
@@ -86,15 +82,15 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
          * @param timeToConvert
          * @return {string} The date string
          */
-        function convertTime(timeToConvert= 0) {
-            var time = timeToConvert.epochSecond * 1000;
+        function convertTime(timeToConvert = 0) {
+            let time = timeToConvert * 1000;
             time = dateToString(new Date(time));
             return time;
         }
 
         scope.getTimeString = convertTime;
 
-            /**
+        /**
          * [Private]
          * Converts a javascript date object to a human-readable date string in the "dd.mm.yyyy hh:mm:ss" format.
          *
@@ -103,16 +99,16 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
          */
         function dateToString(date) {
             //Retrieve all properties from the date object
-            var year = date.getFullYear();
-            var month = '' + (date.getMonth() + 1);
-            var day = '' + date.getDate();
-            var hours = '' + date.getHours();
-            var minutes = '' + date.getMinutes();
-            var seconds = '' + date.getSeconds();
+            let year = date.getFullYear();
+            let month = '' + (date.getMonth() + 1);
+            let day = '' + date.getDate();
+            let hours = '' + date.getHours();
+            let minutes = '' + date.getMinutes();
+            let seconds = '' + date.getSeconds();
 
             //Add a leading zero (if necessary) to all properties except the year
-            var values = [day, month, hours, minutes, seconds];
-            for (var i = 0; i < values.length; i++) {
+            let values = [day, month, hours, minutes, seconds];
+            for (let i = 0; i < values.length; i++) {
                 if (values[i].length < 2) {
                     values[i] = '0' + values[i];
                 }
@@ -153,55 +149,15 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             '<td>{{statisticsData.numberLogs}}</td>' +
             '</tr>' +
             '<tr>' +
-            // TODO HANDLE STATISTICS PROPERLY
-          //  '<th>Average:</th>' +
-          //  '<td>{{statisticsData.average}}&nbsp;{{unit}}</td>' +
-          //  '</tr>' +
-          //  '<tr>' +
-          //  '<th>Variance:</th>' +
-          //  '<td>{{statisticsData.variance}}&nbsp;{{unit ? "(" + unit + ")&sup2;" : ""}}</td>' +
-          //  '</tr>' +
-          //  '<tr>' +
-          //  '<th>Standard deviation:</th>' +
-          //  '<td>{{statisticsData.standardDeviation}}&nbsp;{{(unit)}}</td>' +
-          //  '</tr>' +
-          //  '<tr>' +
-            '<th>First value ({{getTimeString(statisticsData.firstLog.time)}}):</th>' +
-            '<td><json-formatter json="statisticsData.firstLog.value" open="1"></json-formatter></td>' +
-            //'<td><button uib-popover="{{statisticsData.firstLog.message}}"' +
-            //'<td><button uib-popover="5"' +
-            //'popover-title="{{statisticsData.firstLog.date}}" type="button"' +
-            //'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
-            //'class="btn btn-default">5{statisticsData.firstLog.value}}</button>' +
-            //'class="btn btn-default">5</button>' +
+            '<th>First value:</th>' +
+            '<td>{{getTimeString(statisticsData.firstLog.time)}}<json-formatter json="statisticsData.firstLog.value" open="1"></json-formatter></td>' +
             '<span>&nbsp;{{(unit)}}</span></td>' +
             '</tr>' +
             '<tr>' +
-            '<th>Last value ({{getTimeString(statisticsData.lastLog.time)}}):</th>' +
-            '<td><json-formatter json="statisticsData.lastLog.value" open="1"></json-formatter></td>' +
-
-        //    '<td><button uib-popover="{{statisticsData.lastLog.message}}"' +
-        //    'popover-title="{{statisticsData.lastLog.date}}" type="button"' +
-        //    'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
-        //   'class="btn btn-default">{{statisticsData.lastLog.value}}</button>' +
+            '<th>Last value:</th>' +
+            '<td>{{getTimeString(statisticsData.lastLog.time)}}<json-formatter json="statisticsData.lastLog.value" open="1"></json-formatter></td>' +
             '<span>&nbsp;{{(unit)}}</span></td>' +
             '</tr>' +
-            // '<tr>' +
-            // '<th>Minimum value:</th>' +
-            // '<td><button uib-popover="{{statisticsData.minimumLog.message}}"' +
-            // 'popover-title="{{statisticsData.minimumLog.date}}" type="button"' +
-            // 'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
-            // 'class="btn btn-default">{{statisticsData.minimumLog.value}}</button>' +
-            // '<span>&nbsp;{{(unit)}}</span></td>' +
-            // '</tr>' +
-            // '<tr>' +
-            // '<th>Maximum value:</th>' +
-            // '<td><button uib-popover="{{statisticsData.maximumLog.message}}"' +
-            // 'popover-title="{{statisticsData.maximumLog.date}}" type="button"' +
-            // 'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
-            // 'class="btn btn-default">{{statisticsData.maximumLog.value}}</button>' +
-            // '<span>&nbsp;{{(unit)}}</span></td>' +
-            // '</tr>' +
             '</tbody>' +
             '</table>'
         ,

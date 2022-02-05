@@ -1,0 +1,173 @@
+<div class="row clearfix" ng-hide>
+    <!-- List of Data Model Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Data models for operators
+                        <small>These data models can be used by operators to specify which kind of data is
+                            expected to be sent by an operator.</small>
+                    </h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            data-toggle="modal" data-target="#addDataModelModal" data-backdrop="static"
+                            data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="dataModelListCtrl.items">
+                    <table class="table table-hover" st-table="displayedCollection"
+                           st-safe-src="dataModelListCtrl.items">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Data example</th>
+                            <!--   <th>Amount of data tree nodes</th> -->
+                            <th>Owner</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <td>
+                                <span>{{item.name}}</span>&nbsp;
+                                <i ng-show="item.defaultEntity" title="Default data model"
+                                   class="material-icons" style="vertical-align: bottom;">lock</i>
+                            </td>
+                            <td>{{item.description}}</td>
+                            <td>
+                                <button class="btn btn-default" role="button" data-toggle="collapse"
+                                        style="margin-bottom: 5px;" data-target="#query-{{item.id}}">
+                                    Show MQTT message example
+                                </button>
+                                <div id="query-{{item.id}}" class="collapse">
+                                     <pre style="height: auto; max-height: 200px; overflow: auto;
+     background-color: #eeeeee; word-break: normal !important;
+     word-wrap: normal !important;
+     white-space: pre !important;">{{item.jsonexample ? ctrl.formatJSON(item.jsonexample) : 'Not available'}}</pre>
+                                </div>
+
+                            </td>
+                            <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                            <td>
+                                <form ng-submit="deleteDataModelCtrl.deleteItem()" style="display: inline-block">
+                                    <button type="submit" ng-hide="item.defaultEntity"
+                                            class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="deleteDataModelCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="dataModelListCtrl.items.length === 0">
+                            <td>No data models registered.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Data Models Card -->
+    <!-- Modal -->
+    <div class="modal fade" id="addDataModelModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new data model
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form id="addDataModelForm" ng-submit="addDataModelCtrl.addItem()">
+                    <fieldset id="dataModel-form">
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDataModelCtrl.item.errors.global}">
+                                <span class="alert alert-danger"
+                                      ng-show="addDataModelCtrl.item.errors.global"> {{addDataModelCtrl.item.errors.global}} </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDataModelCtrl.item.errors.name}">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDataModelCtrl.item.errors.name }">
+                                    <input class="form-control"
+                                           id="data-model-form-input-name" type="text"
+                                           placeholder="Name *"
+                                           ng-model="addDataModelCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDataModelCtrl.item.errors.name">{{addDataModelCtrl.item.errors.name}}</span>
+                            </div>
+                            <!-- item.description group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDataModelCtrl.item.errors.description}">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDataModelCtrl.item.errors.description }">
+                                    <input class="form-control"
+                                           id="data-model-form-input-description"
+                                           type="text"
+                                           placeholder="Description"
+                                           ng-model="addDataModelCtrl.item.description"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDataModelCtrl.item.errors.description">{{addDataModelCtrl.item.errors.description}}</span>
+                            </div>
+                            <!-- item.treeNodes group -->
+                            <div class="form-group" ng-class="{'has-error' : addDataModelCtrl.item.errors.treeNodes}">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDataModelCtrl.item.errors.treeNodes}"
+                                     style="border:0;">
+                                    <dm-input ng-model="ctrl.treeNodes"></dm-input>
+                                    <button type="button"
+                                            class="btn btn-primary m-t-0 waves-effect"
+                                            data-toggle="collapse" data-target="#data-model-json-definition"
+                                            style="margin-top: 10px;"> Toggle JSON definition
+                                    </button>
+                                    <div class="collapse" id="data-model-json-definition" style="margin-top: 5px;">
+                                    <textarea class="form-control"
+                                              placeholder="Add here the data model tree"
+                                              ng-model="ctrl.treeNodes"
+                                              style="height: 125px; border:none;">
+                                    </textarea>
+                                    </div>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDataModelCtrl.item.errors.treeNodes">{{addDataModelCtrl.item.errors.treeNodes}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-secondary m-t-0 waves-effect"
+                                    data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit"
+                                    class="btn btn-primary m-t-0 waves-effect">Create
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>

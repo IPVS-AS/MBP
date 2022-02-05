@@ -42,8 +42,8 @@ public enum ACLogicalOperator {
 	
 	// - - -
 	
-	private int maxArguments;
-	private Function<List<String>, String> expressionSupplier;
+	private final int maxArguments;
+	private final Function<List<String>, String> expressionSupplier;
 	
 	private ACLogicalOperator(int maxArguments, Function<List<String>, String> expressionSupplier) {
 		this.maxArguments = maxArguments;

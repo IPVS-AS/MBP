@@ -1,0 +1,269 @@
+<!-- Create new visualization component card -->
+<div ng-if="currChart === 'select'" class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card create-new-vis-card-card">
+            <div class="header">
+                <i class="material-icons"  style="position: absolute; margin-top: 0px">addchart</i>
+                <h2 style="margin-left: 35px;">Add a chart for sensor {{componentData.name}}</h2>
+            </div>
+            <div class="body align-items-center justify-content-center">
+                <div class="row clearfix">
+                    <div style="margin: 0 auto;">
+                        <button type="button" style="float:left; margin-left: 10px"
+                                class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                ng-click="onCreateNewVisualizationClicked()">
+                            <i class="material-icons">add</i>
+                        </button>
+                        <select class="form-control show-tick" ng-model="$parent.nextChartToAdd"
+                                style="float:left; max-width: 400px; margin-left: 10px">
+                            <option value="select" disabled>Select...</option>
+                            <option ng-repeat="visId in idOfAllApplicableVisualizations"
+                                    value="{{visId}}">
+                                {{visId === 'doubleVis' ? "Line Chart" : ""}}
+                                {{visId === 'geoMap' ? "Map" : ""}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div ng-if="currChart !== 'select'" class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h4>Sensor: {{componentData.name}}</h4>
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" ng-show="$parent.deploymentState==='RUNNING'">
+                        <a data-target="#live-chart-card-{{$parent.visItem.instanceId}}" data-toggle="tab">
+                            <i class="material-icons">live_tv</i>
+                            Live Chart
+                        </a>
+                    </li>
+                    <li role="presentation" class="active">
+                        <a data-target="#historical-chart-card-{{$parent.visItem.instanceId}}" data-toggle="tab">
+                            <i class="material-icons">access_time</i>
+                            Historical Chart
+                        </a>
+                    </li>
+                </ul>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="$parent.historicalChartApi.updateChart()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="clickable" data-toggle="modal" data-target="#modal-{{visItem.instanceId}}"
+                           data-backdrop="static" data-keyboard="false">
+                            <i class="material-icons">settings</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="clickable" ng-click="$parent.deleteChartCard($parent.visItem.instanceId)">
+                            <i class="material-icons">delete</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active live-chart-card" id="live-chart-card-{{visItem.instanceId}}"
+                         ng-show="$parent.deploymentState=='RUNNING'">
+
+                        <!-- doubleVis Live chart -->
+                        <div ng-if="$parent.visItem.visId === 'doubleVis'">
+                            <live-chart
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, true)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, true)"
+                                    get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
+                                    is-updateable="$parent.$parent.isLiveChartUpdateable()"
+                                    unit=""
+                                    json-path="{{$parent.$parent.visItem.visFieldToPathMapping}}"
+                                    field-collection-id="{{$parent.$parent.visItem.fieldCollectionId}}">
+                            </live-chart>
+                        </div>
+                        <!-- geoMap Live chart -->
+                        <div ng-if="$parent.visItem.visId === 'geoMap'">
+                            <live-geo-map-chart
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, true)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, true)"
+                                    get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
+                                    is-updateable="$parent.$parent.isLiveChartUpdateable()"
+                                    unit=""
+                                    json-path="{{$parent.$parent.visItem.visFieldToPathMapping}}"
+                                    field-collection-id="{{$parent.$parent.visItem.fieldCollectionId}}">
+                            </live-geo-map-chart>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade in active historical-chart-card"
+                         id="historical-chart-card-{{$parent.visItem.instanceId}}">
+
+                        <!-- doubleVis historical chart -->
+                        <div ng-if="$parent.visItem.visId === 'doubleVis'">
+                            <historical-chart
+                                    api="$parent.$parent.historicalChartApi"
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, false)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, false)"
+                                    get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
+                                    unit=""
+                                    json-path="{{$parent.$parent.visItem.visFieldToPathMapping}}"
+                                    field-collection-id="{{$parent.$parent.visItem.fieldCollectionId}}">
+                            </historical-chart>
+                        </div>
+                        <!-- geoMap historical chart -->
+                        <div ng-if="$parent.visItem.visId === 'geoMap'">
+                            <historical-geo-map-chart
+                                    api="$parent.$parent.historicalChartApi"
+                                    loading-start="$parent.$parent.loadingStart($parent.$parent.instanceId, false)"
+                                    loading-finish="$parent.$parent.loadingFinish($parent.$parent.instanceId, false)"
+                                    get-data="$parent.$parent.getData(numberLogs, descending, unit, startTime, endTime)"
+                                    unit=""
+                                    json-path="{{$parent.$parent.visItem.visFieldToPathMapping}}"
+                                    field-collection-id="{{$parent.$parent.visItem.fieldCollectionId}}">
+                            </historical-geo-map-chart>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<!-- Visualization settings modal -->
+<div class="modal fade" id="modal-{{visItem.instanceId}}" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configure the chart
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
+            </div>
+            <form ng-submit="updateJsonPath(visItem)">
+                <fieldset>
+                    <div class="modal-body">
+
+                        <!-- START: Modal cases for each visualization and available vis field collections -->
+                        <div ng-if="visItem.visId === 'doubleVis'">
+
+                            <!-- Line chart modal START -->
+                            <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
+                                <!-- "global" error for addItem -->
+                                <div class="form-group"
+                                     ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                </div>
+                                <!-- item.name group -->
+                                <label>JsonPath to number value:</label>
+                                <div
+                                        ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                    <div ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+
+                                        <json-path-input ng-model="$parent.$parent.visItem.visFieldToPathMappingInput.value"
+                                                         json-path-list="$parent.$parent.visItem.getJsonPathsByFieldCollectionName('default').value"
+                                                         number-of-needed-wildcards="0"
+                                                         field-collection-id-input="$parent.$parent.visItem.fieldCollectionIdInput"
+                                                         path-type="default"
+                                        </json-path-input>
+
+                                    </div>
+
+                                    <span class="help-block"
+                                          ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                </div>
+                            </div>
+
+                            <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('arrVal')">
+
+                                <!-- "global" error for addItem -->
+                                <div class="form-group"
+                                     ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                </div>
+                                <!-- item.name group -->
+                                <label>JsonPath to number array:</label>
+                                <div
+                                        ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+
+                                        <json-path-input ng-model="$parent.visItem.visFieldToPathMappingInput.arrVal"
+                                                         json-path-list="$parent.visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
+                                                         number-of-needed-wildcards="1"
+                                                         field-collection-id-input="$parent.visItem.fieldCollectionIdInput"
+                                                         path-type="arrVal"
+                                        </json-path-input>
+
+                                    </div>
+                                    <span class="help-block"
+                                          ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- GeoMap modal case -->
+                        <div ng-if="visItem.visId === 'geoMap'">
+
+                            <div ng-if="$parent.visItem.hasVisualizationOptionFieldCollectionWithName('default')">
+                                <!-- "global" error for addItem -->
+                                <div class="form-group"
+                                     ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                </div>
+                                <!-- item.name group -->
+                                <div
+                                        ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <label>JsonPath to number latitude:</label>
+                                        <ng-container>
+                                            <json-path-input ng-model="$parent.$parent.visItem.visFieldToPathMappingInput.latitude"
+                                                             json-path-list="$parent.$parent.visItem.getJsonPathsByFieldCollectionName('default').latitude"
+                                                             number-of-needed-wildcards="0"
+                                                             field-collection-id-input="$parent.$parent.visItem.fieldCollectionIdInput"
+                                                             path-type="default"
+                                            </json-path-input>
+                                        </ng-container>
+                                        <label style="margin-top: 10px">JsonPath to number longitude:</label>
+                                        <ng-container>
+                                            <json-path-input ng-model="$parent.$parent.visItem.visFieldToPathMappingInput.longitude"
+                                                             json-path-list="$parent.$parent.visItem.getJsonPathsByFieldCollectionName('default').longitude"
+                                                             number-of-needed-wildcards="0"
+                                                             field-collection-id-input="$parent.$parent.visItem.fieldCollectionIdInput"
+                                                             path-type="default"
+                                            </json-path-input>
+                                        </ng-container>
+
+                                    </div>
+                                    <span class="help-block"
+                                          ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- END: Modal cases for each visualization and available vis field collections -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                            Close
+                        </button>
+                        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Save</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>

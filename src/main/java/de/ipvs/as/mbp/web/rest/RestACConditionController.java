@@ -4,12 +4,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.EntityStillInUseException;
@@ -51,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/policy-conditions")
+@RequestMapping(Constants.BASE_PATH + "/policy-conditions")
 @Api(tags = {"Access-Control Policy Conditions"})
 public class RestACConditionController {
 	
@@ -100,14 +101,12 @@ public class RestACConditionController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })
     public ResponseEntity<List<ACAttributeKey>> attributeKeys() {
     	List<ACAttributeKey> attributeKeys = new ArrayList<>();
-    	for (ACAttributeKey key : ACAttributeKey.values()) {
-    		attributeKeys.add(key);
-    	}
+		attributeKeys.addAll(Arrays.asList(ACAttributeKey.values()));
     	return ResponseEntity.ok(attributeKeys);
     }
     
     private EntityModel<ACAbstractCondition> conditionToEntityModel(ACAbstractCondition condition) {
-    	return new EntityModel<>(condition, linkTo(getClass()).slash(condition.getId()).withSelfRel());
+    	return EntityModel.of(condition, linkTo(getClass()).slash(condition.getId()).withSelfRel());
     }
     
     private PagedModel<EntityModel<ACAbstractCondition>> conditionsToPagedModel(List<ACAbstractCondition> conditions, Pageable pageable) {
@@ -121,7 +120,7 @@ public class RestACConditionController {
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	
     	// Create and return paged model
-    	return new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
+    	return PagedModel.of(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
     }
     
 }

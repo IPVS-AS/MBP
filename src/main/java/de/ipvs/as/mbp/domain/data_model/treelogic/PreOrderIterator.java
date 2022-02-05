@@ -12,9 +12,9 @@ import java.util.*;
  */
 public class PreOrderIterator implements Iterator<DataModelTreeNode> {
 
-    private DataModelTreeNode root;
-    private List<DataModelTreeNode> stack;
-    private List<DataModelTreeNode> visitedNodes;
+    private final DataModelTreeNode root;
+    private final List<DataModelTreeNode> stack;
+    private final List<DataModelTreeNode> visitedNodes;
 
     private boolean isCyclic;
 

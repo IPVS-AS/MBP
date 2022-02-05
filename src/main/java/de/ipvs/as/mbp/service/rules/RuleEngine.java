@@ -94,11 +94,8 @@ public class RuleEngine {
             rulesOfTrigger.add(rule);
         } else {
             //Register trigger at the trigger service
-            triggerService.registerTrigger(trigger, (ruleTrigger, output) -> {
-                //Induce the executions of rules that use this trigger on callback
-                induceRuleExecution(ruleTrigger, output);
-
-            });
+            //Induce the executions of rules that use this trigger on callback
+            triggerService.registerTrigger(trigger, this::induceRuleExecution);
 
             Set<Rule> rulesOfTrigger = new HashSet<>();
             rulesOfTrigger.add(rule);

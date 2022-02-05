@@ -7,7 +7,7 @@ import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import de.ipvs.as.mbp.service.env_model.events.EnvironmentModelEventService;
 import de.ipvs.as.mbp.service.env_model.events.types.ComponentValueEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 
 @org.springframework.stereotype.Component
-public class EnvironmentModelValueReceiver implements ValueLogReceiverObserver {
+public class EnvironmentModelValueReceiver implements ValueLogObserver {
 
     @Autowired
     private ActuatorRepository actuatorRepository;
@@ -26,7 +26,7 @@ public class EnvironmentModelValueReceiver implements ValueLogReceiverObserver {
     @Autowired
     private EnvironmentModelEventService eventService;
 
-    private ValueLogReceiver valueLogReceiver;
+    private final ValueLogReceiver valueLogReceiver;
 
     @Autowired
     public EnvironmentModelValueReceiver(ValueLogReceiver valueLogReceiver) {

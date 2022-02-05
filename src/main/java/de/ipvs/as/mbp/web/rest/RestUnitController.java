@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import io.swagger.annotations.*;
 import de.ipvs.as.mbp.domain.units.PredefinedQuantity;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ import java.util.List;
  * Rest controller for requests related to units.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = {"Units"}, description = "Provides means for working with physical units")
 public class RestUnitController {
 

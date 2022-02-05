@@ -1,11 +1,11 @@
 package de.ipvs.as.mbp;
 
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.security.UserSessionCookieFilter;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -22,7 +22,6 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
-@Import(UserSessionService.class)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -51,18 +50,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/resources/**")
                 .antMatchers("/webapp/**")
                 .antMatchers(URL_LOGIN, "/templates/register")
-                .antMatchers(HttpMethod.GET, RestConfiguration.BASE_PATH + "/settings/mbpinfo")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenUser")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenSuperuser")
-                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenAcl");
+                .antMatchers(HttpMethod.GET, Constants.BASE_PATH + "/settings/mbpinfo")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/users")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenUser")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenSuperuser")
+                .antMatchers(HttpMethod.POST, Constants.BASE_PATH + "/checkOauthTokenAcl");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         //Configure HTTP security
         http
-                .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .sessionFixation()
+                    .migrateSession().and()
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(c -> {
                     c.logoutRequestMatcher(new AntPathRequestMatcher(URL_LOGOUT));
@@ -73,8 +75,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     c.antMatchers("/api/users/login").permitAll();
                     c.antMatchers("/api/**").authenticated();
                 })
+                .addFilterAfter(userSessionCookieFilter, SecurityContextPersistenceFilter.class)
                 .exceptionHandling(c -> c
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-                .addFilterAfter(userSessionCookieFilter, SecurityContextPersistenceFilter.class);
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
     }
 }

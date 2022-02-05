@@ -4,8 +4,8 @@
  * Controller for the settings page.
  */
 app.controller('ExceptionLogController',
-    ['$scope', '$q', 'exceptionLogs', 'LogService', 'NotificationService',
-        function ($scope, $q, exceptionLogs, LogService, NotificationService) {
+    ['$scope', 'exceptionLogs', 'LogService', 'NotificationService',
+        function ($scope, exceptionLogs, LogService, NotificationService) {
             //Find DOM elements of exception logs table and stack trace modal
             const ELEMENT_LOGS_TABLE = $("#exception-logs-table");
             const ELEMENT_STACKTRACE_MODAL = $("#showStackTraceModal")
@@ -67,7 +67,7 @@ app.controller('ExceptionLogController',
              * Initializes the DataTable within the template page.
              */
             function initDataTable() {
-                //Check whether table has already been initilaized
+                //Check whether table has already been initialized
                 if (logsDataTable != null) {
                     return;
                 }
@@ -79,7 +79,7 @@ app.controller('ExceptionLogController',
                     ordering: false,
                     columns: [
                         {
-                            data: 'time.epochSecond',
+                            data: 'time',
                             render: function (data, type, row) {
                                 return new Date(data * 1000).toLocaleString('de-DE', {
                                     'year': 'numeric',
@@ -114,7 +114,7 @@ app.controller('ExceptionLogController',
 
                         //Perform request in order to retrieve the exception logs
                         LogService.getExceptionLogs(data.length, pageNumber, 'time,desc').then(function (response) {
-                            //Issue callback with the required data from the response
+                            //Trigger callback with the data from the response
                             callback({
                                 draw: data.draw,
                                 data: response.content,

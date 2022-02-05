@@ -1,13 +1,14 @@
 package de.ipvs.as.mbp.repository;
 
 import de.ipvs.as.mbp.domain.component.Actuator;
-import de.ipvs.as.mbp.domain.device.Device;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 //@RepositoryRestResource(collectionResourceRel = "actuators", path = "actuators")
 //@Api(tags = {"Actuator entities"}, description = "CRUD for actuator entities")
+@Repository
 public interface ActuatorRepository extends ComponentRepository<Actuator> {
 
     Optional<Actuator> findFirstByName(@Param("name") String name);

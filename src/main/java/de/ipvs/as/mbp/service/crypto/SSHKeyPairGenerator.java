@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Service for generating new RSA key pairs that may be used for establishing SSH sessions between the MBP
@@ -18,7 +19,7 @@ public class SSHKeyPairGenerator {
      */
     private static final int KEY_TYPE = com.jcraft.jsch.KeyPair.RSA;
 
-    private JSch jsch;
+    private final JSch jsch;
 
     /**
      * Instantiates the key generator service with a new SSH session.
@@ -47,16 +48,19 @@ public class SSHKeyPairGenerator {
         }
 
         //Create output streams for both keys
-        ByteArrayOutputStream privateKeyOutput = new ByteArrayOutputStream();
-        ByteArrayOutputStream publicKeyOutput = new ByteArrayOutputStream();
+        String publicKey = null;
+        String privateKey = null;
+        try (ByteArrayOutputStream privateKeyOutput = new ByteArrayOutputStream();
+                ByteArrayOutputStream publicKeyOutput = new ByteArrayOutputStream()) {
+            //Write keys to streams (with empty comment for public key)
+            keyPair.writePrivateKey(privateKeyOutput);
+            keyPair.writePublicKey(publicKeyOutput, "");
 
-        //Write keys to streams (with empty comment for public key)
-        keyPair.writePrivateKey(privateKeyOutput);
-        keyPair.writePublicKey(publicKeyOutput, "");
-
-        //Read converted keys from streams
-        String privateKey = new String(privateKeyOutput.toByteArray());
-        String publicKey = new String(publicKeyOutput.toByteArray());
+            privateKey = new String(privateKeyOutput.toByteArray());
+            publicKey = new String(publicKeyOutput.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         //Create new key pair object and add the keys
         KeyPair keyPairObject = new KeyPair();

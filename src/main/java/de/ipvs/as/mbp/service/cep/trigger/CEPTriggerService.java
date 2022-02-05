@@ -4,7 +4,7 @@ import java.util.*;
 
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.component.Component;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -12,8 +12,9 @@ import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.service.discovery.deployment.DynamicDeployableComponent;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.service.cep.engine.core.CEPEngine;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Service;
  * and works as a observer for the received value logs.
  */
 @Service
-public class CEPTriggerService implements ValueLogReceiverObserver {
+public class CEPTriggerService implements ValueLogObserver {
 
     // The data model tree cache to receive the data model tree of the respective component
     @Autowired
@@ -41,11 +42,10 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
     private CEPValueLogParser cepValueLogParser;
 
     // To store incoming ValueLogs temporarily for the case that the ValueLog was not already saved in the MongoDB
-    @Autowired
-    private CEPValueLogCache cepValueLogCache;
+    private final CEPValueLogCache cepValueLogCache;
 
     //The CEP engine instance to use
-    private CEPEngine engine;
+    private final CEPEngine engine;
 
     /**
      * Creates and initializes the CEP trigger service by passing a certain rule engine and a value log receiver
@@ -55,8 +55,9 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
      * @param valueLogReceiver The value log receiver instance to use
      */
     @Autowired
-    private CEPTriggerService(CEPEngine engine, ValueLogReceiver valueLogReceiver) {
+    CEPTriggerService(CEPEngine engine, CEPValueLogCache cepValueLogCache, ValueLogReceiver valueLogReceiver) {
         this.engine = engine;
+        this.cepValueLogCache = cepValueLogCache;
 
         //Register as observer at the ValueLogReceiver
         valueLogReceiver.registerObserver(this);
@@ -122,6 +123,10 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
      */
     @Override
     public void onValueReceived(ValueLog valueLog) {
+        //TODO
+        //Ignore value logs of dynamic deployments for the moment
+        if (valueLog.getComponent().equalsIgnoreCase(new DynamicDeployableComponent().getComponentTypeName())) return;
+
         // Pass the valueLog to the cache to have later access to it, even if it is not already written in the mongoDB
         cepValueLogCache.addValueLog(valueLog);
 
@@ -255,19 +260,19 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
             }
 
             // Add all json path options for the current leaf node to the event type
-            IoTDataTypes typeOfNode = node.getType();
+            DataModelDataType typeOfNode = node.getType();
             for (String path : paths) {
                 JsonPath jsonPath = JsonPath.compile(path);
                 // Remove the $ from the json path
                 path = path.substring(1);
                 // No arrays are in the path --> just add the path as field
-                if (IoTDataTypes.hasCepPrimitiveDataType(typeOfNode)) {
+                if (DataModelDataType.hasCepPrimitiveDataType(typeOfNode)) {
                     eventType.addField(path, typeOfNode.getCepType());
                 } else {
                     // Special cases for special IoT data types like Date and Binary for which no explicit mapping is defined
-                    if (typeOfNode == IoTDataTypes.DATE) {
+                    if (typeOfNode == DataModelDataType.DATE) {
                         eventType.addField(path, CEPPrimitiveDataTypes.LONG);
-                    } else if (typeOfNode == IoTDataTypes.BINARY) {
+                    } else if (typeOfNode == DataModelDataType.BINARY) {
                         eventType.addField(path, CEPPrimitiveDataTypes.STRING);
                     }
                 }
@@ -312,9 +317,7 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
                 for (int ind = 0; ind < dimension; ind++) {
                     for (List<Integer> indPerPath : arrayIndicesPerPathToBuild) {
                         List<Integer> tmp = new ArrayList<>();
-                        for (Integer toAdd : indPerPath) {
-                            tmp.add(toAdd);
-                        }
+                        tmp.addAll(indPerPath);
                         tmp.add(ind);
                         pathIndicesToAdd.add(tmp);
                         if (!pathIndicesToRemove.contains(indPerPath)) {

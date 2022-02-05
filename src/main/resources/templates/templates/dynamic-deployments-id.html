@@ -1,0 +1,454 @@
+<div class="row clearfix">
+    <!-- Sensor Properties Card -->
+    <div class="col-lg-6">
+        <div class="card details-info-card">
+            <div class="header"
+                 ng-class="{'bg-blue': ctrl.dynamicDeployment.inProgress, 'bg-grey': ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress, 'bg-orange': (ctrl.dynamicDeployment.lastState === 'no_candidate' || ctrl.dynamicDeployment.lastState === 'all_failed') && !ctrl.dynamicDeployment.inProgress, 'bg-green': ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress}">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">device_hub</i>
+                <h2 style="margin-left: 35px;">
+                    {{ctrl.dynamicDeployment.name}}
+                    <small ng-show="ctrl.dynamicDeployment.inProgress">Deployment operations are currently in
+                        progress.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress">The
+                        dynamic deployment is deactivated.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'no_candidate' && !ctrl.dynamicDeployment.inProgress">No
+                        candidate devices could be retrieved.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'all_failed' && !ctrl.dynamicDeployment.inProgress">The
+                        deployment failed for all candidate devices.</small>
+                    <small ng-show="ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress">Successfully
+                        deployed to the most appropriate candidate device.</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.reloadDeploymentDetails()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <table class="table table-hover">
+                    <tbody>
+                    <tr>
+                        <th>Operator:</th>
+                        <td>{{ctrl.dynamicDeployment.operator.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Device template:</th>
+                        <td>{{ctrl.dynamicDeployment.deviceTemplate.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>State:</th>
+                        <td>
+                            <div class="clickable" ng-click="ctrl.reloadDeploymentDetails()">
+                                <div ng-show="ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-primary">{{ctrl.dynamicDeployment.activatingIntended ? 'Activating' : 'Deactivating'}}</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'disabled' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-default">Disabled</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'no_candidate' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-warning">No candidates</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'all_failed' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-warning">All failed</span>
+                                </div>
+                                <div ng-show="ctrl.dynamicDeployment.lastState === 'deployed' && !ctrl.dynamicDeployment.inProgress">
+                                    <span class="label label-success">Deployed</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr ng-show="ctrl.dynamicDeployment.lastDeviceDetails">
+                        <th>Current device:</th>
+                        <td>
+                            <ul class="list-group">
+                                <li class="list-group-item"><strong>IP address:</strong>
+                                    {{ctrl.dynamicDeployment.lastDeviceDetails.ipAddress}}
+                                </li>
+                                <li class="list-group-item"><strong>MAC address:</strong>
+                                    {{ctrl.dynamicDeployment.lastDeviceDetails.macAddress}}
+                                </li>
+                                <li class="list-group-item"><strong>User name:</strong>
+                                    {{ctrl.dynamicDeployment.lastDeviceDetails.username}}
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <br/>
+                <div>
+                    <span ng-show="!ctrl.dynamicDeployment.activatingIntended">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.activateDeployment()"
+                                style="color: white;">
+                            <i class="material-icons">play_circle_outline</i>
+                            <span>Activate deployment</span>
+                        </button>
+                    </span>
+                    <span ng-show="ctrl.dynamicDeployment.activatingIntended">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.deactivateDeployment()"
+                                style="color: white;">
+                            <i class="material-icons">pause_circle_outline</i>
+                            <span>Deactivate deployment</span>
+                        </button>
+                    </span>
+                    <span>
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="ctrl.refreshCandidateDevices()"
+                                style="color: white;" data-toggle="popover" data-placement="top"
+                                data-trigger="hover" data-html="true"
+                                title="Refresh candidate devices and subscriptions"
+                                data-content="Refreshes all candidate devices that are stored for the device template of the dynamic deployment by retrieving them from the discovery repositories again. Thereby, also the subscriptions at these repositories are renewed, such that e.g. discovery repositories that are available under recently created request topics can be considered as well.">
+                            <i class="material-icons">refresh</i>
+                            <span>Refresh candidates devices</span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="col-lg-6">
+        <div class="card stats-card">
+            <div class="header">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">equalizer</i>
+                <h2 style="margin-left: 35px;">Value statistics
+                    <small>Overview about received values.</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.deleteValueLogs()" class="clickable">
+                            <i class="material-icons">delete</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a ng-click="valueLogStatsApi.updateStats()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <h5>Display unit</h5>
+                <div class="form-group align-right">
+                    <div class="form-line">
+                        <unit-input ng-model="ctrl.displayUnitInput"
+                                    unit-filter="{{ctrl.dynamicDeployment.operator.unit}}"></unit-input>
+                    </div>
+                    <span class="help-block" ng-show="false"></span><br/>
+                    <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
+                        Update
+                    </button>
+                </div>
+                <value-log-stats api="valueLogStatsApi"
+                                 loading-start="ctrl.valueLogStats.loadingStart()"
+                                 loading-finish="ctrl.valueLogStats.loadingFinish()"
+                                 get-stats="ctrl.valueLogStats.getStats(unit)"
+                                 unit="{{ctrl.displayUnit}}">
+                </value-log-stats>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Discovery logs card -->
+<div class="row clearfix" ng-hide="ng-hide">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Discovery logs<small>Overview about the discovery logs that were collected for the
+                    discovery-related tasks of this dynamic deployment.</small></h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.deleteDiscoveryLogs()" class="clickable">
+                            <i class="material-icons">delete</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a ng-click="ctrl.updateDiscoveryLogs()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table id="discovery-logs-table" class="table table-bordered table-striped table-hover dataTable"
+                           style="width:100%;">
+                        <thead>
+                        <tr>
+                            <th>Start time</th>
+                            <th>Task</th>
+                            <th>Trigger</th>
+                            <th>End time</th>
+                            <th style="min-width: 450px;">Log messages</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============== ALL VISUALIZATIONS START ================ -->
+<div id="addNewCardsHere" ng-repeat="visItem in ctrl.allActiveVisualizations">
+    <div class="row clearfix">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="header">
+                    <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                        <li role="presentation" ng-show="ctrl.dynamicDeployment.lastState==='deployed'">
+                            <a data-target="#live-chart-card-{{visItem.instanceId}}" data-toggle="tab">
+                                <i class="material-icons">live_tv</i>
+                                Live Chart
+                            </a>
+                        </li>
+                        <li role="presentation" class="active">
+                            <a data-target="#historical-chart-card-{{visItem.instanceId}}" data-toggle="tab">
+                                <i class="material-icons">access_time</i>
+                                Historical Chart
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="header-dropdown m-r--5">
+                        <li>
+                            <a ng-click="historicalChartApi.updateChart()" class="clickable">
+                                <i class="material-icons">refresh</i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="clickable" data-toggle="modal" data-target="#modal-{{visItem.instanceId}}"
+                               data-backdrop="static" data-keyboard="false">
+                                <i class="material-icons">settings</i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="clickable" ng-click="ctrl.deleteChartCard(visItem.instanceId)">
+                                <i class="material-icons">delete</i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="body">
+                    <div class="tab-content">
+                        <div class="tab-pane fade live-chart-card" id="live-chart-card-{{visItem.instanceId}}"
+                             ng-show="ctrl.dynamicDeployment.lastState=='deployed'">
+
+                            <!-- doubleVis Live chart -->
+                            <div ng-if="visItem.visId === 'doubleVis'">
+                                <live-chart
+                                        loading-start="ctrl.liveChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="ctrl.liveChart.loadingFinish(visItem.instanceId)"
+                                        get-data="ctrl.liveChart.getData(numberLogs, descending, unit, startTime, endTime)"
+                                        is-updateable="ctrl.liveChart.isUpdateable()"
+                                        unit="{{ctrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </live-chart>
+                            </div>
+                            <!-- geoMap Live chart -->
+                            <div ng-if="visItem.visId === 'geoMap'">
+                                <live-geo-map-chart
+                                        loading-start="ctrl.liveChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="ctrl.liveChart.loadingFinish(visItem.instanceId)"
+                                        get-data="ctrl.liveChart.getData(numberLogs, descending, unit, startTime, endTime)"
+                                        is-updateable="ctrl.liveChart.isUpdateable()"
+                                        unit="{{ctrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </live-geo-map-chart>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade in active historical-chart-card"
+                             id="historical-chart-card-{{visItem.instanceId}}">
+
+                            <!-- doubleVis historical chart -->
+                            <div ng-if="visItem.visId === 'doubleVis'">
+                                <historical-chart
+                                        api="$parent.historicalChartApi"
+                                        loading-start="ctrl.historicalChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="ctrl.historicalChart.loadingFinish(visItem.instanceId)"
+                                        get-data="ctrl.historicalChart.getData(numberLogs, descending, unit, startTime, endTime)"
+                                        unit="{{ctrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </historical-chart>
+                            </div>
+                            <!-- geoMap historical chart -->
+                            <div ng-if="visItem.visId === 'geoMap'">
+                                <historical-geo-map-chart
+                                        api="$parent.historicalChartApi"
+                                        loading-start="ctrl.historicalChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="ctrl.historicalChart.loadingFinish(visItem.instanceId)"
+                                        get-data="ctrl.historicalChart.getData(numberLogs, descending, unit, startTime, endTime)"
+                                        unit="{{ctrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </historical-geo-map-chart>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualization settings modal -->
+    <div class="modal fade" id="modal-{{visItem.instanceId}}" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configure the chart
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="ctrl.updateJsonPath(visItem)">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- START: Modal cases for each visualization and available vis field collections -->
+                            <div ng-if="visItem.visId === 'doubleVis'">
+
+                                <!-- Line chart modal START -->
+                                <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
+                                    <!-- "global" error for addItem -->
+                                    <div class="form-group"
+                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                    </div>
+                                    <!-- item.name group -->
+                                    <label>JsonPath to number value:</label>
+                                    <div ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <div ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+
+                                            <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
+                                                             json-path-list="visItem.getJsonPathsByFieldCollectionName('default').value"
+                                                             number-of-needed-wildcards="0"
+                                                             field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                             path-type="default"
+                                            </json-path-input>
+                                        </div>
+                                        <span class="help-block"
+                                              ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                    </div>
+                                </div>
+
+                                <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('arrVal')">
+                                    <!-- "global" error for addItem -->
+                                    <div class="form-group"
+                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                    </div>
+                                    <!-- item.name group -->
+                                    <label>JsonPath to number array:</label>
+                                    <div ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                            <json-path-input ng-model="visItem.visFieldToPathMappingInput.arrVal"
+                                                             json-path-list="visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
+                                                             number-of-needed-wildcards="1"
+                                                             field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                             path-type="arrVal"
+                                            </json-path-input>
+                                        </div>
+                                        <span class="help-block"
+                                              ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GeoMap modal case -->
+                            <div ng-if="visItem.visId === 'geoMap'">
+                                <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
+                                    <!-- "global" error for addItem -->
+                                    <div class="form-group"
+                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                    </div>
+                                    <!-- item.name group -->
+                                    <div
+                                            ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                            <label>JsonPath to number latitude:</label>
+                                            <ng-container>
+                                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.latitude"
+                                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').latitude"
+                                                                 number-of-needed-wildcards="0"
+                                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                                 path-type="default"
+                                                </json-path-input>
+                                            </ng-container>
+                                            <label style="margin-top: 10px">JsonPath to number longitude:</label>
+                                            <ng-container>
+                                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.longitude"
+                                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').longitude"
+                                                                 number-of-needed-wildcards="0"
+                                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                                 path-type="default"
+                                                </json-path-input>
+                                            </ng-container>
+                                        </div>
+                                        <span class="help-block"
+                                              ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- END: Modal cases for each visualization and available vis field collections -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Save</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ============== ALL VISUALIZATIONS END ================ -->
+
+<!-- Create new visualization component card -->
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card create-new-vis-card-card">
+            <div class="header">
+                <i class="material-icons" style="position: absolute; margin-top: 0px">addchart</i>
+                <h2 style="margin-left: 35px; margin-top: 4px;">Add a chart</h2>
+            </div>
+            <div class="body align-items-center justify-content-center">
+                <div class="row clearfix">
+                    <div style="margin: 0 auto;">
+                        <button type="button" style="float:left; margin-left: 10px; margin-top: -4px;"
+                                class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                ng-click="ctrl.onCreateNewVisualizationClicked()">
+                            <i class="material-icons">add</i>
+                        </button>
+                        <select class="form-control show-tick" ng-model="ctrl.nextChartToAdd"
+                                style="float:left; max-width: 400px; margin-left: 10px">
+                            <option value="select" disabled>Select...</option>
+                            <option ng-repeat="visId in ctrl.idOfAllApplicableVisualizations"
+                                    value="{{visId}}">
+                                {{visId === 'doubleVis' ? "Line Chart" : ""}}
+                                {{visId === 'geoMap' ? "Map" : ""}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

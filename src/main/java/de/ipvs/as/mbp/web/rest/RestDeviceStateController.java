@@ -1,9 +1,10 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.device.DeviceStateDTO;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.DeviceRepository;
@@ -25,7 +26,7 @@ import java.util.Map;
  * REST Controller for requests related to the availability of devices.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/devices")
+@RequestMapping(Constants.BASE_PATH + "/devices")
 @Api(tags = { "Device state" })
 public class RestDeviceStateController {
 
@@ -67,7 +68,7 @@ public class RestDeviceStateController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 401, message = "Not authorized to access the device!"),
 			@ApiResponse(code = 404, message = "Device or requesting user not found!") })
-	public ResponseEntity<EntityModel<DeviceState>> getDeviceStatus(
+	public ResponseEntity<EntityModel<DeviceStateDTO>> getDeviceStatus(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve the device from the database
@@ -79,6 +80,6 @@ public class RestDeviceStateController {
 		// Determine device state
 		DeviceState deviceState = deployer.retrieveDeviceState(device);
 
-		return ResponseEntity.ok(new EntityModel<DeviceState>(deviceState));
+		return ResponseEntity.ok(EntityModel.of(new DeviceStateDTO(deviceState.name())));
 	}
 }

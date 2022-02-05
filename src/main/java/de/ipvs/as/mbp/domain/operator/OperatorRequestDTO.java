@@ -1,13 +1,8 @@
 package de.ipvs.as.mbp.domain.operator;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.user_entity.UserEntityRequestDTO;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import javax.persistence.GeneratedValue;
 import java.util.List;
 
 public class OperatorRequestDTO extends UserEntityRequestDTO {

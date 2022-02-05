@@ -1,0 +1,99 @@
+<script type="text/ng-template" id="tree_item_renderer.html">
+    <div class="panel panel-primary" style="margin-top: 5px; margin-bottom: 5px; margin-right: 2px;"
+         ng-init="data.expanded = false;">
+        <div class="panel-heading" style="height:42px; padding-bottom: 4px;padding-top: 4px;">
+            <button type="button" ng-show="data.nodes.length > 0" ng-click="collapseExpand(data)"
+                    style="margin-left:-8px; margin-right:7px; padding-left:9px; padding-right:8px; padding-bottom:4px; padding-top:4px;"
+                    class="btn bg-mbp-blue waves-effect">
+                <i class="material-icons">{{data.expanded ? "expand_less" : "expand_more"}}</i>
+            </button>
+            <span style="display: inline-block; margin-top: 7px;">
+                {{data.name}}: <strong>{{data.type}}{{data.size ? "[" + data.size + "]" : ""}}</strong></span>
+            <div style="display: inline-block; float:right;">
+                <button type="button" class="btn bg-green waves-effect" ng-click="edit(data)" ng-show="!data.isRoot"
+                        style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
+                    <i class="material-icons">edit</i>
+                </button>
+                <button type="button" class="btn bg-green waves-effect"
+                        ng-show="data.type==='object' || (data.type==='array' && data.nodes.length == 0)"
+                        ng-click="data.expanded = true; add(data);"
+                        style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
+                    <i class="material-icons">add</i>
+                </button>
+                <button type="button" class="btn bg-red waves-effect" ng-click="delete(data)"
+                        ng-show="data.nodes.length > 0"
+                        style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;">
+                    <i class="material-icons">delete</i>
+                </button>
+            </div>
+        </div>
+
+        <div ng-show="data.edit">
+            <table class="table table-hover">
+                <tbody>
+                <tr>
+                    <th>Type:</th>
+                    <td>
+                        <select name="type" ng-show="!data.isRoot" ng-model="data.type" ng-change="typeChanged(data)">
+                            <option selected value="object">Object</option>
+                            <option value="array">Array</option>
+                            <option value="double">Double</option>
+                            <option value="string">String</option>
+                            <option value="boolean">Boolean</option>
+                            <option value="date">Date</option>
+                            <option value="int">Integer</option>
+                            <option value="long">Long</option>
+                            <option value="decimal128">Decimal128</option>
+                            <option value="binary">Binary</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Name:
+                    </th>
+                    <td>
+                        <input class="form-control" type="text"
+                               placeholder="Name" ng-model="data.name" ng-change="parseToDataModelJson()"/>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        Description:
+                    </th>
+                    <td>
+                        <input class="form-control" type="text"
+                               placeholder="Description" ng-model="data.description"
+                               ng-change="parseToDataModelJson()"/>
+                    </td>
+                </tr>
+                <tr ng-show="data.type === 'array'">
+                    <th>
+                        Array size:
+                    </th>
+                    <td>
+                        <input class="form-control" type="number"
+                               placeholder="1" ng-model="data.size" ng-change="parseToDataModelJson()"/>
+                    </td>
+                </tr>
+                <tr ng-show="data.type != 'array' && data.type != 'object'">
+                    <th>
+                        Unit:
+                    </th>
+                    <td>
+                        <unit-input ng-change="parseToDataModelJson()"
+                                    ng-model="data.unit"></unit-input>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <ul ng-show="data.expanded">
+            <li ng-repeat="data in data.nodes" ng-include="'tree_item_renderer.html'"></li>
+        </ul>
+    </div>
+</script>
+
+<div ng-repeat="data in tree" ng-include="'tree_item_renderer.html'"></div>
+
+

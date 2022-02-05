@@ -38,7 +38,7 @@ public class DefaultEntitiesConfiguration {
      */
     @Bean(name = "defaultOperatorWhitelist")
     public List<String> defaultOperatorWhitelist() {
-        List<String> operatorPaths = Arrays.asList("/operators/extraction/temperature_stub");
+        List<String> operatorPaths = Collections.singletonList("/operators/extraction/temperature_stub");
         return Collections.unmodifiableList(operatorPaths);
     }
 

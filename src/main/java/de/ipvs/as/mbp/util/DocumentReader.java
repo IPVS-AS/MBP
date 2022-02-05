@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.util;
 
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import org.bson.Document;
 
@@ -16,13 +16,13 @@ public class DocumentReader {
      * Stores array indices to resolve list indices in the {@link Document}. The order of the
      * indices stored in the queue must be the same as it would occur in a json path.
      */
-    private ArrayDeque<Integer> arrayIndexQueue;
+    private final ArrayDeque<Integer> arrayIndexQueue;
 
     /**
      * Represents a slice of the {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree} in the
      * order from the root to the leaves.
      */
-    private List<DataModelTreeNode> pathList;
+    private final List<DataModelTreeNode> pathList;
 
     /**
      * Returns a dequeue of array indices of all predecessor nodes of a given {@link DataModelTreeNode}
@@ -46,7 +46,7 @@ public class DocumentReader {
         ArrayDeque<Integer> maxArrayIndexQueue = new ArrayDeque<>();
         for (int i = predecessorsOfNode.size() - 1; i >= 0; i--) {
             DataModelTreeNode currNode = predecessorsOfNode.get(i);
-            if (currNode.getType() == IoTDataTypes.ARRAY) {
+            if (currNode.getType() == DataModelDataType.ARRAY) {
                 maxArrayIndexQueue.addFirst(currNode.getSize() - 1);
             }
         }
@@ -129,30 +129,30 @@ public class DocumentReader {
 
         DataModelTreeNode parent = node.getParent();
 
-        IoTDataTypes typeOfNode = node.getType();
+        DataModelDataType typeOfNode = node.getType();
 
         // In the primitive case we are a at the end and we can return the result immediately
-        if (IoTDataTypes.isPrimitive(typeOfNode)) {
+        if (DataModelDataType.isPrimitive(typeOfNode)) {
 
-            if (parent.getType() == IoTDataTypes.OBJECT) {
+            if (parent.getType() == DataModelDataType.OBJECT) {
                 if (newValueForEdit != null) {
                     ((Document) currentDataStructureToHandle).put(node.getName(), newValueForEdit);
                 }
                 returnObjects.add(((Document) currentDataStructureToHandle).get(node.getName()));
-            } else if (parent.getType() == IoTDataTypes.ARRAY) {
+            } else if (parent.getType() == DataModelDataType.ARRAY) {
                 if (newValueForEdit != null) {
                     ((List<Object>) currentDataStructureToHandle).set(arrIndex, newValueForEdit);
                 }
                 returnObjects.add(((List<Object>) currentDataStructureToHandle).get(arrIndex));
             }
 
-        } else if (typeOfNode == IoTDataTypes.ARRAY) {
+        } else if (typeOfNode == DataModelDataType.ARRAY) {
 
             List<Object> nextDataStructureToHandle = null;
 
-            if (parent.getType() == IoTDataTypes.OBJECT) {
+            if (parent.getType() == DataModelDataType.OBJECT) {
                 nextDataStructureToHandle = (List<Object>) ((Document) currentDataStructureToHandle).get(node.getName());
-            } else if (parent.getType() == IoTDataTypes.ARRAY) {
+            } else if (parent.getType() == DataModelDataType.ARRAY) {
                 nextDataStructureToHandle = (List<Object>) ((List<Object>) currentDataStructureToHandle).get(arrIndex);
             }
 
@@ -173,13 +173,13 @@ public class DocumentReader {
                 extractNextDataStructure(returnObjects, nextNodeIndex + 1, nextDataStructureToHandle, chosenAccessIndexForChild, arrIndicesQueue, newValueForEdit);
             }
 
-        } else if (typeOfNode == IoTDataTypes.OBJECT) {
+        } else if (typeOfNode == DataModelDataType.OBJECT) {
 
             Document nextDataStructureToHandle = null;
 
-            if (parent.getType() == IoTDataTypes.OBJECT) {
+            if (parent.getType() == DataModelDataType.OBJECT) {
                 nextDataStructureToHandle = (Document) ((Document) currentDataStructureToHandle).get(node.getName());
-            } else if (parent.getType() == IoTDataTypes.ARRAY) {
+            } else if (parent.getType() == DataModelDataType.ARRAY) {
                 nextDataStructureToHandle = (Document) ((List<Object>) currentDataStructureToHandle).get(arrIndex);
             }
 

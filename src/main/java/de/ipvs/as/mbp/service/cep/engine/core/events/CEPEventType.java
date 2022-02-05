@@ -13,7 +13,7 @@ public class CEPEventType {
     //Name of the event type and its instances
     private String name;
     //Map (field name --> data type) of fields that are part of instances of this event type
-    private Map<String, CEPPrimitiveDataTypes> fields;
+    private final Map<String, CEPPrimitiveDataTypes> fields;
 
     /**
      * Creates a new event type object with a given name.

@@ -25,8 +25,13 @@ public final class SecurityUtils {
         }
 
         //Get user from authentication
-        User user = (User) authentication.getDetails();
-
+        User user;
+        try {
+            user = (User) authentication.getDetails();
+        } catch (ClassCastException cce) {
+            cce.printStackTrace();
+            return null;
+        }
         //Extract username
         return user.getUsername();
     }

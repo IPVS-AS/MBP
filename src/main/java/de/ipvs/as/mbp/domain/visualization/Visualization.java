@@ -1,15 +1,7 @@
 package de.ipvs.as.mbp.domain.visualization;
 
-import de.ipvs.as.mbp.domain.data_model.DataModel;
-import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
-import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
-import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class represents a possible visualization a user can choose
@@ -29,10 +21,10 @@ public class Visualization {
     /**
      * An unique identifier to identify the visualization among others.
      */
-    private String id;
+    private String name;
 
-    public Visualization(String id) {
-        setId(id);
+    public Visualization(String name) {
+        setName(name);
         fieldsToVisualize = new ArrayList<>();
     }
 
@@ -46,12 +38,12 @@ public class Visualization {
         return this;
     }
 
-    public String getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<VisualizationFields> getFieldsToVisualize() {

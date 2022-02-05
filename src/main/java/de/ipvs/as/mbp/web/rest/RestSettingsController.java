@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.error.MBPException;
@@ -25,7 +25,7 @@ import java.util.List;
  * REST Controller for settings related REST requests.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/settings")
+@RequestMapping(Constants.BASE_PATH + "/settings")
 @Api(tags = {"Settings"}, description = "Retrieval and modification of platform-wide settings")
 public class RestSettingsController {
 

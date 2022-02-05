@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.service.rules.execution;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
-import org.springframework.validation.Errors;
 
 import java.util.Map;
 

@@ -9,7 +9,7 @@ public class MissingPermissionException extends EntityException {
 
 	private static final long serialVersionUID = 2264282354782414640L;
 	
-	private ACAccessType accessType;
+	private final ACAccessType accessType;
 	
 	// - - -
 	

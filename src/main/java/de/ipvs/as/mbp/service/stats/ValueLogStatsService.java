@@ -16,8 +16,6 @@ import java.util.List;
 /**
  * Service that provides means for calculating descriptive statistical information from a set of value logs
  * of a certain component.
- *
- * @author Jan
  */
 @Service
 public class ValueLogStatsService {

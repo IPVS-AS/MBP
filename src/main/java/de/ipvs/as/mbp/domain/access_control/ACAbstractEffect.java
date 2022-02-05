@@ -22,7 +22,7 @@ public abstract class ACAbstractEffect extends ACAbstractEntity {
 	/**
 	 * The {@link ACEffectType} of this effect.
 	 */
-	private ACEffectType type = getClass().getAnnotation(ACEffect.class).type();
+	private final ACEffectType type = getClass().getAnnotation(ACEffect.class).type();
 	
 	// - - -
 	

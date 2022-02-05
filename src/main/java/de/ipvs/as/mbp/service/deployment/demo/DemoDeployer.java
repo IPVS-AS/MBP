@@ -18,7 +18,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import javax.json.JsonObject;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -280,7 +279,6 @@ public class DemoDeployer implements IDeployer {
                 valueLog.setIdref(component.getId());
                 valueLog.setComponent(component.getComponentTypeName());
                 valueLog.setTopic(component.getTopicName());
-                valueLog.setQos(0);
                 valueLog.setMessage("Randomly generated");
 
                 // Get the data model of the component to generate a fitting value

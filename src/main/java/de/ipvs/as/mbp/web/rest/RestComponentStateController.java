@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.constants.Constants;
+import de.ipvs.as.mbp.domain.component.ComponentStateDTO;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
@@ -37,7 +38,7 @@ import io.swagger.annotations.ApiResponses;
  * REST Controller for requests related to the deployment state of components.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(Constants.BASE_PATH)
 @Api(tags = { "Component state" })
 public class RestComponentStateController {
 	
@@ -103,10 +104,15 @@ public class RestComponentStateController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 401, message = "Not authorized to access the sensor"),
 			@ApiResponse(code = 404, message = "Sensor not found") })
-	public ResponseEntity<EntityModel<ComponentState>> getSensorState(
+	public ResponseEntity<EntityModel<ComponentStateDTO>> getSensorState(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) throws EntityNotFoundException, MissingPermissionException {
-		return ResponseEntity.ok(getComponentState(sensorId, sensorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
+		ComponentState componentState = getComponentState(sensorId, sensorRepository, ACAccessRequest.valueOf(accessRequestHeader)).getContent();
+		if (componentState == null) {
+			return ResponseEntity.internalServerError().build();
+		}
+		String componentStateEnumKey = componentState.name();
+		return ResponseEntity.ok(EntityModel.of(new ComponentStateDTO(componentStateEnumKey)));
 	}
 
 	private <C extends Component> Map<String, ComponentState> getStatesAllComponents(ComponentRepository<C> repository, ACAccessRequest accessRequest) {
@@ -126,6 +132,6 @@ public class RestComponentStateController {
 
 		// Determine component state
 		// TODO: Entity model really required here???
-		return new EntityModel<ComponentState>(deploymentWrapper.getComponentState(component));
+		return EntityModel.of(deploymentWrapper.getComponentState(component));
 	}
 }

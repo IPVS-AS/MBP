@@ -12,9 +12,9 @@ public enum ACEffectType {
 	
 	// - - -
 	
-	private String name;
-	private String description;
-	private Class<? extends ACAbstractEffect> clazz;
+	private final String name;
+	private final String description;
+	private final Class<? extends ACAbstractEffect> clazz;
 	
 	// - - -
 	
