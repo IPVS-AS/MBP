@@ -43,6 +43,8 @@ services:
   iot-device:
     container_name: iot-device
     build: ./testing/iot-device-dockerfile
+    ports:
+      - 22:22
     networks:
       default:
         ipv4_address: 172.16.238.10
