@@ -1,6 +1,20 @@
 package de.ipvs.as.mbp.service.cep.engine.esper;
 
-import com.espertech.esper.client.*;
+import com.espertech.esper.common.client.EPCompiled;
+import com.espertech.esper.common.client.EPException;
+import com.espertech.esper.common.client.configuration.Configuration;
+import com.espertech.esper.common.client.module.Module;
+import com.espertech.esper.common.client.module.ParseException;
+import com.espertech.esper.common.client.soda.EPStatementObjectModel;
+import com.espertech.esper.common.client.util.StatementProperty;
+import com.espertech.esper.compiler.client.CompilerArguments;
+import com.espertech.esper.compiler.client.EPCompileException;
+import com.espertech.esper.compiler.client.EPCompiler;
+import com.espertech.esper.compiler.client.EPCompilerProvider;
+import com.espertech.esper.compiler.client.option.StatementNameContext;
+import com.espertech.esper.compiler.client.option.StatementNameOption;
+import com.espertech.esper.runtime.client.*;
+import com.espertech.esper.runtime.client.EPRuntime;
 import de.ipvs.as.mbp.service.cep.engine.core.CEPEngine;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEvent;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
@@ -8,6 +22,10 @@ import de.ipvs.as.mbp.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 import de.ipvs.as.mbp.service.cep.engine.core.exceptions.EventNotRegisteredException;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQueryValidation;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -16,24 +34,31 @@ import java.util.*;
  */
 public class EsperCEPEngine implements CEPEngine {
     //Internal fields
-    private final EPServiceProvider cepService;
-    private final EPAdministrator cepAdmin;
+    private final EPDeploymentService cepDeploymentService;
     private final EPRuntime cepRuntime;
+    private final EPEventService cepEventService;
 
     //Stores the event types that have been registered at the engine
     private final Set<CEPEventType> registeredEventTypes;
+
+    private final EPCompiler cepCompiler;
 
     /**
      * Creates the component by initializing Esper and the corresponding internal fields.
      */
     public EsperCEPEngine() {
+
         //Get and initialize CEP service
-        cepService = EPServiceProviderManager.getDefaultProvider();
-        cepService.initialize();
+        cepRuntime = EPRuntimeProvider.getDefaultRuntime();
+        cepRuntime.initialize();
+
+        cepEventService = cepRuntime.getEventService();
 
         //Get admin and runtime objects
-        cepAdmin = cepService.getEPAdministrator();
-        cepRuntime = cepService.getEPRuntime();
+        cepDeploymentService = cepRuntime.getDeploymentService();
+
+        cepCompiler = EPCompilerProvider.getCompiler();
+
 
         //Create empty set of registered event types
         registeredEventTypes = new HashSet<>();
@@ -47,7 +72,7 @@ public class EsperCEPEngine implements CEPEngine {
      * @param queryString The query string of the query
      * @return The CEPQuery object representing the query
      */
-    public EsperCEPQuery createQuery(String name, String queryString) {
+    public EsperCEPQuery createQuery(String name, String queryString) throws EPCompileException {
         //Sanity checks
         if ((name == null) || (name.isEmpty())) {
             throw new IllegalArgumentException("Name must not be null or empty.");
@@ -62,10 +87,17 @@ public class EsperCEPEngine implements CEPEngine {
         }
 
         //Create statement with name and query string
-        EPStatement statement = cepAdmin.createEPL(queryString, name);
+        CompilerArguments args = new CompilerArguments();
+        args.getOptions().setStatementName(new StatementNameOption() {
+            @Override
+            public String getValue(StatementNameContext statementNameContext) {
+                return name;
+            }
+        });
+        EPCompiled compiled = cepCompiler.compile(queryString, args);
 
         //Create query object from statement and return
-        return new EsperCEPQuery(statement);
+        return new EsperCEPQuery(compiled);
     }
 
     /**
@@ -75,22 +107,34 @@ public class EsperCEPEngine implements CEPEngine {
      * @param name The name of the query for which the CEPQuery object is supposed to be returned
      * @return A dedicated CEPQuery object representing the query
      */
-    public EsperCEPQuery getQueryByName(String name) {
+    public EsperCEPQuery getQueryByName(String name) throws EPCompileException {
         //Sanity check
         if ((name == null) || (name.isEmpty())) {
             throw new IllegalArgumentException("Name must not be null or empty.");
         }
 
+        String[] allDeploymentIds = cepDeploymentService.getDeployments();
+        EPStatement statementToFind = null;
+
         //Retrieve statement by name
-        EPStatement statement = cepAdmin.getStatement(name);
+        for (String deploymentId : allDeploymentIds) {
+            EPDeployment deployment = cepDeploymentService.getDeployment(deploymentId);
+
+            EPStatement[] allStatementsOfCurrDeployment = deployment.getStatements();
+            for (EPStatement statement : allStatementsOfCurrDeployment) {
+                if (statement.getName().equals(name)) {
+                    statementToFind = statement;
+                }
+            }
+        }
 
         //Sanity check
-        if (statement == null) {
+        if (statementToFind == null) {
             return null;
         }
 
         //Create query object from statement and return
-        return new EsperCEPQuery(statement);
+        return createQuery(statementToFind.getName(), (String) statementToFind.getProperty(StatementProperty.EPL));
     }
 
     /**
@@ -143,7 +187,7 @@ public class EsperCEPEngine implements CEPEngine {
         queryBuilder.append(")");
 
         //Create statement for query
-        cepAdmin.createEPL(queryBuilder.toString());
+        //cepDeploymentService.createEPL(queryBuilder.toString());
 
         //Add event type to set of registered types
         registeredEventTypes.add(eventType);
@@ -172,7 +216,7 @@ public class EsperCEPEngine implements CEPEngine {
         }
 
         //Send valid event to Esper
-        cepRuntime.sendEvent(event.getFieldValues(), event.getEventTypeName());
+        cepEventService.sendEventBean(event.getFieldValues(), event.getEventTypeName());
     }
 
     /**
@@ -189,16 +233,21 @@ public class EsperCEPEngine implements CEPEngine {
         }
 
         //Try to register a temporary statement with this query and check if this fails
-        EPStatement testStatement = null;
+        EsperCEPQuery testStatement = null;
         try {
-            testStatement = cepAdmin.createEPL(queryString);
-        } catch (EPException e) {
+            testStatement = createQuery("testQuery", queryString);
+        } catch (EPException | EPCompileException e) {
             //Statement creation failed, query is not valid
             return new CEPQueryValidation(queryString, false, e.getMessage());
         } finally {
             //Destroy test statement in every case (if created)
-            if (testStatement != null) {
-                testStatement.destroy();
+            if (testStatement != null && testStatement.getCurrDeployment() != null) {
+                try {
+                    cepDeploymentService.undeploy(testStatement.getCurrDeployment().getDeploymentId());
+                } catch (EPUndeployException e) {
+                    e.printStackTrace();
+                }
+
             }
         }
 
@@ -213,7 +262,7 @@ public class EsperCEPEngine implements CEPEngine {
      */
     public List<String> getAllQueryNames() {
         //Get names
-        String[] names = cepAdmin.getStatementNames();
+        String[] names = cepDeploymentService.getDeployments();
 
         //Convert array to list
         return Arrays.asList(names);

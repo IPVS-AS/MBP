@@ -1,5 +1,7 @@
 package de.ipvs.as.mbp.service.cep.engine.core;
 
+import com.espertech.esper.compiler.client.EPCompileException;
+import com.espertech.esper.runtime.client.EPUndeployException;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEvent;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
 import de.ipvs.as.mbp.service.cep.engine.core.exceptions.EventNotRegisteredException;
@@ -21,7 +23,7 @@ public interface CEPEngine {
      * @param queryString The query string of the query
      * @return The CEPQuery object representing the query
      */
-    CEPQuery createQuery(String name, String queryString);
+    CEPQuery createQuery(String name, String queryString) throws EPCompileException;
 
     /**
      * Returns a CEPQuery object for a certain query given by its name.
@@ -29,7 +31,7 @@ public interface CEPEngine {
      * @param name The name of the query for which the CEPQuery object is supposed to be returned
      * @return A dedicated CEPQuery object representing the query
      */
-    CEPQuery getQueryByName(String name);
+    CEPQuery getQueryByName(String name) throws EPCompileException;
 
     /**
      * Registers a new event type at the CEP engine. After that, events of the new event type might be

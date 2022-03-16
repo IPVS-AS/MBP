@@ -1,5 +1,7 @@
 package de.ipvs.as.mbp.service.rules;
 
+import com.espertech.esper.compiler.client.EPCompileException;
+import com.espertech.esper.runtime.client.EPUndeployException;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.Testing;
@@ -95,7 +97,11 @@ public class RuleEngine {
         } else {
             //Register trigger at the trigger service
             //Induce the executions of rules that use this trigger on callback
-            triggerService.registerTrigger(trigger, this::induceRuleExecution);
+            try {
+                triggerService.registerTrigger(trigger, this::induceRuleExecution);
+            } catch (EPCompileException e) {
+                return false;
+            }
 
             Set<Rule> rulesOfTrigger = new HashSet<>();
             rulesOfTrigger.add(rule);
@@ -137,7 +143,13 @@ public class RuleEngine {
         //Check if rule set is now empty
         if (rules.isEmpty()) {
             //Unregister trigger from trigger service
-            triggerService.unregisterTrigger(trigger);
+            try {
+                triggerService.unregisterTrigger(trigger);
+            } catch (EPUndeployException e) {
+                e.printStackTrace();
+            } catch (EPCompileException e) {
+                e.printStackTrace();
+            }
 
             //Remove entry from trigger map
             triggerMap.remove(trigger);

@@ -1,5 +1,8 @@
 package de.ipvs.as.mbp.service.cep.engine.core.queries;
 
+import com.espertech.esper.runtime.client.EPDeployException;
+import com.espertech.esper.runtime.client.EPUndeployException;
+
 /**
  * Interface for implementations of engine-specific CEP query objects.
  */
@@ -16,17 +19,17 @@ public interface CEPQuery {
     /**
      * Unregisters the query from the CEP engine.
      */
-    void unregister();
+    void unregister() throws EPUndeployException;
 
     /**
      * Enables the query at the CEP engine again in case it has been disabled before.
      */
-    void enable();
+    void enable() throws EPDeployException;
 
     /**
      * Disables the query at the CEP engine.
      */
-    void disable();
+    void disable() throws EPUndeployException;
 
     /**
      * Checks whether the query is currently active.

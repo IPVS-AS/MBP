@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.service.cep.engine.core.output;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.espertech.esper.event.map.MapEventBean;
+import com.espertech.esper.common.internal.event.map.MapEventBean;
 
 /**
  * Objects of this class represent the result of CEP queries and consist out of

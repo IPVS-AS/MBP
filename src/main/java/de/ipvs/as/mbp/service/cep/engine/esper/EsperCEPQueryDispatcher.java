@@ -32,7 +32,8 @@ class EsperCEPQueryDispatcher {
         //Create object from result
         CEPOutput result = new CEPOutput(resultMap);
 
-        //Create new thread so that Esper is not blocked
+        //Create new thre
+        // ad so that Esper is not blocked
         Thread subscriberThread = new Thread(() -> subscriber.onQueryTriggered(result));
         subscriberThread.start();
     }

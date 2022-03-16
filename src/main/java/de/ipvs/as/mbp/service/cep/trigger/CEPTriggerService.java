@@ -2,6 +2,8 @@ package de.ipvs.as.mbp.service.cep.trigger;
 
 import java.util.*;
 
+import com.espertech.esper.compiler.client.EPCompileException;
+import com.espertech.esper.runtime.client.EPUndeployException;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.data_model.DataModelDataType;
@@ -69,7 +71,7 @@ public class CEPTriggerService implements ValueLogObserver {
      *
      * @param ruleTrigger The rule trigger to register
      */
-    public void registerTrigger(RuleTrigger ruleTrigger, RuleTriggerCallback callback) {
+    public void registerTrigger(RuleTrigger ruleTrigger, RuleTriggerCallback callback) throws EPCompileException {
         //Sanity check
         if (ruleTrigger == null) {
             throw new IllegalArgumentException("Rule trigger must not be null.");
@@ -93,7 +95,7 @@ public class CEPTriggerService implements ValueLogObserver {
      *
      * @param ruleTrigger The rule trigger to unregister
      */
-    public void unregisterTrigger(RuleTrigger ruleTrigger) {
+    public void unregisterTrigger(RuleTrigger ruleTrigger) throws EPUndeployException, EPCompileException {
         //Sanity check
         if (ruleTrigger == null) {
             throw new IllegalArgumentException("Rule trigger must not be null.");

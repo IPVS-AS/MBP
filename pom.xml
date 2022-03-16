@@ -113,10 +113,35 @@
         </dependency>
 
         <!-- Esper CEP -->
+        <!--
         <dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
-            <version>7.1.0</version>
+            <version>8.8.0</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>com.espertech</groupId>
+            <artifactId>esper-common</artifactId>
+            <version>8.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.espertech</groupId>
+            <artifactId>esper-runtime</artifactId>
+            <version>8.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.espertech</groupId>
+            <artifactId>esper-compiler</artifactId>
+            <version>8.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.espertech</groupId>
+            <artifactId>esper-common-avro</artifactId>
+            <version>8.8.0</version>
         </dependency>
 
         <!-- Thymeleaf -->
@@ -210,11 +235,13 @@
         </dependency>
 
         <!--Cglib -->
+        <!--
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
             <version>3.3.0</version>
         </dependency>
+        -->
       
         <!-- JsonPath -->
         <dependency>

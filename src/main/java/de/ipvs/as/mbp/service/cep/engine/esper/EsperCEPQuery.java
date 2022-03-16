@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.cep.engine.esper;
 
-import com.espertech.esper.client.EPStatement;
-import com.espertech.esper.client.EPStatementState;
+import com.espertech.esper.common.client.EPCompiled;
+import com.espertech.esper.runtime.client.*;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQuery;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQuerySubscriber;
 
@@ -12,13 +12,33 @@ public class EsperCEPQuery implements CEPQuery {
     //The dedicated query statement created by the engine
     private EPStatement statement;
 
+    private final EPCompiled compiledStatement;
+
+    private EPDeployment currDeployment;
+
+    private final EPDeploymentService cepDeploymentService;
+
+
     /**
      * Creates a new query object by passing a dedicated statement created by the CEP engine.
      *
-     * @param statement The statement of the query to wrap
+     * @param compiledStatement The compiled statement of the query to wrap
      */
-    EsperCEPQuery(EPStatement statement) {
-        setStatement(statement);
+    EsperCEPQuery(EPCompiled compiledStatement) {
+        this.compiledStatement = compiledStatement;
+
+        this.currDeployment = null;
+
+        cepDeploymentService = EPRuntimeProvider.getDefaultRuntime().getDeploymentService();
+    }
+
+    private void updateDeploymentAndStatement(EPDeployment newDeplyoment) {
+        if (newDeplyoment == null) {
+            this.statement = null;
+        } else {
+            this.statement = newDeplyoment.getStatements()[0];
+        }
+        this.currDeployment = newDeplyoment;
     }
 
     /**
@@ -44,40 +64,32 @@ public class EsperCEPQuery implements CEPQuery {
     /**
      * Unregisters the query from the CEP engine.
      */
-    public void unregister() {
-        statement.destroy();
+    public void unregister() throws EPUndeployException {
+        cepDeploymentService.undeploy(statement.getDeploymentId());
     }
 
     /**
      * Enables the query at the CEP engine again in case it has been disabled before.
      */
-    public void enable() {
-        statement.start();
+    public void enable() throws EPDeployException {
+        EPDeployment currDepl = cepDeploymentService.deploy(compiledStatement);
+        updateDeploymentAndStatement(currDepl);
     }
 
     /**
      * Disables the query at the CEP engine.
      */
-    public void disable() {
-        statement.stop();
+    public void disable() throws EPUndeployException {
+        cepDeploymentService.undeploy(statement.getDeploymentId());
     }
 
     /**
-     * Checks whether the query is currently active.
+     * Checks whether the query is currently active (=isDestroyed).
      *
      * @return True, if the query is currently active; false otherwise
      */
     public boolean isActive() {
-        return statement.isStarted();
-    }
-
-    /**
-     * Returns the current state of the query.
-     *
-     * @return The state
-     */
-    public EPStatementState getState() {
-        return statement.getState();
+        return statement.isDestroyed();
     }
 
     /**
@@ -100,5 +112,9 @@ public class EsperCEPQuery implements CEPQuery {
             throw new IllegalArgumentException("Statement must not be null.");
         }
         this.statement = statement;
+    }
+
+    public EPDeployment getCurrDeployment() {
+        return currDeployment;
     }
 }

@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.domain.rules;
 
+import com.espertech.esper.runtime.client.EPUndeployException;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.RuleTriggerRepository;
 import de.ipvs.as.mbp.service.cep.engine.core.queries.CEPQueryValidation;
