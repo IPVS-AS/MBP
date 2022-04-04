@@ -1,9 +1,8 @@
 package de.ipvs.as.mbp.service.deployment.ssh;
-
+import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import de.ipvs.as.mbp.service.deployment.ssh.SSHSession;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,7 +12,7 @@ import java.util.Map;
  * Provides a managed pool of SSH session for devices. The sessions may be requested and used by other components
  * on demand.
  */
-@Component
+@org.springframework.stereotype.Component
 public class SSHSessionPool {
 
     //Map (device id -> SSH session) of sessions
@@ -25,6 +24,47 @@ public class SSHSessionPool {
     private SSHSessionPool() {
         //Initialize map of sessions
         sessionsMap = new HashMap<>();
+    }
+
+    /**
+     * Returns an active SSH session for a certain component. If no session for this component exists,
+     * a new session is created and returned.
+     *
+     * @param component The device to return a SSH session for
+     * @return The active SSH session for the device
+     * @throws IOException In case of an I/O issue
+     */
+    public SSHSession getSSHSession(Component component) throws IOException {
+        //Sanity check
+        if (component == null || component.getDevice() == null) {
+            throw new IllegalArgumentException("Component and its device must not be null.");
+        }
+
+        //Get component id
+        String componentId = component.getId();
+
+        //Check if a session is already registered
+        if (sessionsMap.containsKey(component.getId())) {
+            //Get registered session
+            SSHSession session = sessionsMap.get(componentId);
+
+            //Check if session is active
+            if (session.isActive()) {
+                return session;
+            }
+
+            //Unregister old session from map
+            sessionsMap.remove(componentId);
+        }
+
+        //A new SSH session needs to be created
+        SSHSession session = establishSSHSession(component.getDevice());
+
+        //Register session in sessions map
+        sessionsMap.put(componentId, session);
+
+        //Return new session
+        return session;
     }
 
     /**
@@ -81,11 +121,8 @@ public class SSHSessionPool {
             throw new IllegalArgumentException("Device must not be null.");
         }
 
-        //Check if a session is registered for this device
-        if (sessionsMap.containsKey(device.getId())) {
-            //Unregister session from map
-            sessionsMap.remove(device.getId());
-        }
+        //Unregister session from map if it is already existing
+        sessionsMap.remove(device.getId());
 
         //Create a new SSH session
         return getSSHSession(device);

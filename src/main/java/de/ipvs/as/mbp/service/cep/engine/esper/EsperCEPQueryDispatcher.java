@@ -9,7 +9,7 @@ import java.util.Map;
  * Dispatcher for CEP query callbacks that converts the query result to a CEPOutput object, creates a new thread
  * and notifies the subscriber within this thread.
  */
-class EsperCEPQueryDispatcher {
+public class EsperCEPQueryDispatcher {
     //The subscriber that should be notified by the dispatcher
     private CEPQuerySubscriber subscriber;
 

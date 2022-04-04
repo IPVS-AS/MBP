@@ -80,16 +80,22 @@ public class RestComponentStateController {
 	 * @param actuatorId the id of the {@link Actuator}.
 	 * @throws EntityNotFoundException
 	 * @throws MissingPermissionException
+	 * @return
 	 */
 	@GetMapping("/actuators/state/{id}")
 	@ApiOperation(value = "Retrieves the component state for an actuator", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 401, message = "Not authorized to access the actuator"),
 			@ApiResponse(code = 404, message = "Actuator not found") })
-	public ResponseEntity<EntityModel<ComponentState>> getActuatorState(
+	public ResponseEntity<EntityModel<ComponentStateDTO>> getActuatorState(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId) throws EntityNotFoundException, MissingPermissionException {
-		return ResponseEntity.ok(getComponentState(actuatorId, actuatorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
+		ComponentState componentState = getComponentState(actuatorId, actuatorRepository, ACAccessRequest.valueOf(accessRequestHeader)).getContent();
+		if (componentState == null) {
+			return ResponseEntity.internalServerError().build();
+		}
+		String componentStateEnumKey = componentState.name();
+		return ResponseEntity.ok(EntityModel.of(new ComponentStateDTO(componentStateEnumKey)));
 	}
 
 	/**

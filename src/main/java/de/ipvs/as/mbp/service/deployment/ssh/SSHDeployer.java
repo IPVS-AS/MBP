@@ -179,7 +179,7 @@ public class SSHDeployer implements IDeployer {
 
         try {
             // Get SSH session from pool
-            SSHSession sshSession = sshSessionPool.getSSHSession(device);
+            SSHSession sshSession = sshSessionPool.getSSHSession(component);
 
             // Create JSON string from parameters
             JSONArray parameterArray = convertParametersToJSON(operator, parameterInstanceList);
@@ -217,7 +217,7 @@ public class SSHDeployer implements IDeployer {
 
         try {
             // Get SSH session from pool
-            SSHSession sshSession = sshSessionPool.getSSHSession(device);
+            SSHSession sshSession = sshSessionPool.getSSHSession(component);
 
             // Execute start script with parameters
             sshSession.executeShellScript(deploymentPath + "/" + STOP_SCRIPT_NAME);
@@ -255,7 +255,7 @@ public class SSHDeployer implements IDeployer {
 
         try {
             // Get SSH session from pool
-            SSHSession sshSession = sshSessionPool.getSSHSession(device);
+            SSHSession sshSession = sshSessionPool.getSSHSession(component);
 
             // Resolve deployment path
             String deploymentPath = getDeploymentPath(component);
@@ -348,7 +348,7 @@ public class SSHDeployer implements IDeployer {
 
         try {
             // Get SSH session from pool
-            SSHSession sshSession = sshSessionPool.getSSHSession(device);
+            SSHSession sshSession = sshSessionPool.getSSHSession(component);
 
             // Resolve deployment path
             String deploymentPath = getDeploymentPath(component);
@@ -410,7 +410,7 @@ public class SSHDeployer implements IDeployer {
 
         try {
             // Get SSH session from pool
-            SSHSession sshSession = sshSessionPool.getSSHSession(device);
+            SSHSession sshSession = sshSessionPool.getSSHSession(component);
 
             // Reset output stream of session
             sshSession.resetStdOutStream();
@@ -446,7 +446,7 @@ public class SSHDeployer implements IDeployer {
 
         try {
             // Get SSH session from pool
-            SSHSession sshSession = sshSessionPool.getSSHSession(component.getDevice());
+            SSHSession sshSession = sshSessionPool.getSSHSession(component);
 
             // Resolve deployment path
             String deploymentPath = getDeploymentPath(component);

@@ -65,7 +65,7 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                 grid_num: 5,
                 grid_snap: true,
                 step: 1,
-                min: 5,
+                min: 1,
                 max: 60,
                 from: scope.settings.refreshInterval,
                 onFinish: function (data) {
@@ -164,6 +164,8 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                      * @param values
                      */
                     function displayData(values) {
+                        var oldZoom = chart.getZoom();
+
                         // Clear possibly already existing markers
                         if (markers != null) {
                             markers.clearLayers();
@@ -183,7 +185,7 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                         }
                         chart.addLayer(markers);
                         chart.fitBounds(new L.LatLngBounds(latLngArr), {
-                            maxZoom: 5
+                            maxZoom: oldZoom // use the old zoom as max to keep the zoom level like the user sets it
                         });
                     }
 

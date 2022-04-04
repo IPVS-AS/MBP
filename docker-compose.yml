@@ -7,6 +7,7 @@ services:
     links:
       - mosquitto
       - mongodb
+      - iot-device
     ports:
       - 8080:8080
 
@@ -35,6 +36,26 @@ services:
       - 1884:1884
     volumes:
       - mosquitto_volume:/var/lib/mosquitto
+    networks:
+      default:
+        ipv4_address: 172.16.238.03
+  
+  iot-device:
+    container_name: iot-device
+    build: ./testing/iot-device-dockerfile
+    ports:
+      - 22:22
+    networks:
+      default:
+        ipv4_address: 172.16.238.10
+
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
+        - subnet: "2001:3984:3989::/64"
 
 volumes:
   mosquitto_volume:

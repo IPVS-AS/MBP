@@ -72,6 +72,7 @@ public class CEPEventType {
         //Get field values of the provided event
         Map<String, Object> fieldValues = event.getFieldValues();
 
+        /*
         //Iterate over all defined fields of this event type
         Set<String> fieldNames = fields.keySet();
         for (String fieldName : fieldNames) {
@@ -91,6 +92,7 @@ public class CEPEventType {
                 return false;
             }
         }
+        */
 
         //in all other cases, the event is a valid instance
         return true;

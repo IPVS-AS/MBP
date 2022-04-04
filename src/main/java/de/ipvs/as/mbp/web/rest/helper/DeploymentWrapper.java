@@ -46,7 +46,7 @@ public class DeploymentWrapper {
      * @param component          the {@link Component} to start.
      * @param parameterInstances the list of {@link ParameterInstance}s.
      */
-    public void     startComponent(Component component, List<ParameterInstance> parameterInstances) {
+    public void startComponent(Component component, List<ParameterInstance> parameterInstances) {
         // Get adapter for parameter comparison
         Operator operator = component.getOperator();
 
