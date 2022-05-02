@@ -15,7 +15,7 @@ import java.util.Map;
 @org.springframework.stereotype.Component
 public class SSHSessionPool {
 
-    //Map (device id -> SSH session) of sessions
+    //Map (component id -> SSH session) of sessions
     private final Map<String, SSHSession> sessionsMap;
 
     /**
