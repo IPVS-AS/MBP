@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import de.ipvs.as.mbp.util.ValidationErrorCollection;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +24,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
+
+import springfox.documentation.PathProvider;
 import springfox.documentation.annotations.ApiIgnore;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -48,7 +53,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 public class SwaggerConfiguration {
     public static final String SWAGGER_PATH_UI = "/swagger-ui.html";
     public static final String SWAGGER_PATH_JSON = "/v2/api-docs";
-
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
     /**
      * Creates a docket bean that holds the swagger configuration.
      *
@@ -58,16 +64,26 @@ public class SwaggerConfiguration {
     public Docket docket() {
         //Type resolver for working with types
         TypeResolver typeResolver = new TypeResolver();
-        
+
         //Create bean
-        return new Docket(DocumentationType.SWAGGER_2)
+        return new Docket(DocumentationType.SWAGGER_2).pathProvider(new PathProvider() {
+                    @Override
+                    public String getOperationPath(String operationPath) {
+                        return operationPath.replace(contextPath, StringUtils.EMPTY);
+                    }
+
+                    @Override
+                    public String getResourceListingPath(String groupName, String apiDeclaration) {
+                        return null;
+                    }
+                })
                 .useDefaultResponseMessages(false)
                 .additionalModels(typeResolver.resolve(ValidationErrorCollection.class))
                 .select()
-				.apis(RequestHandlerSelectors.withClassAnnotation(Api.class)
-							.or(RequestHandlerSelectors.withClassAnnotation(ApiModel.class)
-							.or(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)))
-						.and(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class).negate()))
+                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class)
+                        .or(RequestHandlerSelectors.withClassAnnotation(ApiModel.class)
+                                .or(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)))
+                        .and(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class).negate()))
 //                .apis(Predicates.and(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
 //                        RequestHandlerSelectors.withClassAnnotation(ApiModel.class),
 //                        RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)),
